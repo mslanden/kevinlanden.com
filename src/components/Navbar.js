@@ -27,6 +27,10 @@ const NavContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding: 0 1rem;
+  }
 `;
 
 const Logo = styled(Link)`
@@ -51,6 +55,10 @@ const LogoText = styled.span`
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     font-size: 1.2rem;
   }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1rem;
+  }
 `;
 
 const MenuButton = styled.button`
@@ -61,9 +69,18 @@ const MenuButton = styled.button`
   cursor: pointer;
   z-index: 1001;
   display: none;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
-    display: block;
+    display: flex;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1.3rem;
+    padding: 0.3rem;
   }
 `;
 
@@ -125,7 +142,8 @@ const MobileMenu = styled(motion.div)`
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  padding: 2rem;
+  padding: 4rem 1.5rem 2rem 1.5rem;
+  overflow-y: auto; /* Allow scrolling if needed */
 `;
 
 const MobileNavLinks = styled.div`
@@ -133,6 +151,12 @@ const MobileNavLinks = styled.div`
   flex-direction: column;
   gap: 2rem;
   text-align: center;
+  width: 100%;
+  padding: 1rem;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    gap: 1.5rem;
+  }
 `;
 
 const MobileNavLink = styled(Link)`
@@ -143,6 +167,11 @@ const MobileNavLink = styled(Link)`
   letter-spacing: 1px;
   transition: color 0.3s ease;
   font-family: ${props => props.theme.fonts.heading};
+  padding: 0.5rem 0;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1.2rem;
+  }
   
   &:hover {
     color: #d2b48c;
@@ -177,9 +206,9 @@ const Navbar = () => {
   };
   
   return (
-    <Nav scrolled={scrolled}>
+    <Nav scrolled={scrolled || menuOpen}>
       <NavContainer>
-        <Logo to="/">
+        <Logo to="/" onClick={closeMenu}>
           <LogoText>OUTRIDER</LogoText>
         </Logo>
         
