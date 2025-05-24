@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
 import { FiMenu, FiX } from 'react-icons/fi';
 
 const Nav = styled.nav`
@@ -12,7 +11,7 @@ const Nav = styled.nav`
   padding: 1rem 0;
   background-color: ${({ scrolled }) => 
     scrolled ? 'rgba(18, 18, 18, 0.95)' : 'transparent'};
-  z-index: 1000;
+  z-index: 8000;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   box-shadow: ${({ scrolled }) => 
     scrolled ? '0 2px 10px rgba(0, 0, 0, 0.2)' : 'none'};
@@ -33,12 +32,13 @@ const NavContainer = styled.div`
   }
 `;
 
+// Logo link
 const Logo = styled(Link)`
   display: flex;
   align-items: center;
   text-decoration: none;
   color: #d2b48c;
-  z-index: 1001;
+  z-index: 10000;
 `;
 
 const LogoImage = styled.img`
@@ -61,26 +61,19 @@ const LogoText = styled.span`
   }
 `;
 
+// Hamburger menu button
 const MenuButton = styled.button`
   background: none;
   border: none;
   color: #d2b48c;
-  font-size: 1.5rem;
+  font-size: 24px;
   cursor: pointer;
-  z-index: 1001;
+  z-index: 10000;
   display: none;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 8px;
   
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    display: flex;
-  }
-  
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 1.3rem;
-    padding: 0.3rem;
+  @media (max-width: ${props => props.theme.breakpoints.lg}) {
+    display: block;
   }
 `;
 
@@ -88,7 +81,7 @@ const NavLinks = styled.div`
   display: flex;
   gap: 2rem;
   
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
+  @media (max-width: ${props => props.theme.breakpoints.lg}) {
     display: none;
   }
 `;
@@ -98,9 +91,11 @@ const NavLink = styled(Link)`
   text-decoration: none;
   font-weight: 500;
   letter-spacing: 0.5px;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
   position: relative;
-  padding: 0.3rem 0;
+  padding: 0.5rem 0.8rem;
+  margin: 0 0.2rem;
+  border-radius: 4px;
   
   &:after {
     content: '';
@@ -108,16 +103,18 @@ const NavLink = styled(Link)`
     width: 0;
     height: 2px;
     bottom: 0;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     background-color: #d2b48c;
     transition: width 0.3s ease;
   }
   
   &:hover {
     color: #d2b48c;
+    background-color: rgba(210, 180, 140, 0.05);
     
     &:after {
-      width: 100%;
+      width: 80%;
     }
   }
   
@@ -125,55 +122,66 @@ const NavLink = styled(Link)`
     color: #d2b48c;
     
     &:after {
-      width: 100%;
+      width: 80%;
     }
   }
 `;
 
-const MobileMenu = styled(motion.div)`
+
+
+// Fullscreen mobile menu overlay
+const MobileMenu = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(18, 18, 18, 0.98);
-  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: #000;
+  z-index: 9000;
+  display: ${props => props.isOpen ? 'flex' : 'none'};
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  padding: 4rem 1.5rem 2rem 1.5rem;
-  overflow-y: auto; /* Allow scrolling if needed */
+  overflow: hidden;
 `;
 
+// Mobile links container
 const MobileNavLinks = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 30px;
   text-align: center;
-  width: 100%;
-  padding: 1rem;
+  width: 90%;
+  max-width: 300px;
+  margin: 0 auto;
   
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    gap: 1.5rem;
+  @media (min-width: ${props => props.theme.breakpoints.md}) and (max-width: ${props => props.theme.breakpoints.lg}) {
+    max-width: 350px;
+    gap: 35px;
   }
 `;
 
+// Mobile menu link
 const MobileNavLink = styled(Link)`
-  color: #f5f5f5;
+  color: white;
   text-decoration: none;
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 500;
-  letter-spacing: 1px;
-  transition: color 0.3s ease;
   font-family: ${props => props.theme.fonts.heading};
-  padding: 0.5rem 0;
+  padding: 12px 0;
+  display: block;
+  text-align: center;
+  letter-spacing: 1px;
   
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 1.2rem;
+  @media (min-width: ${props => props.theme.breakpoints.md}) and (max-width: ${props => props.theme.breakpoints.lg}) {
+    font-size: 22px;
   }
   
-  &:hover {
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 20px;
+  }
+  
+  &:hover, &.active {
     color: #d2b48c;
   }
 `;
@@ -181,6 +189,7 @@ const MobileNavLink = styled(Link)`
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -197,6 +206,11 @@ const Navbar = () => {
     };
   }, [scrolled]);
   
+  // Close menu when changing routes
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location]);
+  
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
@@ -205,45 +219,44 @@ const Navbar = () => {
     setMenuOpen(false);
   };
   
+  // Check if a link is active
+  const isActive = (path) => {
+    if (path === '/' && location.pathname === '/') return true;
+    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    return false;
+  };
+  
   return (
     <Nav scrolled={scrolled || menuOpen}>
       <NavContainer>
-        <Logo to="/" onClick={closeMenu}>
+        <Logo to="/" onClick={closeMenu} style={{position: 'relative'}}>
           <LogoText>OUTRIDER</LogoText>
         </Logo>
         
         <NavLinks>
-          <NavLink to="/">Home</NavLink>
-          <NavLink to="/buyers-guide">Buyers Guide</NavLink>
-          <NavLink to="/sellers-guide">Sellers Guide</NavLink>
-          <NavLink to="/marketing-plan">Marketing Plan</NavLink>
-          <NavLink to="/testimonials">Testimonials</NavLink>
-          <NavLink to="/affiliate">Affiliate Program</NavLink>
+          <NavLink to="/" className={isActive('/') ? 'active' : ''}>Home</NavLink>
+          <NavLink to="/buyers-guide" className={isActive('/buyers-guide') ? 'active' : ''}>Buyers Guide</NavLink>
+          <NavLink to="/sellers-guide" className={isActive('/sellers-guide') ? 'active' : ''}>Sellers Guide</NavLink>
+          <NavLink to="/marketing-plan" className={isActive('/marketing-plan') ? 'active' : ''}>Marketing Plan</NavLink>
+          <NavLink to="/testimonials" className={isActive('/testimonials') ? 'active' : ''}>Testimonials</NavLink>
+          <NavLink to="/affiliate" className={isActive('/affiliate') ? 'active' : ''}>Affiliate Program</NavLink>
         </NavLinks>
         
-        <MenuButton onClick={toggleMenu}>
+        <MenuButton onClick={toggleMenu} aria-label="Toggle navigation menu">
           {menuOpen ? <FiX /> : <FiMenu />}
         </MenuButton>
         
-        <AnimatePresence>
-          {menuOpen && (
-            <MobileMenu
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <MobileNavLinks>
-                <MobileNavLink to="/" onClick={closeMenu}>Home</MobileNavLink>
-                <MobileNavLink to="/buyers-guide" onClick={closeMenu}>Buyers Guide</MobileNavLink>
-                <MobileNavLink to="/sellers-guide" onClick={closeMenu}>Sellers Guide</MobileNavLink>
-                <MobileNavLink to="/marketing-plan" onClick={closeMenu}>Marketing Plan</MobileNavLink>
-                <MobileNavLink to="/testimonials" onClick={closeMenu}>Testimonials</MobileNavLink>
-                <MobileNavLink to="/affiliate" onClick={closeMenu}>Affiliate Program</MobileNavLink>
-              </MobileNavLinks>
-            </MobileMenu>
-          )}
-        </AnimatePresence>
+        {/* Full-screen mobile menu */}
+        <MobileMenu isOpen={menuOpen}>
+          <MobileNavLinks>
+            <MobileNavLink to="/" onClick={closeMenu}>Home</MobileNavLink>
+            <MobileNavLink to="/buyers-guide" onClick={closeMenu}>Buyers Guide</MobileNavLink>
+            <MobileNavLink to="/sellers-guide" onClick={closeMenu}>Sellers Guide</MobileNavLink>
+            <MobileNavLink to="/marketing-plan" onClick={closeMenu}>Marketing Plan</MobileNavLink>
+            <MobileNavLink to="/testimonials" onClick={closeMenu}>Testimonials</MobileNavLink>
+            <MobileNavLink to="/affiliate" onClick={closeMenu}>Affiliate Program</MobileNavLink>
+          </MobileNavLinks>
+        </MobileMenu>
       </NavContainer>
     </Nav>
   );
