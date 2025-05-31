@@ -5,7 +5,7 @@ import { useInView } from 'react-intersection-observer';
 
 const TerritorySection = styled.section`
   padding: 8rem 0;
-  background-color: ${props => props.theme.colors.background.dark};
+  background-color: ${props => props.theme.colors.background.coolDark};
   position: relative;
   overflow: hidden;
   
@@ -18,7 +18,7 @@ const TerritorySection = styled.section`
     height: 100%;
     background-image: url('/images/topographic-map.jpg');
     background-size: cover;
-    opacity: 0.1;
+    opacity: 0.08;
     z-index: 1;
   }
 `;
@@ -83,7 +83,7 @@ const TerritoryGrid = styled.div`
 `;
 
 const TerritoryCard = styled(motion.div)`
-  background-color: rgba(30, 30, 30, 0.7);
+  background-color: rgba(20, 20, 20, 0.85);
   border-radius: ${props => props.theme.borderRadius.large};
   overflow: hidden;
   box-shadow: ${props => props.theme.shadows.medium};
@@ -138,7 +138,7 @@ const TerritoryDescription = styled.p`
 
 const TerritoryStats = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   color: ${props => props.theme.colors.text.muted};
   font-size: 0.9rem;
   margin-top: auto;
@@ -150,11 +150,19 @@ const TerritoryStat = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 8px;
+  text-align: center;
   
   span:first-child {
     font-weight: bold;
     color: ${props => props.theme.colors.text.secondary};
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem;
+    font-size: 1rem;
+  }
+  
+  span:last-child {
+    white-space: nowrap;
+    font-size: 0.8rem;
   }
 `;
 
@@ -165,7 +173,7 @@ const MapContainer = styled(motion.div)`
   box-shadow: ${props => props.theme.shadows.large};
   border: 1px solid ${props => props.theme.colors.border};
   height: 400px;
-  background-color: rgba(30, 30, 30, 0.7);
+  background-color: rgba(20, 20, 20, 0.85);
   position: relative;
   
   img {
@@ -283,7 +291,7 @@ const Territory = () => {
             animate={titleInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Expertly serving the unique real estate markets of these beautiful communities
+            Expertly serving the unique real estate markets of these beautiful mountain communities
           </SectionSubtitle>
         </SectionHeader>
         
@@ -309,11 +317,11 @@ const Territory = () => {
                   </TerritoryStat>
                   <TerritoryStat>
                     <span>{territory.population}</span>
-                    <span>Population</span>
+                    <span>Pop.</span>
                   </TerritoryStat>
                   <TerritoryStat>
                     <span>{territory.avgListing}</span>
-                    <span>Avg. Listing</span>
+                    <span>Avg. Price</span>
                   </TerritoryStat>
                 </TerritoryStats>
               </TerritoryContent>

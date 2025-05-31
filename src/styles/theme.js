@@ -7,6 +7,9 @@ const theme = {
       dark: '#121212', // Dark background
       light: '#2a2a2a', // Slightly lighter dark background
       card: 'rgba(30, 30, 30, 0.8)', // Card background
+      warmDark: '#1a1613', // Warm dark with brown undertones
+      coolDark: '#101318', // Cool dark with blue undertones
+      richDark: '#0d0d0d', // Even darker background
     },
     text: {
       primary: '#f5f5f5', // Light text

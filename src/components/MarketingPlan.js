@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaCamera, FaGlobe, FaMailBulk, FaHandshake, FaPencilRuler, FaStar } from 'react-icons/fa';
+import { FaCamera, FaGlobe, FaMailBulk, FaPencilRuler } from 'react-icons/fa';
 
 const MarketingSection = styled.section`
   padding: 8rem 0;
@@ -68,16 +68,9 @@ const SectionSubtitle = styled(motion.p)`
   margin: 0 auto;
 `;
 
-const ContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-  
-  @media (max-width: ${props => props.theme.breakpoints.lg}) {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
+const ContentContainer = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
 `;
 
 const MarketingStrategyList = styled(motion.div)`
@@ -135,89 +128,7 @@ const StrategyDescription = styled.p`
   line-height: 1.7;
 `;
 
-const OutriderDifference = styled(motion.div)`
-  background-color: rgba(30, 30, 30, 0.8);
-  padding: 3rem;
-  border-radius: ${props => props.theme.borderRadius.large};
-  border: 1px solid ${props => props.theme.colors.border};
-  box-shadow: ${props => props.theme.shadows.large};
-  position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background-color: ${props => props.theme.colors.primary};
-  }
-`;
 
-const DifferenceTitle = styled.h3`
-  font-family: ${props => props.theme.fonts.heading};
-  font-size: 2rem;
-  color: ${props => props.theme.colors.text.secondary};
-  margin-bottom: 2rem;
-  position: relative;
-  display: inline-block;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    width: 50px;
-    height: 2px;
-    background-color: ${props => props.theme.colors.primary};
-  }
-`;
-
-const BenefitsList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const BenefitItem = styled.li`
-  margin-bottom: 1.2rem;
-  padding-left: 2rem;
-  position: relative;
-  color: ${props => props.theme.colors.text.primary};
-  
-  &::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: ${props => props.theme.colors.primary};
-    font-weight: bold;
-  }
-`;
-
-const PricingInfo = styled.div`
-  margin-top: 2.5rem;
-  padding-top: 2rem;
-  border-top: 1px solid ${props => props.theme.colors.border};
-  
-  h4 {
-    font-family: ${props => props.theme.fonts.heading};
-    font-size: 1.5rem;
-    color: ${props => props.theme.colors.text.secondary};
-    margin-bottom: 1rem;
-  }
-  
-  p {
-    color: ${props => props.theme.colors.text.primary};
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .highlight {
-    color: ${props => props.theme.colors.text.secondary};
-    font-weight: bold;
-  }
-`;
 
 const MarketingPlan = () => {
   const [titleRef, titleInView] = useInView({
@@ -228,11 +139,6 @@ const MarketingPlan = () => {
   const [strategyRef, strategyInView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
-  });
-  
-  const [differenceRef, differenceInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.2,
   });
   
   const strategyVariants = {
@@ -255,7 +161,7 @@ const MarketingPlan = () => {
     },
     {
       icon: <FaGlobe />,
-      title: 'Digital Marketing',
+      title: 'Internet Marketing',
       description: 'Comprehensive online marketing strategy including social media, real estate platforms, and targeted advertising.'
     },
     {
@@ -291,7 +197,7 @@ const MarketingPlan = () => {
           </SectionSubtitle>
         </SectionHeader>
         
-        <ContentGrid>
+        <ContentContainer>
           <MarketingStrategyList
             ref={strategyRef}
             initial="hidden"
@@ -318,31 +224,7 @@ const MarketingPlan = () => {
               </MarketingStrategyItem>
             ))}
           </MarketingStrategyList>
-          
-          <OutriderDifference
-            ref={differenceRef}
-            initial={{ opacity: 0, x: 50 }}
-            animate={differenceInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
-            transition={{ duration: 0.8 }}
-          >
-            <DifferenceTitle>The Outrider Difference</DifferenceTitle>
-            
-            <BenefitsList>
-              <BenefitItem>No contract commitments - we earn your business every day</BenefitItem>
-              <BenefitItem>Weekly updates on market status and showing feedback</BenefitItem>
-              <BenefitItem>Every home gets comprehensive marketing regardless of price point</BenefitItem>
-              <BenefitItem>Professional communication with prompt responses to your questions</BenefitItem>
-              <BenefitItem>Expertise in the unique rural and mountain property markets</BenefitItem>
-              <BenefitItem>Transparent process from listing to closing</BenefitItem>
-            </BenefitsList>
-            
-            <PricingInfo>
-              <h4>Competitive Listing Fee</h4>
-              <p>Just <span className="highlight">1% to list</span> your property ($7k minimum)</p>
-              <p>Full-service representation without the premium price</p>
-            </PricingInfo>
-          </OutriderDifference>
-        </ContentGrid>
+        </ContentContainer>
       </MarketingContainer>
     </MarketingSection>
   );

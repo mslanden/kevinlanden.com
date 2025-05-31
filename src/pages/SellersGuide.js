@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaHome, FaCamera, FaChartLine, FaAd, FaHandshake, FaFileContract, FaMoneyCheckAlt } from 'react-icons/fa';
+import { FaHome, FaCamera, FaChartLine, FaAd, FaHandshake, FaFileContract, FaMoneyCheckAlt, FaChartBar, FaMapMarkedAlt, FaFileAlt, FaPhotoVideo } from 'react-icons/fa';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -71,6 +71,17 @@ const PageDescription = styled(motion.p)`
 const ContentSection = styled.section`
   padding: 5rem 0;
   background-color: ${props => props.theme.colors.background.dark};
+`;
+
+const MarketingSection = styled.section`
+  padding: 5rem 0;
+  background-color: ${props => props.theme.colors.background.warmDark};
+`;
+
+const PricingSection = styled.section`
+  padding: 5rem 0;
+  background-color: ${props => props.theme.colors.background.coolDark};
+  text-align: center;
 `;
 
 const ContentContainer = styled.div`
@@ -203,19 +214,6 @@ const QuoteBox = styled(motion.div)`
   border-radius: ${props => props.theme.borderRadius.large};
   border: 1px solid ${props => props.theme.colors.border};
   text-align: center;
-  position: relative;
-  
-  &::before {
-    content: '"';
-    position: absolute;
-    top: -30px;
-    left: 30px;
-    font-size: 8rem;
-    font-family: ${props => props.theme.fonts.heading};
-    color: ${props => props.theme.colors.primary};
-    opacity: 0.3;
-    line-height: 1;
-  }
   
   h3 {
     font-family: ${props => props.theme.fonts.heading};
@@ -227,12 +225,12 @@ const QuoteBox = styled(motion.div)`
   p {
     font-size: 1.1rem;
     color: ${props => props.theme.colors.text.primary};
-    font-style: italic;
-  }
-  
-  .highlight {
-    color: ${props => props.theme.colors.text.secondary};
-    font-weight: bold;
+    line-height: 1.7;
+    
+    .highlight {
+      color: ${props => props.theme.colors.text.secondary};
+      font-weight: 600;
+    }
   }
 `;
 
@@ -284,6 +282,191 @@ const CTAButton = styled(motion.button)`
   }
 `;
 
+const MarketingGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const MarketingCard = styled(motion.div)`
+  background-color: rgba(20, 20, 20, 0.85);
+  border-radius: ${props => props.theme.borderRadius.default};
+  overflow: hidden;
+  border: 1px solid ${props => props.theme.colors.border};
+  transition: all 0.3s ease;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: ${props => props.theme.shadows.medium};
+    border-color: ${props => props.theme.colors.secondary};
+  }
+`;
+
+const CardHeader = styled.div`
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+`;
+
+const IconContainer = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: rgba(139, 69, 19, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${props => props.theme.colors.border};
+  flex-shrink: 0;
+  
+  svg {
+    color: ${props => props.theme.colors.text.secondary};
+    font-size: 1.5rem;
+  }
+`;
+
+const CardTitle = styled.h3`
+  font-family: ${props => props.theme.fonts.heading};
+  font-size: 1.5rem;
+  color: ${props => props.theme.colors.text.secondary};
+  margin: 0;
+`;
+
+const CardContent = styled.div`
+  padding: 2rem;
+  
+  p {
+    color: ${props => props.theme.colors.text.primary};
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    
+    li {
+      padding-left: 1.5rem;
+      position: relative;
+      margin-bottom: 0.8rem;
+      color: ${props => props.theme.colors.text.primary};
+      
+      &::before {
+        content: '\2022';
+        position: absolute;
+        left: 0;
+        color: ${props => props.theme.colors.primary};
+      }
+    }
+  }
+`;
+
+const PricingTitle = styled(motion.h2)`
+  font-family: ${props => props.theme.fonts.heading};
+  font-size: 3rem;
+  color: ${props => props.theme.colors.text.secondary};
+  margin-bottom: 1.5rem;
+`;
+
+const PricingContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+`;
+
+const PricingCard = styled(motion.div)`
+  background-color: rgba(20, 20, 20, 0.85);
+  border-radius: ${props => props.theme.borderRadius.large};
+  padding: 3rem 2rem;
+  border: 1px solid ${props => props.theme.colors.border};
+  width: 100%;
+  max-width: 800px;
+  margin: 3rem auto;
+  text-align: center;
+  box-shadow: ${props => props.theme.shadows.medium};
+  
+  ${props => props.popular && `
+    border-color: ${props.theme.colors.secondary};
+    box-shadow: ${props.theme.shadows.large};
+    position: relative;
+  `}
+`;
+
+const PricingHeader = styled.div`
+  margin-bottom: 1.5rem;
+  
+  h3 {
+    font-family: ${props => props.theme.fonts.heading};
+    font-size: 2rem;
+    color: ${props => props.theme.colors.text.secondary};
+    margin-bottom: 1rem;
+  }
+`;
+
+const PricingPrice = styled.div`
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 1rem;
+  
+  span {
+    font-size: 1rem;
+    color: ${props => props.theme.colors.text.muted};
+  }
+`;
+
+const PricingFeatures = styled.ul`
+  list-style-type: none;
+  padding: 0;
+  margin: 2rem 0;
+  text-align: left;
+  max-width: 600px;
+  margin: 2rem auto;
+  
+  li {
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: 1rem;
+    color: ${props => props.theme.colors.text.primary};
+    
+    &::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: ${props => props.theme.colors.primary};
+    }
+  }
+`;
+
+const PricingButton = styled.button`
+  background-color: ${props => props.theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: ${props => props.theme.borderRadius.small};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: ${props => props.theme.colors.tertiary};
+    transform: translateY(-3px);
+    box-shadow: ${props => props.theme.shadows.small};
+  }
+  
+  &:active {
+    transform: translateY(-1px);
+  }
+`;
+
 const SellersGuide = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -306,14 +489,129 @@ const SellersGuide = () => {
   
   const [quoteRef, quoteInView] = useInView({
     triggerOnce: true,
+    threshold: 0.3,
+  });
+  
+  const [marketingRef, marketingInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+  
+  const [pricingRef, pricingInView] = useInView({
+    triggerOnce: true,
     threshold: 0.2,
   });
   
   const [ctaRef, ctaInView] = useInView({
     triggerOnce: true,
-    threshold: 0.2,
+    threshold: 0.3,
   });
   
+  const marketingServices = [
+    {
+      title: "Professional Photography",
+      icon: <FaCamera />,
+      content: (
+        <>
+          <p>
+            High-quality, professionally staged photos that showcase your property in its best light. Our photographers
+            understand how to capture rural and mountain properties to highlight views, land features, and unique attributes.
+          </p>
+          <ul>
+            <li>Interior and exterior professional shots</li>
+            <li>Twilight photography for select properties</li>
+            <li>Staging recommendations and assistance</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      title: "Market Analysis",
+      icon: <FaChartBar />,
+      content: (
+        <>
+          <p>
+            Comprehensive market analysis to properly position and price your property based on current conditions, recent sales,
+            and the unique attributes of rural and mountain properties.
+          </p>
+          <ul>
+            <li>Comparative market analysis</li>
+            <li>Price trend monitoring</li>
+            <li>Strategic positioning recommendations</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      title: "Targeted Advertising",
+      icon: <FaAd />,
+      content: (
+        <>
+          <p>
+            Precision digital marketing campaigns that target qualified buyers looking specifically for rural and mountain
+            properties with your unique features.
+          </p>
+          <ul>
+            <li>Social media advertising</li>
+            <li>Paid search campaigns</li>
+            <li>Email marketing to buyer database</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      title: "Area Expertise",
+      icon: <FaMapMarkedAlt />,
+      content: (
+        <>
+          <p>
+            Detailed information about water rights, easements, zoning, and other important aspects of rural property ownership
+            that buyers need to understand.
+          </p>
+          <ul>
+            <li>Local area knowledge</li>
+            <li>Access to specialized resources</li>
+            <li>Community and recreational information</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      title: "Documentation",
+      icon: <FaFileAlt />,
+      content: (
+        <>
+          <p>
+            Professional property documentation including detailed property features, disclosure preparation, and organization
+            of all necessary paperwork for a smooth transaction.
+          </p>
+          <ul>
+            <li>Property feature sheets</li>
+            <li>Disclosure assistance</li>
+            <li>Document preparation and review</li>
+          </ul>
+        </>
+      )
+    },
+    {
+      title: "Visual Media",
+      icon: <FaPhotoVideo />,
+      content: (
+        <>
+          <p>
+            High-quality visual content including aerial drone photography and immersive 3D virtual tours that allow buyers
+            to experience your property from anywhere.
+          </p>
+          <ul>
+            <li>Aerial drone photography</li>
+            <li>3D virtual property tours</li>
+            <li>Property video tours</li>
+          </ul>
+        </>
+      )
+    }
+  ];
+
   const sellingSteps = [
     {
       icon: <FaHome />,
@@ -502,6 +800,92 @@ const SellersGuide = () => {
           </QuoteBox>
         </ContentContainer>
       </ContentSection>
+      
+      <MarketingSection>
+        <ContentContainer>
+          <IntroText
+            ref={marketingRef}
+            initial={{ opacity: 0, y: 30 }}
+            animate={marketingInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2>Comprehensive Marketing Strategy</h2>
+            <p>
+              Your property deserves a marketing strategy as unique as its features. Our comprehensive approach ensures maximum exposure to qualified buyers across multiple platforms, from traditional MLS listings to cutting-edge digital marketing.            
+            </p>
+          </IntroText>
+          
+          <MarketingGrid>
+            {marketingServices.map((service, index) => (
+              <MarketingCard
+                key={service.title}
+                initial={{ opacity: 0, y: 50 }}
+                animate={marketingInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <CardHeader>
+                  <IconContainer>{service.icon}</IconContainer>
+                  <CardTitle>{service.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {service.content}
+                </CardContent>
+              </MarketingCard>
+            ))}
+          </MarketingGrid>
+        </ContentContainer>
+      </MarketingSection>
+      
+      <PricingSection>
+        <PricingContainer ref={pricingRef}>
+          <PricingTitle
+            initial={{ opacity: 0, y: 30 }}
+            animate={pricingInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8 }}
+          >
+            Simple, Transparent Pricing
+          </PricingTitle>
+          
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={pricingInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            style={{ color: '#f5f5f5', maxWidth: '800px', margin: '0 auto', lineHeight: '1.7' }}
+          >
+            We believe in providing exceptional service at a fair price. Our listing fee is just 1% of the sale price 
+            (with a $7,000 minimum), significantly lower than the industry standard while providing comprehensive marketing and support.
+          </motion.p>
+          
+          <PricingCard
+            initial={{ opacity: 0, y: 30 }}
+            animate={pricingInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            popular
+          >
+            <PricingHeader>
+              <h3>Outrider Full Service</h3>
+            </PricingHeader>
+            
+            <PricingPrice>
+              1% <span>of sale price ($7k minimum)</span>
+            </PricingPrice>
+            
+            <PricingFeatures>
+              <li>Professional Photography</li>
+              <li>Aerial Drone Photography</li>
+              <li>Virtual 3D Tours</li>
+              <li>Custom Property Website</li>
+              <li>Featured MLS Listing</li>
+              <li>Social Media Campaigns</li>
+              <li>Weekly Market Updates</li>
+              <li>Full Transaction Management</li>
+              <li>No Contract Commitment</li>
+            </PricingFeatures>
+            
+            <PricingButton>Get Started</PricingButton>
+          </PricingCard>
+        </PricingContainer>
+      </PricingSection>
       
       <CTASection>
         <CTAContainer ref={ctaRef}>

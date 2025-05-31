@@ -8,9 +8,8 @@ import theme from './styles/theme';
 import Home from './pages/Home';
 import BuyersGuide from './pages/BuyersGuide';
 import SellersGuide from './pages/SellersGuide';
-import MarketingPlan from './pages/MarketingPlan';
-import Testimonials from './pages/Testimonials';
-import Affiliate from './pages/Affiliate';
+import BestInShow from './pages/BestInShow';
+import Contact from './pages/Contact';
 
 // Components
 import Navbar from './components/Navbar';
@@ -26,9 +25,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/buyers-guide" element={<BuyersGuide />} />
           <Route path="/sellers-guide" element={<SellersGuide />} />
-          <Route path="/marketing-plan" element={<MarketingPlan />} />
-          <Route path="/testimonials" element={<Testimonials />} />
-          <Route path="/affiliate" element={<Affiliate />} />
+          <Route path="/best-in-show" element={<BestInShow />} />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
         <Footer />
       </Router>

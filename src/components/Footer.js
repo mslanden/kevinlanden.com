@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from 'react-icons/fa';
 
 const FooterContainer = styled.footer`
   background-color: ${props => props.theme.colors.background.dark};
@@ -130,35 +130,6 @@ const ContactItem = styled.div`
   }
 `;
 
-const SocialLinks = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    justify-content: center;
-  }
-`;
-
-const SocialLink = styled.a`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(139, 69, 19, 0.2);
-  color: ${props => props.theme.colors.text.secondary};
-  transition: all 0.3s ease;
-  border: 1px solid ${props => props.theme.colors.border};
-  
-  &:hover {
-    background-color: ${props => props.theme.colors.primary};
-    color: white;
-    transform: translateY(-3px);
-  }
-`;
-
 const FooterBottom = styled.div`
   text-align: center;
   padding-top: 2rem;
@@ -240,28 +211,16 @@ const Footer = () => {
               <FaMapMarkerAlt />
               <span>Serving Anza, Aguanga, Idyllwild, and Mountain Center</span>
             </ContactItem>
-            <SocialLinks>
-              <SocialLink href="#" aria-label="Facebook">
-                <FaFacebookF />
-              </SocialLink>
-              <SocialLink href="#" aria-label="Instagram">
-                <FaInstagram />
-              </SocialLink>
-              <SocialLink href="#" aria-label="LinkedIn">
-                <FaLinkedinIn />
-              </SocialLink>
-            </SocialLinks>
           </FooterColumn>
           
           <FooterColumn>
             <FooterHeading>Quick Links</FooterHeading>
             <FooterLinks>
               <FooterLink><Link to="/">Home</Link></FooterLink>
-              <FooterLink><Link to="/buyers-guide">Buyers Guide</Link></FooterLink>
               <FooterLink><Link to="/sellers-guide">Sellers Guide</Link></FooterLink>
-              <FooterLink><Link to="/marketing-plan">Marketing Plan</Link></FooterLink>
-              <FooterLink><Link to="/testimonials">Testimonials</Link></FooterLink>
-              <FooterLink><Link to="/affiliate">Affiliate Program</Link></FooterLink>
+              <FooterLink><Link to="/buyers-guide">Buyers Guide</Link></FooterLink>
+              <FooterLink><Link to="/best-in-show">Best In Show</Link></FooterLink>
+              <FooterLink><Link to="/contact">Contact Us</Link></FooterLink>
             </FooterLinks>
           </FooterColumn>
           
@@ -278,7 +237,7 @@ const Footer = () => {
             
             <NewsletterSection>
               <FooterHeading>Monthly Newsletter</FooterHeading>
-              <p>Subscribe to our western-themed newsletter</p>
+              <p>Subscribe to our Monthly Newsletter</p>
               <NewsletterForm>
                 <NewsletterInput type="email" placeholder="Your email" />
                 <NewsletterButton type="submit">Subscribe</NewsletterButton>

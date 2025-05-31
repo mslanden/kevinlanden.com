@@ -41,10 +41,7 @@ const Logo = styled(Link)`
   z-index: 10000;
 `;
 
-const LogoImage = styled.img`
-  height: 40px;
-  margin-right: 0.8rem;
-`;
+
 
 const LogoText = styled.span`
   font-family: ${props => props.theme.fonts.heading};
@@ -235,11 +232,10 @@ const Navbar = () => {
         
         <NavLinks>
           <NavLink to="/" className={isActive('/') ? 'active' : ''}>Home</NavLink>
-          <NavLink to="/buyers-guide" className={isActive('/buyers-guide') ? 'active' : ''}>Buyers Guide</NavLink>
-          <NavLink to="/sellers-guide" className={isActive('/sellers-guide') ? 'active' : ''}>Sellers Guide</NavLink>
-          <NavLink to="/marketing-plan" className={isActive('/marketing-plan') ? 'active' : ''}>Marketing Plan</NavLink>
-          <NavLink to="/testimonials" className={isActive('/testimonials') ? 'active' : ''}>Testimonials</NavLink>
-          <NavLink to="/affiliate" className={isActive('/affiliate') ? 'active' : ''}>Affiliate Program</NavLink>
+          <NavLink to="/sellers-guide" className={isActive('/sellers-guide') ? 'active' : ''}>Sellers</NavLink>
+          <NavLink to="/buyers-guide" className={isActive('/buyers-guide') ? 'active' : ''}>Buyers</NavLink>
+          <NavLink to="/best-in-show" className={isActive('/best-in-show') ? 'active' : ''}>Best In Show</NavLink>
+          <NavLink to="/contact" className={isActive('/contact') ? 'active' : ''}>Contact</NavLink>
         </NavLinks>
         
         <MenuButton onClick={toggleMenu} aria-label="Toggle navigation menu">
@@ -250,11 +246,10 @@ const Navbar = () => {
         <MobileMenu isOpen={menuOpen}>
           <MobileNavLinks>
             <MobileNavLink to="/" onClick={closeMenu}>Home</MobileNavLink>
-            <MobileNavLink to="/buyers-guide" onClick={closeMenu}>Buyers Guide</MobileNavLink>
-            <MobileNavLink to="/sellers-guide" onClick={closeMenu}>Sellers Guide</MobileNavLink>
-            <MobileNavLink to="/marketing-plan" onClick={closeMenu}>Marketing Plan</MobileNavLink>
-            <MobileNavLink to="/testimonials" onClick={closeMenu}>Testimonials</MobileNavLink>
-            <MobileNavLink to="/affiliate" onClick={closeMenu}>Affiliate Program</MobileNavLink>
+            <MobileNavLink to="/sellers-guide" onClick={closeMenu}>Sellers</MobileNavLink>
+            <MobileNavLink to="/buyers-guide" onClick={closeMenu}>Buyers</MobileNavLink>
+            <MobileNavLink to="/best-in-show" onClick={closeMenu}>Best In Show</MobileNavLink>
+            <MobileNavLink to="/contact" onClick={closeMenu}>Contact</MobileNavLink>
           </MobileNavLinks>
         </MobileMenu>
       </NavContainer>
