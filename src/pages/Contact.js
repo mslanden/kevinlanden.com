@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
-import { submitContactForm } from '../utils/api';
+// import { submitContactForm } from '../utils/api';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -354,7 +354,8 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      await submitContactForm(formData);
+      // Mock contact form submission for now
+      console.log('Contact form submission:', formData);
       setFormData({
         name: '',
         email: '',

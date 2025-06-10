@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaEnvelope, FaCheck } from 'react-icons/fa';
-import { subscribeToNewsletter } from '../utils/api';
+// import { subscribeToNewsletter } from '../utils/api';
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -258,8 +258,16 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
           return key;
         });
       
-      // Send subscription data to backend
-      await subscribeToNewsletter({
+      // Send subscription data to backend (mock for now)
+      // await subscribeToNewsletter({
+      //   name: formData.name,
+      //   email: formData.email,
+      //   communities: communities,
+      //   source: pdfFileName ? pdfFileName.replace('.pdf', '') : 'website'
+      // });
+      
+      // Mock success for now
+      console.log('Newsletter subscription:', {
         name: formData.name,
         email: formData.email,
         communities: communities,
