@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import NewsletterModal from './NewsletterModal';
 
 const FooterContainer = styled.footer`
   background-color: ${props => props.theme.colors.background.dark};
@@ -145,58 +146,35 @@ const NewsletterSection = styled.div`
   margin-top: 1.5rem;
 `;
 
-const NewsletterForm = styled.form`
-  display: flex;
-  margin-top: 1rem;
-  
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-`;
-
-const NewsletterInput = styled.input`
-  flex: 1;
-  padding: 0.8rem 1rem;
-  border: 1px solid ${props => props.theme.colors.border};
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-radius: 4px 0 0 4px;
-  outline: none;
-  
-  &:focus {
-    border-color: ${props => props.theme.colors.text.secondary};
-  }
-  
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    width: 100%;
-    border-radius: 4px;
-  }
-`;
-
 const NewsletterButton = styled.button`
   background-color: ${props => props.theme.colors.primary};
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
-  border-radius: 0 4px 4px 0;
+  border-radius: 4px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 1rem;
+  width: 100%;
   
   &:hover {
     background-color: ${props => props.theme.colors.tertiary};
-  }
-  
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    width: 100%;
-    border-radius: 4px;
+    transform: translateY(-2px);
   }
 `;
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [isNewsletterModalOpen, setIsNewsletterModalOpen] = useState(false);
+  
+  const handleNewsletterClick = () => {
+    setIsNewsletterModalOpen(true);
+  };
+  
+  const handleModalClose = () => {
+    setIsNewsletterModalOpen(false);
+  };
   
   return (
     <FooterContainer>
@@ -217,10 +195,10 @@ const Footer = () => {
             <FooterHeading>Quick Links</FooterHeading>
             <FooterLinks>
               <FooterLink><Link to="/">Home</Link></FooterLink>
-              <FooterLink><Link to="/sellers-guide">Sellers Guide</Link></FooterLink>
-              <FooterLink><Link to="/buyers-guide">Buyers Guide</Link></FooterLink>
+              <FooterLink><Link to="/sellers-guide">Sellers</Link></FooterLink>
+              <FooterLink><Link to="/buyers-guide">Buyers</Link></FooterLink>
               <FooterLink><Link to="/best-in-show">Best In Show</Link></FooterLink>
-              <FooterLink><Link to="/contact">Contact Us</Link></FooterLink>
+              <FooterLink><Link to="/contact">Contact</Link></FooterLink>
             </FooterLinks>
           </FooterColumn>
           
@@ -228,20 +206,19 @@ const Footer = () => {
             <FooterHeading>Contact Us</FooterHeading>
             <ContactItem>
               <FaEnvelope />
-              <a href="mailto:info@outriderrealestate.com">info@outriderrealestate.com</a>
+              <a href="mailto:kevin@outriderrealestate.com">kevin@outriderrealestate.com</a>
             </ContactItem>
             <ContactItem>
               <FaPhoneAlt />
-              <a href="tel:+15551234567">(555) 123-4567</a>
+              <a href="tel:+19514914890">(951) 491-4890</a>
             </ContactItem>
             
             <NewsletterSection>
               <FooterHeading>Monthly Newsletter</FooterHeading>
               <p>Subscribe to our Monthly Newsletter</p>
-              <NewsletterForm>
-                <NewsletterInput type="email" placeholder="Your email" />
-                <NewsletterButton type="submit">Subscribe</NewsletterButton>
-              </NewsletterForm>
+              <NewsletterButton onClick={handleNewsletterClick}>
+                Subscribe to Newsletter
+              </NewsletterButton>
             </NewsletterSection>
           </FooterColumn>
         </FooterTop>
@@ -250,6 +227,12 @@ const Footer = () => {
           <Copyright>© {currentYear} Outrider Real Estate. All rights reserved.</Copyright>
         </FooterBottom>
       </FooterContent>
+      
+      <NewsletterModal 
+        isOpen={isNewsletterModalOpen}
+        onClose={handleModalClose}
+        pdfFileName={null}
+      />
     </FooterContainer>
   );
 };

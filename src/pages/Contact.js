@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
+import { submitContactForm } from '../utils/api';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -293,9 +294,24 @@ const MapWrapper = styled(motion.div)`
     height: 100%;
     border: 0;
   }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -325,10 +341,34 @@ const Contact = () => {
     visible: { opacity: 1, y: 0 }
   };
   
-  const handleSubmit = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Form submission logic would go here
-    alert('Thank you for your message. We will get back to you soon!');
+    setIsSubmitting(true);
+    
+    try {
+      await submitContactForm(formData);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+      alert('Thank you for your message. We will get back to you soon!');
+    } catch (error) {
+      alert('There was an error submitting your message. Please try again.');
+      console.error('Contact form submission error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (
@@ -370,46 +410,44 @@ const Contact = () => {
                 <FaPhoneAlt />
                 <div>
                   <h3>Phone</h3>
-                  <p>(555) 123-4567</p>
+                  <p>(951) 491-4890</p>
                 </div>
               </ContactInfoItem>
               <ContactInfoItem>
                 <FaEnvelope />
                 <div>
                   <h3>Email</h3>
-                  <p>info@kevinlanden.com</p>
-                </div>
-              </ContactInfoItem>
-              <ContactInfoItem>
-                <FaMapMarkerAlt />
-                <div>
-                  <h3>Office</h3>
-                  <p>
-                    123 Mountain View Road<br />
-                    Anza, CA 92539
-                  </p>
+                  <p>kevin@outriderrealestate.com</p>
                 </div>
               </ContactInfoItem>
             </ContactInfoList>
             
             <BusinessHours>
-              <h3>Business Hours</h3>
-              <table>
-                <tbody>
-                  <tr>
-                    <td>Monday - Friday</td>
-                    <td>9:00 AM - 5:00 PM</td>
-                  </tr>
-                  <tr>
-                    <td>Saturday</td>
-                    <td>10:00 AM - 3:00 PM</td>
-                  </tr>
-                  <tr>
-                    <td>Sunday</td>
-                    <td>Closed</td>
-                  </tr>
-                </tbody>
-              </table>
+              <h3>Schedule a Meeting</h3>
+              <p style={{
+                color: '#d2b48c',
+                lineHeight: '1.6',
+                marginBottom: '1rem'
+              }}>
+                Ready to get started? Book a convenient time to discuss your real estate needs.
+              </p>
+              <a 
+                href="https://cal.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: '#8B4513',
+                  color: 'white',
+                  padding: '12px 24px',
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Book a Meeting
+              </a>
             </BusinessHours>
           </ContactInfo>
           
@@ -421,12 +459,15 @@ const Contact = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             onSubmit={handleSubmit}
           >
-            <ContactFormTitle>Send Us a Message</ContactFormTitle>
+            <ContactFormTitle>Questions?</ContactFormTitle>
             <FormGroup>
               <FormLabel htmlFor="name">Your Name</FormLabel>
               <FormInput 
                 type="text" 
                 id="name" 
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
                 placeholder="Enter your name" 
                 required 
               />
@@ -436,6 +477,9 @@ const Contact = () => {
               <FormInput 
                 type="email" 
                 id="email" 
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 placeholder="Enter your email" 
                 required 
               />
@@ -445,6 +489,9 @@ const Contact = () => {
               <FormInput 
                 type="tel" 
                 id="phone" 
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
                 placeholder="Enter your phone number" 
               />
             </FormGroup>
@@ -453,6 +500,9 @@ const Contact = () => {
               <FormInput 
                 type="text" 
                 id="subject" 
+                name="subject"
+                value={formData.subject}
+                onChange={handleInputChange}
                 placeholder="What's this about?" 
                 required 
               />
@@ -461,16 +511,20 @@ const Contact = () => {
               <FormLabel htmlFor="message">Message</FormLabel>
               <FormTextarea 
                 id="message" 
-                placeholder="Tell us what you need..." 
+                name="message"
+                value={formData.message}
+                onChange={handleInputChange}
+                placeholder="Feel welcome to inquire about any real estate matter." 
                 required 
               />
             </FormGroup>
             <FormButton
               type="submit"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              disabled={isSubmitting}
+              whileHover={!isSubmitting ? { scale: 1.05 } : {}}
+              whileTap={!isSubmitting ? { scale: 0.95 } : {}}
             >
-              Send Message
+              {isSubmitting ? 'Sending...' : 'Send Message'}
             </FormButton>
           </ContactForm>
         </ContactContainer>
@@ -485,13 +539,10 @@ const Contact = () => {
             variants={fadeIn}
             transition={{ duration: 0.6 }}
           >
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d106326.53227912583!2d-116.71270724179686!3d33.55387899999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80db54a3445b3fd7%3A0x29a7e95dc4a636bb!2sAnza%2C%20CA%2092539!5e0!3m2!1sen!2sus!4v1653065075455!5m2!1sen!2sus"
-              title="Kevin Landen Real Estate Office Location"
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
+            <img
+              src="/images/territory-map.jpeg"
+              alt="Kevin Landen Real Estate Service Territory Map - Anza, Aguanga, Idyllwild, and Mountain Center"
+            />
           </MapWrapper>
         </MapContainer>
       </MapSection>

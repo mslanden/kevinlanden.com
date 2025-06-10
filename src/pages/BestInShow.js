@@ -500,7 +500,7 @@ const BestInShow = () => {
               variants={fadeIn}
               transition={{ duration: 0.8 }}
             >
-              Digital Item Removal
+              Item Removal
             </SectionTitle>
             <SectionDescription
               initial="hidden"
@@ -587,14 +587,13 @@ const BestInShow = () => {
           </SectionHeader>
           
           <TourContainer>
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/i8mLVgH2GWg?si=fLq2kpJmKcG9vREA&autoplay=1&mute=1&loop=1&playlist=i8mLVgH2GWg&controls=0&start=33&modestbranding=1"
-              title="3D Tour Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            <iframe 
+              src="https://www.zillow.com/view-imx/bf81432d-958e-42c7-9412-5200c94d443d?initialViewType=pano&utm_source=dashboard" 
+              height="450" 
+              width="100%" 
+              frameBorder="0" 
               allowFullScreen
+              title="Zillow 3D Tour"
             ></iframe>
           </TourContainer>
           

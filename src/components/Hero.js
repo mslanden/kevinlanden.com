@@ -20,22 +20,31 @@ const HeroContent = styled.div`
   position: relative;
   z-index: 3;
   text-align: center;
-  max-width: 900px;
+  max-width: 1000px;
   padding: 0 2rem;
   display: flex;
   flex-direction: column;
-  height: 80%;
-  justify-content: center;
+  height: 85%;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const HeroTop = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  padding-bottom: 2rem;
 `;
 
 const HeroLogo = styled(motion.div)`
-  margin-bottom: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   
   img {
-    max-width: 340px;
+    max-width: 200px;
     width: 100%;
     height: auto;
     margin: 0 auto;
@@ -44,111 +53,115 @@ const HeroLogo = styled(motion.div)`
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     img {
-      max-width: 280px;
+      max-width: 180px;
     }
   }
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
     img {
-      max-width: 220px;
+      max-width: 160px;
     }
   }
+`;
+
+const HeroMiddle = styled.div`
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 2rem;
+`;
+
+const HeroBottom = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  padding-top: 1rem;
 `;
 
 
 
 const HeroSubtitle = styled(motion.p)`
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: #f5f5f5;
-  margin-bottom: 2.5rem;
-  max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0;
+  max-width: 800px;
   font-weight: 300;
   letter-spacing: 0.5px;
   line-height: 1.8;
   text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
-  padding: 0 10px;
+  padding: 0 1rem;
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
-    font-size: 1.1rem;
-    max-width: 650px;
+    font-size: 1.2rem;
+    max-width: 700px;
     line-height: 1.7;
   }
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 1rem;
+    font-size: 1.1rem;
     line-height: 1.6;
+    padding: 0;
   }
 `;
 const ServiceFeatures = styled(motion.div)`
   text-align: center;
-  margin-top: 1.5rem;
-  margin-bottom: 3rem;
-  font-size: 1.1rem;
+  margin: 0;
+  font-size: 1.2rem;
   color: #d2b48c;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   font-weight: 500;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 0.95rem;
+    font-size: 1rem;
   }
 `;
 
 const TagLine = styled(motion.div)`
   text-align: center;
-  margin-top: 2rem;
+  margin: 0;
   font-family: ${props => props.theme.fonts.heading};
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   color: ${props => props.theme.colors.text.secondary};
   font-style: italic;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
-    font-size: 1.5rem;
-    margin-top: 2rem;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
   }
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    margin-top: 1.5rem;
+    font-size: 1.6rem;
   }
 `;
 
 const LogoText = styled(motion.div)`
   font-family: ${props => props.theme.fonts.heading};
-  font-size: 4rem;
+  font-size: 5rem;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   color: ${props => props.theme.colors.secondary};
-  margin-top: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+  margin-top: 1.5rem;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: 4rem;
+    letter-spacing: 2px;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
     font-size: 3.2rem;
-  }
-  
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 2.8rem;
+    letter-spacing: 1px;
   }
 `;
-
-const SubLogoText = styled(motion.div)`
-  font-family: ${props => props.theme.fonts.body};
-  font-size: 1.5rem;
-  font-style: italic;
-  color: ${props => props.theme.colors.text.secondary};
-  letter-spacing: 1px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-  
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    font-size: 1.8rem;
-  }
-  
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 1.5rem;
-  }
-`;
-
 
 
 
@@ -183,60 +196,57 @@ const Hero = () => {
       <img src={cowHeroImage} alt="Country landscape" style={imageStyle} />
       <div style={overlayStyle}></div>
       <HeroContent>
-        <HeroLogo
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <img 
-            src="/logo/logo-theme-color.svg" 
-            alt="Outrider Real Estate" 
-            style={{
-              height: 'auto',
-              maxWidth: '240px',
-              filter: 'drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3))',
-            }}
-          />
-          <LogoText
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+        <HeroTop>
+          <HeroLogo
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
           >
-            OUTRIDER
-          </LogoText>
-          <SubLogoText
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+            <img 
+              src="/logo/logo-theme-color.svg" 
+              alt="Outrider Real Estate" 
+              style={{
+                height: 'auto',
+                filter: 'drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.4))',
+              }}
+            />
+            <LogoText
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.5 }}
+            >
+              OUTRIDER
+            </LogoText>
+          </HeroLogo>
+        </HeroTop>
+
+        <HeroMiddle>
+          <HeroSubtitle
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.9 }}
           >
-            - real estate -
-          </SubLogoText>
-        </HeroLogo>
+            Professional real estate services, serving the mountain communities of Anza, Aguanga, Idyllwild, and Mountain Center.
+          </HeroSubtitle>
+          
+          <ServiceFeatures
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1.1 }}
+          >
+            No binding contracts • 1% to list or buy <span style={{fontSize: '0.9rem', opacity: 0.8}}>(7k minimum)</span>
+          </ServiceFeatures>
+        </HeroMiddle>
 
-
-
-        <HeroSubtitle
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-        >
-          Professional real estate services, serving the mountain communities of Anza, Aguanga, Idyllwild, and Mountain Center.
-        </HeroSubtitle>
-        
-        <ServiceFeatures
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.65 }}
-        >
-          No binding contracts • Transparent • 1% to list or buy
-        </ServiceFeatures>
-        <TagLine
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-        >
-          Let's ride...
-        </TagLine>
+        <HeroBottom>
+          <TagLine
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1.3 }}
+          >
+            Let's ride...
+          </TagLine>
+        </HeroBottom>
       </HeroContent>
     </HeroContainer>
   );
