@@ -1,6 +1,15 @@
 // API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
+// Get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('adminToken');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` })
+  };
+};
+
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -38,9 +47,7 @@ export const subscribeToNewsletter = async (subscriptionData) => {
 export const getNewsletterSubscribers = async () => {
   const response = await fetch(`${API_BASE_URL}/newsletter/subscribers`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
   });
   return handleResponse(response);
 };
@@ -49,9 +56,7 @@ export const getNewsletterSubscribers = async () => {
 const get = async (endpoint) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
   });
   return { data: await handleResponse(response) };
 };
@@ -59,9 +64,7 @@ const get = async (endpoint) => {
 const post = async (endpoint, data) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   return { data: await handleResponse(response) };
@@ -70,9 +73,7 @@ const post = async (endpoint, data) => {
 const put = async (endpoint, data) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   return { data: await handleResponse(response) };

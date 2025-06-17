@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaUsers, FaCopy, FaTag, FaRedo } from 'react-icons/fa';
+import { FaUsers, FaCopy, FaTag, FaRedo, FaSignOutAlt } from 'react-icons/fa';
 import { getNewsletterSubscribers } from '../utils/api';
 import api from '../utils/api';
+import AdminLogin from '../components/AdminLogin';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -332,7 +333,31 @@ const SuccessMessage = styled.div`
   margin-top: 1rem;
 `;
 
+const LogoutButton = styled.button`
+  position: fixed;
+  top: 100px;
+  right: 2rem;
+  background-color: ${props => props.theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: ${props => props.theme.borderRadius.small};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  
+  &:hover {
+    background-color: ${props => props.theme.colors.tertiary};
+  }
+`;
+
 const Admin = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const [subscribers, setSubscribers] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -347,8 +372,19 @@ const Admin = () => {
   
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchSubscribers();
-    fetchBlowoutSaleStatus();
+    
+    // Check if user is already logged in
+    const token = localStorage.getItem('adminToken');
+    const savedUser = localStorage.getItem('adminUser');
+    
+    if (token && savedUser) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(savedUser));
+      fetchSubscribers();
+      fetchBlowoutSaleStatus();
+    } else {
+      setLoading(false);
+    }
   }, []);
   
   const [headerRef, headerInView] = useInView({
@@ -422,6 +458,23 @@ const Admin = () => {
     }
   };
   
+  const handleLoginSuccess = (token, userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    setLoading(true);
+    fetchSubscribers();
+    fetchBlowoutSaleStatus();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    setIsAuthenticated(false);
+    setUser(null);
+    setSubscribers(null);
+    setBlowoutSale(null);
+  };
+
   const copyEmailsToClipboard = (community) => {
     const emails = subscribers.subscribersByCommunity[community]
       .map(sub => sub.email)
@@ -441,9 +494,27 @@ const Admin = () => {
     });
   };
   
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <PageContainer>
+        <PageHeader>
+          <HeaderContent>
+            <PageTitle>Newsletter Admin</PageTitle>
+          </HeaderContent>
+        </PageHeader>
+        <AdminLogin onLoginSuccess={handleLoginSuccess} />
+      </PageContainer>
+    );
+  }
+
   if (loading) {
     return (
       <PageContainer>
+        <LogoutButton onClick={handleLogout}>
+          <FaSignOutAlt />
+          Logout
+        </LogoutButton>
         <PageHeader>
           <HeaderContent>
             <PageTitle>Newsletter Admin</PageTitle>
@@ -457,6 +528,10 @@ const Admin = () => {
   if (error) {
     return (
       <PageContainer>
+        <LogoutButton onClick={handleLogout}>
+          <FaSignOutAlt />
+          Logout
+        </LogoutButton>
         <PageHeader>
           <HeaderContent>
             <PageTitle>Newsletter Admin</PageTitle>
@@ -471,6 +546,10 @@ const Admin = () => {
   
   return (
     <PageContainer>
+      <LogoutButton onClick={handleLogout}>
+        <FaSignOutAlt />
+        Logout
+      </LogoutButton>
       <PageHeader ref={headerRef}>
         <HeaderContent>
           <PageTitle
