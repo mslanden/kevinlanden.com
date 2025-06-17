@@ -433,7 +433,7 @@ const Contact = () => {
                 Ready to get started? Book a convenient time to discuss your real estate needs.
               </p>
               <a 
-                href="https://cal.com" 
+                href="https://calendly.com/landenkm/30min" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{

@@ -203,7 +203,7 @@ const Hero = () => {
             transition={{ duration: 1, delay: 0.2 }}
           >
             <img 
-              src="/logo/logo-theme-color.svg" 
+              src="/logo/main_logo.svg" 
               alt="Outrider Real Estate" 
               style={{
                 height: 'auto',

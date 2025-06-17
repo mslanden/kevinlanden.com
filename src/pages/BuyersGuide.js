@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaHome, FaSearch, FaHandshake, FaFileSignature, FaMoneyBillWave, FaKey } from 'react-icons/fa';
+import { FaHome, FaSearch, FaHandshake, FaFileSignature, FaMoneyBillWave, FaKey, FaDownload } from 'react-icons/fa';
+import NewsletterModal from '../components/NewsletterModal';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -66,6 +67,30 @@ const PageDescription = styled(motion.p)`
   max-width: 800px;
   margin: 0 auto;
   line-height: 1.8;
+`;
+
+const DownloadButton = styled(motion.button)`
+  background-color: ${props => props.theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: ${props => props.theme.borderRadius.default};
+  cursor: pointer;
+  margin-top: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background-color ${props => props.theme.transitions.default};
+  
+  &:hover {
+    background-color: ${props => props.theme.colors.tertiary};
+  }
+  
+  svg {
+    font-size: 1.2rem;
+  }
 `;
 
 const ContentSection = styled.section`
@@ -244,6 +269,8 @@ const CTAButton = styled(motion.button)`
 `;
 
 const BuyersGuide = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -267,6 +294,19 @@ const BuyersGuide = () => {
     triggerOnce: true,
     threshold: 0.2,
   });
+  
+  const handleDownloadClick = () => {
+    setIsModalOpen(true);
+  };
+  
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+  
+  const handleDownloadComplete = () => {
+    // Open the themed HTML guide in a new tab
+    window.open('/buyers-guide.html', '_blank');
+  };
   
   const buyingSteps = [
     {
@@ -385,6 +425,17 @@ const BuyersGuide = () => {
           >
             Your comprehensive roadmap to finding and purchasing the perfect property in our beautiful mountain and rural communities.
           </PageDescription>
+          <DownloadButton
+            initial={{ opacity: 0, y: 30 }}
+            animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleDownloadClick}
+          >
+            <FaDownload />
+            Download Buyers Guide
+          </DownloadButton>
         </HeaderContent>
       </PageHeader>
       
@@ -455,6 +506,13 @@ const BuyersGuide = () => {
           </CTAButton>
         </CTAContainer>
       </CTASection>
+      
+      <NewsletterModal 
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onDownloadComplete={handleDownloadComplete}
+        pdfFileName="buyers-guide.html"
+      />
     </PageContainer>
   );
 };

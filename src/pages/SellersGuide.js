@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaHome, FaCamera, FaChartLine, FaAd, FaHandshake, FaFileContract, FaMoneyCheckAlt, FaChartBar, FaMapMarkedAlt, FaFileAlt, FaPhotoVideo } from 'react-icons/fa';
+import { FaHome, FaCamera, FaChartLine, FaAd, FaHandshake, FaFileContract, FaMoneyCheckAlt, FaChartBar, FaMapMarkedAlt, FaFileAlt, FaPhotoVideo, FaDownload } from 'react-icons/fa';
+import NewsletterModal from '../components/NewsletterModal';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -66,6 +67,30 @@ const PageDescription = styled(motion.p)`
   max-width: 800px;
   margin: 0 auto;
   line-height: 1.8;
+`;
+
+const DownloadButton = styled(motion.button)`
+  background-color: ${props => props.theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: ${props => props.theme.borderRadius.default};
+  cursor: pointer;
+  margin-top: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background-color ${props => props.theme.transitions.default};
+  
+  &:hover {
+    background-color: ${props => props.theme.colors.tertiary};
+  }
+  
+  svg {
+    font-size: 1.2rem;
+  }
 `;
 
 const ContentSection = styled.section`
@@ -202,34 +227,6 @@ const TimelineContent = styled.div`
         left: 0;
         color: ${props => props.theme.colors.primary};
       }
-    }
-  }
-`;
-
-const QuoteBox = styled(motion.div)`
-  max-width: 800px;
-  margin: 4rem auto;
-  padding: 3rem;
-  background-color: rgba(30, 30, 30, 0.8);
-  border-radius: ${props => props.theme.borderRadius.large};
-  border: 1px solid ${props => props.theme.colors.border};
-  text-align: center;
-  
-  h3 {
-    font-family: ${props => props.theme.fonts.heading};
-    font-size: 2rem;
-    color: ${props => props.theme.colors.text.secondary};
-    margin-bottom: 1.5rem;
-  }
-  
-  p {
-    font-size: 1.1rem;
-    color: ${props => props.theme.colors.text.primary};
-    line-height: 1.7;
-    
-    .highlight {
-      color: ${props => props.theme.colors.text.secondary};
-      font-weight: 600;
     }
   }
 `;
@@ -468,6 +465,8 @@ const PricingButton = styled.button`
 `;
 
 const SellersGuide = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -487,15 +486,23 @@ const SellersGuide = () => {
     threshold: 0.1,
   });
   
-  const [quoteRef, quoteInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.3,
-  });
-  
   const [marketingRef, marketingInView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+  
+  const handleDownloadClick = () => {
+    setIsModalOpen(true);
+  };
+  
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+  
+  const handleDownloadComplete = () => {
+    // Open the themed HTML guide in a new tab
+    window.open('/sellers-guide.html', '_blank');
+  };
   
   const [pricingRef, pricingInView] = useInView({
     triggerOnce: true,
@@ -745,6 +752,17 @@ const SellersGuide = () => {
           >
             Your roadmap to successfully selling your property in our rural and mountain communities for maximum value with minimum stress.
           </PageDescription>
+          <DownloadButton
+            initial={{ opacity: 0, y: 30 }}
+            animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleDownloadClick}
+          >
+            <FaDownload />
+            Download Sellers Guide
+          </DownloadButton>
         </HeaderContent>
       </PageHeader>
       
@@ -784,20 +802,6 @@ const SellersGuide = () => {
               </TimelineItem>
             ))}
           </ProcessTimeline>
-          
-          <QuoteBox
-            ref={quoteRef}
-            initial={{ opacity: 0, y: 30 }}
-            animate={quoteInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h3>The Outrider Difference</h3>
-            <p>
-              <span className="highlight">No contract commitments</span> - weekly updates on market status, 
-              every home gets all marketing to secure top dollar. 
-              <span className="highlight"> Just 1% to list</span> your property (7k minimum).
-            </p>
-          </QuoteBox>
         </ContentContainer>
       </ContentSection>
       
@@ -915,6 +919,13 @@ const SellersGuide = () => {
           </CTAButton>
         </CTAContainer>
       </CTASection>
+      
+      <NewsletterModal 
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onDownloadComplete={handleDownloadComplete}
+        pdfFileName="sellers-guide.html"
+      />
     </PageContainer>
   );
 };

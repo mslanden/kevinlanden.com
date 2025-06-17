@@ -263,7 +263,7 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
       //   name: formData.name,
       //   email: formData.email,
       //   communities: communities,
-      //   source: pdfFileName ? pdfFileName.replace('.pdf', '') : 'website'
+      //   source: pdfFileName ? pdfFileName.replace(/\.(pdf|html)$/, '') : 'website'
       // });
       
       // Mock success for now
@@ -271,15 +271,15 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
         name: formData.name,
         email: formData.email,
         communities: communities,
-        source: pdfFileName ? pdfFileName.replace('.pdf', '') : 'website'
+        source: pdfFileName ? pdfFileName.replace(/\.(pdf|html)$/, '') : 'website'
       });
       
       setIsSubmitted(true);
       
-      // Only download if there's a PDF to download
+      // Only download if there's a file to download
       if (pdfFileName) {
         setTimeout(() => {
-          downloadPdf();
+          downloadFile();
         }, 1500);
       } else {
         // For newsletter-only signups, close modal after showing success
@@ -293,13 +293,11 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
     }
   };
   
-  const downloadPdf = () => {
+  const downloadFile = () => {
     setIsDownloading(true);
     
-    // In a real implementation, you would fetch the PDF from Supabase
-    // For now, we'll just simulate the download
+    // Simulate loading time before opening the guide
     setTimeout(() => {
-      // Simulate PDF download completion
       setIsDownloading(false);
       
       // Close modal and trigger completion callback
@@ -314,7 +312,7 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
   
   const handleSkip = () => {
     // Skip newsletter signup and download directly
-    downloadPdf();
+    downloadFile();
   };
   
   const atLeastOneNewsletterSelected = Object.values(formData.newsletters).some(value => value);
@@ -462,12 +460,12 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
                   )}
                 </IconWrapper>
                 
-                <h3>{isDownloading ? 'Preparing Download...' : 'Thank You!'}</h3>
+                <h3>{isDownloading ? 'Opening Guide...' : 'Thank You!'}</h3>
                 <p>
                   {isDownloading 
-                    ? `Preparing your ${pdfFileName} for download...` 
+                    ? `Opening your guide...` 
                     : pdfFileName 
-                      ? `You've been subscribed! Your ${pdfFileName} will begin downloading shortly.`
+                      ? `You've been subscribed! Your guide will open shortly.`
                       : "You've been successfully subscribed to our newsletter! We'll keep you updated with the latest market insights in your selected communities."}
                 </p>
               </SuccessMessage>
