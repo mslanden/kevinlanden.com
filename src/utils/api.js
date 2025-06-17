@@ -45,11 +45,47 @@ export const getNewsletterSubscribers = async () => {
   return handleResponse(response);
 };
 
+// Generic HTTP methods for admin functionality
+const get = async (endpoint) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return { data: await handleResponse(response) };
+};
+
+const post = async (endpoint, data) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  return { data: await handleResponse(response) };
+};
+
+const put = async (endpoint, data) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  return { data: await handleResponse(response) };
+};
+
 // Export all API methods
 const api = {
   submitContactForm,
   subscribeToNewsletter,
   getNewsletterSubscribers,
+  get,
+  post,
+  put,
 };
 
 export default api;
