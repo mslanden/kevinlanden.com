@@ -200,6 +200,17 @@ const GalleryDescription = styled.p`
 `;
 
 // Special components for different content types
+const ResponsiveGalleryGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: stretch;
+  
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    grid-template-columns: 1fr;
+  }
+`;
+
 const BeforeAfterContainer = styled.div`
   position: relative;
   height: 100%;
@@ -597,11 +608,10 @@ const BestInShow = () => {
             ></iframe>
           </TourContainer>
           
-          <GalleryGrid
+          <ResponsiveGalleryGrid
             initial="hidden"
             animate={tourInView ? "visible" : "hidden"}
             variants={staggerItems}
-            style={{ gridTemplateColumns: "1fr 1fr", alignItems: "stretch" }}
           >
             <GalleryItem variants={item}>
               <GalleryImage style={{ height: '400px' }}>
@@ -626,7 +636,7 @@ const BestInShow = () => {
                 </GalleryDescription>
               </GalleryContent>
             </GalleryItem>
-          </GalleryGrid>
+          </ResponsiveGalleryGrid>
         </ContentContainer>
       </ContentSection>
     </PageContainer>

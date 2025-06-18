@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { useNavigate } from 'react-router-dom';
 import { FaHome, FaSearch, FaHandshake, FaFileSignature, FaMoneyBillWave, FaKey, FaDownload } from 'react-icons/fa';
 import NewsletterModal from '../components/NewsletterModal';
 
@@ -269,6 +270,7 @@ const CTAButton = styled(motion.button)`
 `;
 
 const BuyersGuide = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   useEffect(() => {
@@ -306,6 +308,10 @@ const BuyersGuide = () => {
   const handleDownloadComplete = () => {
     // Open the themed HTML guide in a new tab
     window.open('/buyers-guide.html', '_blank');
+  };
+  
+  const handleConsultationClick = () => {
+    navigate('/contact');
   };
   
   const buyingSteps = [
@@ -501,6 +507,7 @@ const BuyersGuide = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handleConsultationClick}
           >
             Schedule a Consultation
           </CTAButton>

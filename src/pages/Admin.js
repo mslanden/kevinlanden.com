@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaUsers, FaCopy, FaTag, FaRedo, FaSignOutAlt } from 'react-icons/fa';
+import { FaUsers, FaCopy, FaTag, FaRedo, FaSignOutAlt, FaEnvelope, FaTrash, FaCheckCircle } from 'react-icons/fa';
 import { getNewsletterSubscribers } from '../utils/api';
 import api from '../utils/api';
 import AdminLogin from '../components/AdminLogin';
@@ -333,6 +333,86 @@ const SuccessMessage = styled.div`
   margin-top: 1rem;
 `;
 
+// Contact Submissions Styles
+const ContactSubmissionsSection = styled(motion.div)`
+  margin-bottom: 3rem;
+  background-color: rgba(20, 20, 20, 0.85);
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.default};
+  overflow: hidden;
+`;
+
+const ContactMessage = styled.div`
+  padding: 1.5rem;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &.unread {
+    background-color: rgba(139, 69, 19, 0.1);
+  }
+`;
+
+const MessageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+`;
+
+const MessageInfo = styled.div`
+  flex: 1;
+  
+  h4 {
+    color: ${props => props.theme.colors.text.secondary};
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+  
+  p {
+    color: ${props => props.theme.colors.text.muted};
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+`;
+
+const MessageActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const ActionButton = styled.button`
+  background: ${props => props.variant === 'danger' ? '#ff4444' : '#4CAF50'};
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: ${props => props.theme.borderRadius.small};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const MessageContent = styled.div`
+  color: ${props => props.theme.colors.text.primary};
+  line-height: 1.6;
+  white-space: pre-wrap;
+`;
+
 const LogoutButton = styled.button`
   position: fixed;
   top: 100px;
@@ -370,6 +450,10 @@ const Admin = () => {
   const [blowoutLoading, setBlowoutLoading] = useState(false);
   const [blowoutSuccess, setBlowoutSuccess] = useState('');
   
+  // Contact Submissions States
+  const [contactSubmissions, setContactSubmissions] = useState([]);
+  const [contactLoading, setContactLoading] = useState(false);
+  
   useEffect(() => {
     window.scrollTo(0, 0);
     
@@ -384,6 +468,7 @@ const Admin = () => {
         setUser(userData);
         fetchSubscribers();
         fetchBlowoutSaleStatus();
+        fetchContactSubmissions();
       } catch (error) {
         console.error('Error parsing saved user data:', error);
         // Clear invalid data
@@ -464,6 +549,64 @@ const Admin = () => {
       console.error('Error resetting blowout sale:', err);
     } finally {
       setBlowoutLoading(false);
+    }
+  };
+  
+  const fetchContactSubmissions = async () => {
+    setContactLoading(true);
+    try {
+      const response = await api.get('/contact/submissions');
+      setContactSubmissions(response.data);
+    } catch (err) {
+      console.error('Error fetching contact submissions:', err);
+    } finally {
+      setContactLoading(false);
+    }
+  };
+  
+  const markAsRead = async (id) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/contact/submissions/${id}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      });
+      
+      if (response.ok) {
+        setContactSubmissions(prev => 
+          prev.map(submission => 
+            submission.id === id 
+              ? { ...submission, read: true } 
+              : submission
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Error marking submission as read:', err);
+    }
+  };
+  
+  const deleteSubmission = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this submission?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/contact/submissions/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      });
+      
+      if (response.ok) {
+        setContactSubmissions(prev => prev.filter(submission => submission.id !== id));
+      }
+    } catch (err) {
+      console.error('Error deleting submission:', err);
     }
   };
   
@@ -652,6 +795,64 @@ const Admin = () => {
               )}
             </BlowoutContent>
           </BlowoutSaleSection>
+          
+          {/* Contact Submissions Section */}
+          <ContactSubmissionsSection
+            initial={{ opacity: 0, y: 30 }}
+            animate={contentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <CommunityHeader>
+              <h2>
+                <FaEnvelope />
+                Contact Submissions
+              </h2>
+              <SubscriberCount>
+                {contactSubmissions.length} messages
+              </SubscriberCount>
+            </CommunityHeader>
+            <div style={{ padding: '0' }}>
+              {contactLoading ? (
+                <LoadingMessage>Loading contact submissions...</LoadingMessage>
+              ) : contactSubmissions.length > 0 ? (
+                contactSubmissions.map((submission) => (
+                  <ContactMessage 
+                    key={submission.id}
+                    className={!submission.read ? 'unread' : ''}
+                  >
+                    <MessageHeader>
+                      <MessageInfo>
+                        <h4>{submission.subject}</h4>
+                        <p><strong>From:</strong> {submission.name} ({submission.email})</p>
+                        {submission.phone && <p><strong>Phone:</strong> {submission.phone}</p>}
+                        <p><strong>Submitted:</strong> {new Date(submission.created_at).toLocaleString()}</p>
+                      </MessageInfo>
+                      <MessageActions>
+                        {!submission.read && (
+                          <ActionButton onClick={() => markAsRead(submission.id)}>
+                            <FaCheckCircle />
+                            Mark Read
+                          </ActionButton>
+                        )}
+                        <ActionButton 
+                          variant="danger" 
+                          onClick={() => deleteSubmission(submission.id)}
+                        >
+                          <FaTrash />
+                          Delete
+                        </ActionButton>
+                      </MessageActions>
+                    </MessageHeader>
+                    <MessageContent>{submission.message}</MessageContent>
+                  </ContactMessage>
+                ))
+              ) : (
+                <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                  No contact submissions yet
+                </p>
+              )}
+            </div>
+          </ContactSubmissionsSection>
           
           <StatsContainer
             initial={{ opacity: 0, y: 30 }}

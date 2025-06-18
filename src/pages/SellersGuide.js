@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { useNavigate } from 'react-router-dom';
 import { FaHome, FaCamera, FaChartLine, FaAd, FaHandshake, FaFileContract, FaMoneyCheckAlt, FaChartBar, FaMapMarkedAlt, FaFileAlt, FaPhotoVideo, FaDownload } from 'react-icons/fa';
 import NewsletterModal from '../components/NewsletterModal';
 
@@ -465,6 +466,7 @@ const PricingButton = styled.button`
 `;
 
 const SellersGuide = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   useEffect(() => {
@@ -502,6 +504,14 @@ const SellersGuide = () => {
   const handleDownloadComplete = () => {
     // Open the themed HTML guide in a new tab
     window.open('/sellers-guide.html', '_blank');
+  };
+  
+  const handleGetStartedClick = () => {
+    navigate('/contact');
+  };
+  
+  const handleEvaluationClick = () => {
+    navigate('/contact');
   };
   
   const [pricingRef, pricingInView] = useInView({
@@ -886,7 +896,7 @@ const SellersGuide = () => {
               <li>No Contract Commitment</li>
             </PricingFeatures>
             
-            <PricingButton>Get Started</PricingButton>
+            <PricingButton onClick={handleGetStartedClick}>Get Started</PricingButton>
           </PricingCard>
         </PricingContainer>
       </PricingSection>
@@ -914,6 +924,7 @@ const SellersGuide = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handleEvaluationClick}
           >
             Schedule a Property Evaluation
           </CTAButton>

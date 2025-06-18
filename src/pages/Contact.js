@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { FaEnvelope, FaPhoneAlt } from 'react-icons/fa';
-// import { submitContactForm } from '../utils/api';
+import { submitContactForm } from '../utils/api';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -354,16 +354,20 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      // Mock contact form submission for now
-      console.log('Contact form submission:', formData);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
-      alert('Thank you for your message. We will get back to you soon!');
+      const response = await submitContactForm(formData);
+      
+      if (response.success) {
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+        alert('Thank you for your message. We will get back to you soon!');
+      } else {
+        throw new Error('Submission failed');
+      }
     } catch (error) {
       alert('There was an error submitting your message. Please try again.');
       console.error('Contact form submission error:', error);
