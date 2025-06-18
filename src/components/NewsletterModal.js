@@ -16,6 +16,12 @@ const ModalOverlay = styled(motion.div)`
   align-items: center;
   z-index: 1000;
   padding: 1rem;
+  padding-top: 100px; /* Account for header height */
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding-top: 120px; /* Extra padding on mobile */
+    align-items: flex-start;
+  }
 `;
 
 const ModalContainer = styled(motion.div)`

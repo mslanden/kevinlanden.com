@@ -118,6 +118,8 @@ const SubscriberCount = styled.span`
   padding: 0.25rem 1rem;
   border-radius: ${props => props.theme.borderRadius.small};
   font-weight: 600;
+  cursor: default;
+  user-select: none;
 `;
 
 const CopyButton = styled.button`
@@ -555,8 +557,20 @@ const Admin = () => {
   const fetchContactSubmissions = async () => {
     setContactLoading(true);
     try {
-      const response = await api.get('/contact/submissions');
-      setContactSubmissions(response.data);
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/contact/submissions`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setContactSubmissions(data.data || data); // Handle different response structures
+      } else {
+        console.error('Failed to fetch contact submissions:', response.status);
+      }
     } catch (err) {
       console.error('Error fetching contact submissions:', err);
     } finally {
