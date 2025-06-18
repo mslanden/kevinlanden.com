@@ -203,20 +203,13 @@ const Hero = () => {
             transition={{ duration: 1, delay: 0.2 }}
           >
             <img 
-              src="/logo/main_logo.svg" 
-              alt="Outrider Real Estate" 
+              src="/logo/hero.svg" 
+              alt="Kevin Landen Real Estate" 
               style={{
                 height: 'auto',
                 filter: 'drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.4))',
               }}
             />
-            <LogoText
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
-            >
-              OUTRIDER
-            </LogoText>
           </HeroLogo>
         </HeroTop>
 
