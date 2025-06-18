@@ -18,6 +18,10 @@ const ModalOverlay = styled(motion.div)`
   z-index: 1000;
   padding: 1rem;
   overflow-y: auto;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding: 0.5rem;
+  }
 `;
 
 const ModalContainer = styled(motion.div)`
@@ -33,10 +37,16 @@ const ModalContainer = styled(motion.div)`
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   
-  @media (max-width: ${props => props.theme.breakpoints.mobile}) {
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
     padding: 1.5rem;
-    margin: 0.5rem;
     max-height: 85vh;
+    max-width: calc(100% - 2rem);
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding: 1.25rem;
+    max-height: 80vh;
+    border-radius: 8px;
   }
 `;
 
@@ -51,9 +61,16 @@ const CloseButton = styled.button`
   font-size: 1.5rem;
   z-index: 10;
   transition: opacity 0.2s;
+  padding: 0.25rem;
   
   &:hover {
     opacity: 0.7;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 1.25rem;
   }
 `;
 
@@ -66,8 +83,14 @@ const Title = styled.h2`
   text-align: center;
   text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
   
-  @media (max-width: ${props => props.theme.breakpoints.mobile}) {
-    font-size: 1.5rem;
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: 1.75rem;
+    margin-top: 0.75rem;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1.4rem;
+    margin-top: 0.5rem;
   }
 `;
 
@@ -79,6 +102,11 @@ const Subtitle = styled.p`
   line-height: 1.4;
   font-weight: 400;
   text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const SpotsText = styled.p`
@@ -94,6 +122,15 @@ const SpotsText = styled.p`
     font-weight: 700;
     color: ${props => props.theme.colors.secondary};
   }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    
+    span {
+      font-size: 1.3rem;
+    }
+  }
 `;
 
 const PricingGrid = styled.div`
@@ -102,9 +139,10 @@ const PricingGrid = styled.div`
   gap: 1.25rem;
   margin-bottom: 1.5rem;
   
-  @media (max-width: ${props => props.theme.breakpoints.mobile}) {
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
   }
 `;
 
@@ -122,6 +160,10 @@ const PricingCard = styled.div`
     box-shadow: ${props => props.theme.shadows.large};
     border-color: ${props => props.theme.colors.secondary};
   }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding: 1rem;
+  }
 `;
 
 const PriceRange = styled.h3`
@@ -131,6 +173,11 @@ const PriceRange = styled.h3`
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+  }
 `;
 
 const Price = styled.div`
@@ -142,6 +189,15 @@ const Price = styled.div`
   
   small {
     font-size: 1.4rem;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+    
+    small {
+      font-size: 1.2rem;
+    }
   }
 `;
 
@@ -161,11 +217,35 @@ const CTAButton = styled(motion.button)`
   text-transform: uppercase;
   letter-spacing: 1px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  white-space: normal;
+  word-wrap: break-word;
   
   &:hover {
     background: ${props => props.theme.colors.tertiary};
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  
+  .button-text-desktop {
+    display: inline;
+  }
+  
+  .button-text-mobile {
+    display: none;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    
+    .button-text-desktop {
+      display: none;
+    }
+    
+    .button-text-mobile {
+      display: inline;
+    }
   }
 `;
 
@@ -175,6 +255,12 @@ const Disclaimer = styled.p`
   text-align: center;
   margin-top: 1rem;
   font-style: italic;
+  line-height: 1.4;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 0.7rem;
+    margin-top: 0.75rem;
+  }
 `;
 
 
@@ -254,7 +340,8 @@ const WelcomeModal = ({ isOpen, onClose, onContact }) => {
               whileTap={{ scale: 0.98 }}
             >
               <FaDollarSign size={20} style={{ display: 'inline', marginRight: '0.5rem' }} />
-              Register Now - Only {spotsRemaining} Spots Left!
+              <span className="button-text-desktop">Register Now - Only {spotsRemaining} Spots Left!</span>
+              <span className="button-text-mobile">Register Now!</span>
             </CTAButton>
             
             <Disclaimer>
