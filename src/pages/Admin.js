@@ -378,10 +378,19 @@ const Admin = () => {
     const savedUser = localStorage.getItem('adminUser');
     
     if (token && savedUser) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(savedUser));
-      fetchSubscribers();
-      fetchBlowoutSaleStatus();
+      try {
+        const userData = JSON.parse(savedUser);
+        setIsAuthenticated(true);
+        setUser(userData);
+        fetchSubscribers();
+        fetchBlowoutSaleStatus();
+      } catch (error) {
+        console.error('Error parsing saved user data:', error);
+        // Clear invalid data
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        setLoading(false);
+      }
     } else {
       setLoading(false);
     }

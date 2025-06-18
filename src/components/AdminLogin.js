@@ -117,11 +117,11 @@ const AdminLogin = ({ onLoginSuccess }) => {
       }
 
       // Store token in localStorage
-      localStorage.setItem('adminToken', data.token);
-      localStorage.setItem('adminUser', JSON.stringify(data.user));
+      localStorage.setItem('adminToken', data.data.token);
+      localStorage.setItem('adminUser', JSON.stringify(data.data.user));
 
       // Call success callback
-      onLoginSuccess(data.token, data.user);
+      onLoginSuccess(data.data.token, data.data.user);
 
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
