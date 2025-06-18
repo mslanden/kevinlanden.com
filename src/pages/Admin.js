@@ -383,7 +383,7 @@ const MessageActions = styled.div`
   gap: 0.5rem;
 `;
 
-const ActionButton = styled.button`
+const MessageActionButton = styled.button`
   background: ${props => props.variant === 'danger' ? '#ff4444' : '#4CAF50'};
   color: white;
   border: none;
@@ -829,18 +829,18 @@ const Admin = () => {
                       </MessageInfo>
                       <MessageActions>
                         {!submission.read && (
-                          <ActionButton onClick={() => markAsRead(submission.id)}>
+                          <MessageActionButton onClick={() => markAsRead(submission.id)}>
                             <FaCheckCircle />
                             Mark Read
-                          </ActionButton>
+                          </MessageActionButton>
                         )}
-                        <ActionButton 
+                        <MessageActionButton 
                           variant="danger" 
                           onClick={() => deleteSubmission(submission.id)}
                         >
                           <FaTrash />
                           Delete
-                        </ActionButton>
+                        </MessageActionButton>
                       </MessageActions>
                     </MessageHeader>
                     <MessageContent>{submission.message}</MessageContent>

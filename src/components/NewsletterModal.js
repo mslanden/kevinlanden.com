@@ -24,10 +24,23 @@ const ModalContainer = styled(motion.div)`
   border: 1px solid ${props => props.theme.colors.border};
   max-width: 550px;
   width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   padding: 2.5rem;
   position: relative;
   box-shadow: ${props => props.theme.shadows.large};
-  overflow: hidden;
+  
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    max-width: calc(100% - 2rem);
+    padding: 2rem;
+    max-height: 85vh;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding: 1.5rem;
+    max-height: 80vh;
+    border-radius: ${props => props.theme.borderRadius.small};
+  }
 `;
 
 const CloseButton = styled.button`
@@ -40,10 +53,17 @@ const CloseButton = styled.button`
   font-size: 1.3rem;
   cursor: pointer;
   transition: transform ${props => props.theme.transitions.fast};
+  padding: 0.25rem;
   
   &:hover {
     transform: scale(1.1);
     color: ${props => props.theme.colors.text.primary};
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 1.1rem;
   }
 `;
 
@@ -53,6 +73,16 @@ const ModalTitle = styled.h2`
   color: ${props => props.theme.colors.text.secondary};
   margin-bottom: 1.5rem;
   text-align: center;
+  
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const ModalDescription = styled.p`
@@ -61,12 +91,21 @@ const ModalDescription = styled.p`
   margin-bottom: 2rem;
   text-align: center;
   line-height: 1.6;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
 `;
 
 const NewsletterForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    gap: 1.25rem;
+  }
 `;
 
 const InputGroup = styled.div`
@@ -101,6 +140,10 @@ const CheckboxGroup = styled.div`
   flex-direction: column;
   gap: 0.75rem;
   margin-top: 0.5rem;
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    gap: 0.5rem;
+  }
 `;
 
 const CheckboxLabel = styled.label`
@@ -116,6 +159,16 @@ const CheckboxLabel = styled.label`
     height: 18px;
     cursor: pointer;
     accent-color: ${props => props.theme.colors.primary};
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    font-size: 0.9rem;
+    gap: 0.5rem;
+    
+    input {
+      width: 16px;
+      height: 16px;
+    }
   }
 `;
 
@@ -138,6 +191,12 @@ const SubscribeButton = styled(motion.button)`
   &:disabled {
     background-color: #5a5a5a;
     cursor: not-allowed;
+  }
+  
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    padding: 0.875rem;
+    font-size: 1rem;
+    margin-top: 0.75rem;
   }
 `;
 
