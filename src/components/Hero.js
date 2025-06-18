@@ -34,7 +34,7 @@ const HeroTop = styled.div`
   display: flex;
   align-items: flex-end;
   width: 100%;
-  padding-bottom: 2rem;
+  padding-bottom: 1rem;
 `;
 
 const HeroLogo = styled(motion.div)`
@@ -44,7 +44,7 @@ const HeroLogo = styled(motion.div)`
   width: 100%;
   
   img {
-    max-width: 200px;
+    max-width: 350px;
     width: 100%;
     height: auto;
     margin: 0 auto;
@@ -53,13 +53,13 @@ const HeroLogo = styled(motion.div)`
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     img {
-      max-width: 180px;
+      max-width: 280px;
     }
   }
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
     img {
-      max-width: 160px;
+      max-width: 240px;
     }
   }
 `;
@@ -71,7 +71,7 @@ const HeroMiddle = styled.div`
   justify-content: center;
   align-items: center;
   width: 100%;
-  gap: 2rem;
+  gap: 1.5rem;
 `;
 
 const HeroBottom = styled.div`
