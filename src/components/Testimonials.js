@@ -102,6 +102,7 @@ const TestimonialContent = styled.div`
   border: 1px solid ${props => props.theme.colors.border};
   display: flex;
   flex-direction: column;
+  justify-content: center;
   width: 100%;
   min-height: 300px;
   
@@ -145,10 +146,9 @@ const TestimonialText = styled.p`
   color: ${props => props.theme.colors.text.primary};
   font-size: 1.1rem;
   line-height: 1.8;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   font-style: italic;
   text-align: center;
-  flex: 1;
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     font-size: 1rem;
@@ -169,7 +169,6 @@ const StarRating = styled.div`
 
 const TestimonialAuthor = styled.div`
   text-align: center;
-  margin-top: auto;
 `;
 
 const AuthorName = styled.h4`
