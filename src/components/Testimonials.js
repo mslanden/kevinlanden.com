@@ -77,7 +77,6 @@ const TestimonialsWrapper = styled.div`
 const TestimonialSlider = styled(motion.div)`
   overflow: hidden;
   position: relative;
-  padding: 2rem 0;
 `;
 
 const TestimonialTrack = styled(motion.div)`
@@ -90,6 +89,8 @@ const TestimonialCard = styled(motion.div)`
   width: 100%;
   padding: 0 1rem;
   box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
 `;
 
 const TestimonialContent = styled.div`
@@ -99,12 +100,14 @@ const TestimonialContent = styled.div`
   box-shadow: ${props => props.theme.shadows.medium};
   position: relative;
   border: 1px solid ${props => props.theme.colors.border};
-  min-height: 250px;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-height: 300px;
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     padding: 2rem;
+    min-height: 280px;
   }
 `;
 
@@ -199,7 +202,7 @@ const SliderControls = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 `;
 
 const ControlButton = styled.button`
