@@ -181,6 +181,20 @@ const AuthorLocation = styled.p`
   font-size: 0.9rem;
 `;
 
+const ReviewLink = styled.a`
+  color: ${props => props.theme.colors.primary};
+  text-decoration: none;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: inline-block;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    color: ${props => props.theme.colors.tertiary};
+    text-decoration: underline;
+  }
+`;
+
 const SliderControls = styled.div`
   display: flex;
   justify-content: space-between;
@@ -255,31 +269,42 @@ const Testimonials = () => {
     threshold: 0.2,
   });
   
-  // Sample testimonial data
+  // Real Google reviews
   const testimonials = [
     {
-      text: "Kevin helped us find our dream mountain property in Idyllwild. His knowledge of the area and attention to detail made the process smooth and enjoyable. We couldn't be happier with our new home!",
-      author: "Sarah & James Thompson",
-      location: "Idyllwild, CA",
-      rating: 5
+      text: "Working with Kevin made the process of home buying very simple and easy. As well as making sure that I made the right decision.",
+      author: "Dyami Williams",
+      location: "Google Review",
+      rating: 5,
+      link: "https://g.co/kgs/PwcY1UL"
     },
     {
-      text: "Selling my ranch property in Anza seemed daunting until I worked with Outrider Real Estate. They understood the unique aspects of rural properties and found the perfect buyers who appreciated the land as much as I did.",
-      author: "Robert Johnson",
-      location: "Anza, CA",
-      rating: 5
+      text: "I worked with Kevin to find a tenant for my property that was vacant for a few months, so needless to say I was very eager to find a tenant. Kevin took more initiative than any of the other realtors I reached out to - the next day, he went to the property and had a professional photographer take photos and listed the property immediately. He wasn't pushy about accepting any of the tenants that applied. He secured a qualified tenant in <2 weeks of listing the property (I was expecting 2-3 months) and was very professional throughout the process. Kevin was a pleasure to work with and I would recommend Kevin to anyone looking for an agent to sell or lease a property.",
+      author: "Ryan Moayedi",
+      location: "Google Review",
+      rating: 5,
+      link: "https://g.co/kgs/Jmfc445"
     },
     {
-      text: "I appreciated the weekly updates and constant communication throughout my home buying process. As a first-time buyer, I had lots of questions, and Kevin was always patient and thorough in his explanations.",
-      author: "Michelle Garcia",
-      location: "Aguanga, CA",
-      rating: 5
+      text: "Kevin is the best. So glad I hired him be my agent. He helped me a lot on preparing the house and did extra work ensured I can get top dollar on my property. Thanks a million kevin.",
+      author: "Tom Zhou",
+      location: "Google Review",
+      rating: 5,
+      link: "https://g.co/kgs/QPmhSrg"
     },
     {
-      text: "The marketing for my property was exceptional. Professional photography, detailed descriptions, and targeted advertising brought multiple offers within the first week. Outrider truly delivers on their promises.",
-      author: "David & Lisa Wilson",
-      location: "Mountain Center, CA",
-      rating: 5
+      text: "I don't even know where to start. I wish every agent I have worked like were Kevin! He did such a wonderful job with this sale. He was very responsive every time I called and was more than willing to help resolve any and every issue. Kevin has a Military background and a lifetime of service and it shows. Thank you Kevin for everything!",
+      author: "Melinda Kent",
+      location: "Google Review",
+      rating: 5,
+      link: "https://g.co/kgs/rJrT3fX"
+    },
+    {
+      text: "Kevin is the best real estate agent I have ever worked with and I've worked with close to 20. His professionalism and knowledge shows through on his ability to sell your property not just List It but sell it. I could not be happier he wins the award of my favorite realtor I've ever worked with. Thank you Kevin",
+      author: "Nancy",
+      location: "Google Review",
+      rating: 5,
+      link: "https://g.co/kgs/mCgj2Hv"
     }
   ];
   
@@ -351,6 +376,15 @@ const Testimonials = () => {
                     <TestimonialAuthor>
                       <AuthorName>{testimonial.author}</AuthorName>
                       <AuthorLocation>{testimonial.location}</AuthorLocation>
+                      {testimonial.link && (
+                        <ReviewLink 
+                          href={testimonial.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          View Original Review
+                        </ReviewLink>
+                      )}
                     </TestimonialAuthor>
                   </TestimonialContent>
                 </TestimonialCard>
