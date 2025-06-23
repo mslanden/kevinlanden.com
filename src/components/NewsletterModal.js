@@ -361,8 +361,20 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
   const downloadFile = () => {
     setIsDownloading(true);
     
-    // Simulate loading time before opening the guide
+    // Simulate loading time before downloading
     setTimeout(() => {
+      // Create a download link for the PDF
+      if (pdfFileName) {
+        const link = document.createElement('a');
+        // Convert HTML filename to PDF filename
+        const pdfPath = pdfFileName.replace('.html', '.pdf');
+        link.href = `/${pdfPath}`;
+        link.download = pdfPath;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
       setIsDownloading(false);
       
       // Close modal and trigger completion callback
