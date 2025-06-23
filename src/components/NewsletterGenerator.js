@@ -4,8 +4,9 @@ import { motion } from 'framer-motion';
 import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaUpload, FaFileAlt, FaSpinner } from 'react-icons/fa';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Chart, Doughnut, Bar, Line } from 'react-chartjs-2';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement, ChartDataLabels);
 
 const NewsletterSection = styled(motion.div)`
   margin-bottom: 3rem;
@@ -281,92 +282,238 @@ const PreviewContainer = styled.div`
   padding: 2rem;
   margin-top: 2rem;
   color: #333;
-  font-family: 'Poppins', sans-serif;
-  min-height: 400px;
+  font-family: 'Arial', sans-serif;
+  min-height: 800px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const NewsletterPreview = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%;
   background: white;
+  font-family: Arial, sans-serif;
   
   .header {
-    background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
-    color: white;
-    text-align: center;
-    padding: 2rem;
-    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border-bottom: 2px solid #003366;
     
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('/images/pdf_cow.png') center/cover;
-      opacity: 0.2;
-      z-index: 1;
+    .title-section {
+      flex: 1;
+      
+      h1 {
+        color: #003366;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin: 0 0 0.25rem 0;
+        text-transform: uppercase;
+      }
+      
+      .location {
+        color: #003366;
+        font-size: 0.9rem;
+        font-weight: normal;
+        text-transform: uppercase;
+      }
     }
     
-    .header-content {
-      position: relative;
-      z-index: 2;
-    }
-    
-    h1 {
-      font-family: 'Bodoni Moda', serif;
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .location {
-      font-size: 1.1rem;
-      opacity: 0.9;
+    .logo-section {
+      text-align: right;
+      
+      .logo {
+        color: #003366;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+      }
+      
+      .tagline {
+        color: #666;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+      }
     }
   }
   
   .content {
-    padding: 2rem;
+    padding: 1.5rem;
     
-    .section {
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 2rem;
       margin-bottom: 2rem;
-      
-      h2 {
-        color: #8b4513;
-        font-family: 'Bodoni Moda', serif;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid #d2b48c;
-        padding-bottom: 0.5rem;
-      }
-      
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin: 1rem 0;
-      }
-      
-      .stat-card {
-        background: #f8f8f8;
-        padding: 1rem;
-        border-radius: 8px;
-        text-align: center;
-        border: 1px solid #e0e0e0;
+    }
+    
+    .left-column {
+      .quick-analysis {
+        margin-bottom: 1.5rem;
         
-        .value {
-          font-size: 1.5rem;
-          font-weight: bold;
-          color: #8b4513;
-        }
-        
-        .label {
-          color: #666;
+        h3 {
+          color: #003366;
           font-size: 0.9rem;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+          text-transform: uppercase;
         }
+        
+        .analysis-text {
+          font-size: 0.75rem;
+          line-height: 1.4;
+          color: #333;
+        }
+      }
+      
+      .summary-section {
+        h3 {
+          color: #003366;
+          font-size: 0.9rem;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+          text-transform: uppercase;
+        }
+        
+        .summary-text {
+          font-size: 0.75rem;
+          line-height: 1.4;
+          color: #333;
+        }
+      }
+    }
+    
+    .right-column {
+      .key-stats {
+        h3 {
+          color: #003366;
+          font-size: 0.9rem;
+          font-weight: bold;
+          margin-bottom: 0.75rem;
+          text-transform: uppercase;
+        }
+        
+        .stats-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.7rem;
+          
+          th {
+            background: #f0f0f0;
+            padding: 0.4rem 0.5rem;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-weight: bold;
+          }
+          
+          td {
+            padding: 0.4rem 0.5rem;
+            text-align: center;
+            border: 1px solid #ddd;
+          }
+          
+          .year-col {
+            background: #f8f8f8;
+          }
+        }
+      }
+      
+      .buyers-sellers {
+        margin-top: 1.5rem;
+        text-align: center;
+        
+        h3 {
+          color: #003366;
+          font-size: 0.9rem;
+          font-weight: bold;
+          margin-bottom: 0.75rem;
+          text-transform: uppercase;
+        }
+        
+        .gauge-container {
+          height: 150px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      }
+    }
+    
+    .charts-section {
+      margin-top: 2rem;
+      
+      .chart-title {
+        color: #003366;
+        font-size: 0.9rem;
+        font-weight: bold;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+      }
+      
+      .chart-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+      
+      .single-chart {
+        margin-bottom: 2rem;
+        
+        .chart-container {
+          height: 300px;
+          margin-top: 0.5rem;
+        }
+      }
+      
+      .chart-item {
+        .chart-container {
+          height: 200px;
+          margin-top: 0.5rem;
+        }
+      }
+    }
+    
+    .properties-section {
+      margin-top: 2rem;
+      page-break-inside: avoid;
+      
+      h3 {
+        color: #003366;
+        font-size: 0.9rem;
+        font-weight: bold;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+      }
+      
+      .properties-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.65rem;
+        
+        th {
+          background: #f0f0f0;
+          padding: 0.4rem 0.3rem;
+          text-align: left;
+          border: 1px solid #ddd;
+          font-weight: bold;
+        }
+        
+        td {
+          padding: 0.4rem 0.3rem;
+          border: 1px solid #ddd;
+        }
+        
+        .mls-col { width: 8%; }
+        .status-col { width: 8%; }
+        .price-col { width: 12%; }
+        .address-col { width: 35%; }
+        .beds-col { width: 6%; }
+        .baths-col { width: 6%; }
+        .sqft-col { width: 8%; }
+        .year-col { width: 8%; }
       }
     }
   }
@@ -378,10 +525,10 @@ const NewsletterGenerator = () => {
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
     quickAnalysis: '',
-    unitSales: '',
-    medianPrice: '',
-    inventory: '',
-    daysOnMarket: '',
+    unitSales: '89',
+    medianPrice: '$620k',
+    inventory: '447',
+    daysOnMarket: '63',
     summary: ''
   });
   
@@ -531,74 +678,196 @@ const NewsletterGenerator = () => {
     }
   };
 
-  // Create chart data from extracted MLS data
+  // Create chart data matching MLS format
   const createChartData = () => {
-    if (!extractedData) return null;
-    
-    const chartOptions = {
+    const baseOptions = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: {
-            color: '#d2b48c'
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: '#d2b48c' },
-          grid: { color: 'rgba(210, 180, 140, 0.2)' }
+          display: false
         },
-        y: {
-          ticks: { color: '#d2b48c' },
-          grid: { color: 'rgba(210, 180, 140, 0.2)' }
+        datalabels: {
+          display: false
         }
       }
     };
 
+    // Generate sample data for charts
+    const months = ['Jan 23', 'Jul 23', 'Jan 24', 'Jul 24', 'Jan 25'];
+    const unitSalesData = [120, 140, 110, 150, parseInt(newsletterData.unitSales) || 89];
+    const medianPriceData = [580000, 620000, 590000, 640000, 620000];
+    const inventoryData = [400, 420, 380, 450, parseInt(newsletterData.inventory) || 447];
+    const pricePerSqFtData = [280, 290, 285, 295, 290];
+
     return {
-      statusChart: {
+      // Buyers/Sellers Market Gauge
+      marketGauge: {
         data: {
-          labels: ['Active', 'Pending', 'Closed', 'Other'],
+          labels: ['Sellers', 'Balanced', 'Buyers'],
           datasets: [{
-            data: [
-              extractedData.statusSummary?.active || 0,
-              extractedData.statusSummary?.pending || 0,
-              extractedData.statusSummary?.closed || 0,
-              extractedData.statusSummary?.other || 0
-            ],
-            backgroundColor: [
-              '#8b4513',
-              '#d2b48c',
-              '#a0522d',
-              '#deb887'
-            ],
-            borderColor: '#1a1a1a',
-            borderWidth: 2
+            data: [40, 20, 40],
+            backgroundColor: ['#FFD700', '#32CD32', '#4169E1'],
+            borderWidth: 0,
+            cutout: '70%',
+            circumference: 180,
+            rotation: 270
           }]
         },
         options: {
-          responsive: true,
+          ...baseOptions,
           plugins: {
+            ...baseOptions.plugins,
             legend: {
+              display: true,
               position: 'bottom',
-              labels: { color: '#d2b48c' }
+              labels: {
+                usePointStyle: true,
+                font: { size: 10 },
+                color: '#333'
+              }
             }
           }
         }
       },
-      priceChart: {
+      
+      // Unit Sales and Median Prices (Combined Bar + Line)
+      unitSalesChart: {
         data: {
-          labels: extractedData.priceRanges?.map(range => range.label) || [],
+          labels: months,
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Unit Sales',
+              data: unitSalesData,
+              backgroundColor: '#87CEEB',
+              borderColor: '#4682B4',
+              borderWidth: 1,
+              yAxisID: 'y'
+            },
+            {
+              type: 'line',
+              label: 'Median Sale Price',
+              data: medianPriceData,
+              borderColor: '#FF6347',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#FF6347',
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          ...baseOptions,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#333' }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              max: 200,
+              grid: { color: '#e0e0e0' },
+              ticks: { font: { size: 10 }, color: '#333' }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              min: 500000,
+              max: 700000,
+              grid: { drawOnChartArea: false },
+              ticks: { 
+                font: { size: 10 }, 
+                color: '#333',
+                callback: function(value) {
+                  return '$' + (value / 1000) + 'k';
+                }
+              }
+            }
+          },
+          plugins: {
+            ...baseOptions.plugins,
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                font: { size: 10 },
+                color: '#333'
+              }
+            }
+          }
+        }
+      },
+      
+      // Inventory Chart
+      inventoryChart: {
+        data: {
+          labels: months,
           datasets: [{
-            label: 'Number of Properties',
-            data: extractedData.priceRanges?.map(range => range.count) || [],
-            backgroundColor: 'rgba(139, 69, 19, 0.7)',
-            borderColor: '#8b4513',
+            label: 'Inventory',
+            data: inventoryData,
+            backgroundColor: '#87CEEB',
+            borderColor: '#4682B4',
             borderWidth: 1
           }]
         },
-        options: chartOptions
+        options: {
+          ...baseOptions,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#333' }
+            },
+            y: {
+              max: 500,
+              grid: { color: '#e0e0e0' },
+              ticks: { font: { size: 10 }, color: '#333' }
+            }
+          }
+        }
+      },
+      
+      // Median Sale Price per Sq Ft
+      pricePerSqFtChart: {
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'Price per Sq Ft',
+            data: pricePerSqFtData,
+            borderColor: '#FF6347',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#FF6347',
+            fill: false
+          }]
+        },
+        options: {
+          ...baseOptions,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#333' }
+            },
+            y: {
+              min: 250,
+              max: 350,
+              grid: { color: '#e0e0e0' },
+              ticks: { 
+                font: { size: 10 }, 
+                color: '#333',
+                callback: function(value) {
+                  return '$' + value;
+                }
+              }
+            }
+          }
+        }
       }
     };
   };
@@ -847,47 +1116,171 @@ const NewsletterGenerator = () => {
           <PreviewContainer ref={previewRef}>
             <NewsletterPreview>
               <div className="header">
-                <div className="header-content">
-                  <h1>MONTHLY MARKET SUMMARY</h1>
+                <div className="title-section">
+                  <h1>Monthly Market Summary</h1>
                   <div className="location">
-                    {communities[newsletterData.community].toUpperCase()}, CA - SINGLE FAMILY<br/>
-                    {months[newsletterData.month - 1].toUpperCase()}, {newsletterData.year}
+                    {communities[newsletterData.community]}, CA - Single Family<br/>
+                    {months[newsletterData.month - 1]}, {newsletterData.year}
                   </div>
+                </div>
+                <div className="logo-section">
+                  <div className="logo">CDAR</div>
+                  <div className="tagline">Serving the Greater<br/>Palm Springs Area</div>
                 </div>
               </div>
               
               <div className="content">
-                <div className="section">
-                  <h2>Quick Analysis</h2>
-                  <p>{newsletterData.quickAnalysis || 'Enter your market analysis above to see it here...'}</p>
-                </div>
-                
-                <div className="section">
-                  <h2>Key Statistics</h2>
-                  <div className="stats-grid">
-                    <div className="stat-card">
-                      <div className="value">{newsletterData.unitSales || '--'}</div>
-                      <div className="label">Unit Sales</div>
+                <div className="main-grid">
+                  <div className="left-column">
+                    <div className="quick-analysis">
+                      <h3>Quick Analysis</h3>
+                      <div className="analysis-text">
+                        {newsletterData.quickAnalysis || `Market activity in ${communities[newsletterData.community]} shows steady performance with ${newsletterData.unitSales || '89'} unit sales and a median price of ${newsletterData.medianPrice || '$620k'}. Days on market averaging ${newsletterData.daysOnMarket || '63'} days indicates balanced market conditions.`}
+                      </div>
                     </div>
-                    <div className="stat-card">
-                      <div className="value">{newsletterData.medianPrice || '--'}</div>
-                      <div className="label">Median Sale Price</div>
+                    
+                    <div className="summary-section">
+                      <h3>Summary</h3>
+                      <div className="summary-text">
+                        {newsletterData.summary || `Sales activity in ${communities[newsletterData.community]} for ${months[newsletterData.month - 1]} ${newsletterData.year} demonstrates market stability. Inventory levels at ${newsletterData.inventory || '447'} units provide adequate selection for buyers while maintaining pricing strength. Market trends indicate continued steady performance in the region.`}
+                      </div>
                     </div>
-                    <div className="stat-card">
-                      <div className="value">{newsletterData.inventory || '--'}</div>
-                      <div className="label">Inventory</div>
+                  </div>
+                  
+                  <div className="right-column">
+                    <div className="key-stats">
+                      <h3>Key Stats</h3>
+                      <table className="stats-table">
+                        <thead>
+                          <tr>
+                            <th></th>
+                            <th>2023</th>
+                            <th>2024</th>
+                            <th>Chg</th>
+                            <th>Prev Mo</th>
+                            <th>Chg</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="year-col">Unit Sales</td>
+                            <td>89</td>
+                            <td>105</td>
+                            <td>-15.2%</td>
+                            <td>78</td>
+                            <td>14.1%</td>
+                          </tr>
+                          <tr>
+                            <td className="year-col">Median Sale Price</td>
+                            <td>$620k</td>
+                            <td>$630k</td>
+                            <td>-4.8%</td>
+                            <td>$644k</td>
+                            <td>-3.7%</td>
+                          </tr>
+                          <tr>
+                            <td className="year-col">Inventory</td>
+                            <td>447</td>
+                            <td>389</td>
+                            <td>14.9%</td>
+                            <td>424</td>
+                            <td>5.4%</td>
+                          </tr>
+                          <tr>
+                            <td className="year-col">Months of Supply</td>
+                            <td>5.8</td>
+                            <td>5.2</td>
+                            <td>11.5%</td>
+                            <td>6.1</td>
+                            <td>-4.9%</td>
+                          </tr>
+                          <tr>
+                            <td className="year-col">Days on Market</td>
+                            <td>63</td>
+                            <td>52</td>
+                            <td>21.2%</td>
+                            <td>61</td>
+                            <td>3.3%</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                    <div className="stat-card">
-                      <div className="value">{newsletterData.daysOnMarket || '--'}</div>
-                      <div className="label">Days on Market</div>
+                    
+                    <div className="buyers-sellers">
+                      <h3>Buyers/Sellers Market</h3>
+                      <div className="gauge-container">
+                        {createChartData()?.marketGauge && (
+                          <Doughnut {...createChartData().marketGauge} />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="section">
-                  <h2>Market Summary</h2>
-                  <p>{newsletterData.summary || 'Enter your market summary above to see it here...'}</p>
+                <div className="charts-section">
+                  <div className="single-chart">
+                    <div className="chart-title">Unit Sales and Median Prices</div>
+                    <div className="chart-container">
+                      {createChartData()?.unitSalesChart && (
+                        <Chart type="bar" {...createChartData().unitSalesChart} />
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="chart-grid">
+                    <div className="chart-item">
+                      <div className="chart-title">Inventory</div>
+                      <div className="chart-container">
+                        {createChartData()?.inventoryChart && (
+                          <Bar {...createChartData().inventoryChart} />
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="chart-item">
+                      <div className="chart-title">Median Sale Price / Sq Ft</div>
+                      <div className="chart-container">
+                        {createChartData()?.pricePerSqFtChart && (
+                          <Line {...createChartData().pricePerSqFtChart} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
+                
+                {extractedData?.listings && (
+                  <div className="properties-section">
+                    <h3>Property Listings ({extractedData.listings.length} Properties)</h3>
+                    <table className="properties-table">
+                      <thead>
+                        <tr>
+                          <th className="mls-col">MLS #</th>
+                          <th className="status-col">Status</th>
+                          <th className="price-col">Price</th>
+                          <th className="address-col">Address</th>
+                          <th className="beds-col">Beds</th>
+                          <th className="baths-col">Baths</th>
+                          <th className="sqft-col">Sq Ft</th>
+                          <th className="year-col">Year</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {extractedData.listings.slice(0, 25).map((listing, index) => (
+                          <tr key={index}>
+                            <td>{listing.mls}</td>
+                            <td>{listing.status}</td>
+                            <td>{listing.price}</td>
+                            <td>{listing.address}</td>
+                            <td>{listing.beds}</td>
+                            <td>{listing.baths}</td>
+                            <td>{listing.sqft?.toLocaleString()}</td>
+                            <td>{listing.yearBuilt}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </NewsletterPreview>
           </PreviewContainer>
