@@ -21,6 +21,8 @@ const ModalOverlay = styled(motion.div)`
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
     padding: 0.5rem;
+    align-items: flex-start; /* Align from the top instead of center */
+    padding-top: 60px; /* Add top padding to avoid header overlap */
   }
 `;
 
@@ -45,8 +47,9 @@ const ModalContainer = styled(motion.div)`
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
     padding: 1.25rem;
-    max-height: 80vh;
+    max-height: calc(100vh - 70px); /* Adjust max-height to account for header */
     border-radius: 8px;
+    margin-bottom: 10px; /* Add some bottom margin */
   }
 `;
 
@@ -59,7 +62,7 @@ const CloseButton = styled.button`
   color: #ffffff;
   cursor: pointer;
   font-size: 1.5rem;
-  z-index: 10;
+  z-index: 1010; /* Ensure it's above other elements */
   transition: opacity 0.2s;
   padding: 0.25rem;
   
@@ -71,6 +74,14 @@ const CloseButton = styled.button`
     top: 0.75rem;
     right: 0.75rem;
     font-size: 1.25rem;
+    background: rgba(0, 0, 0, 0.4); /* Add background to make it more visible */
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
   }
 `;
 
@@ -299,16 +310,18 @@ const WelcomeModal = ({ isOpen, onClose, onContact }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
+          data-testid="modal-overlay"
         >
           <ModalContainer
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            data-testid="modal-container"
             onClick={(e) => e.stopPropagation()}
           >
-            <CloseButton onClick={onClose}>
-              <FaTimes size={24} />
+            <CloseButton onClick={onClose} aria-label="Close modal">
+              <FaTimes size={20} />
             </CloseButton>
             
             <Title>Looking to sell in 2025?</Title>
