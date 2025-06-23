@@ -6,6 +6,7 @@ import { FaUsers, FaCopy, FaTag, FaRedo, FaSignOutAlt, FaEnvelope, FaTrash, FaCh
 import { getNewsletterSubscribers } from '../utils/api';
 import api from '../utils/api';
 import AdminLogin from '../components/AdminLogin';
+import NewsletterGenerator from '../components/NewsletterGenerator';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -867,6 +868,9 @@ const Admin = () => {
               )}
             </div>
           </ContactSubmissionsSection>
+          
+          {/* Newsletter Generator Section */}
+          <NewsletterGenerator />
           
           <StatsContainer
             initial={{ opacity: 0, y: 30 }}
