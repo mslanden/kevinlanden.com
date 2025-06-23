@@ -311,8 +311,8 @@ const WelcomeModal = ({ isOpen, onClose, onContact }) => {
               <FaTimes size={24} />
             </CloseButton>
             
-            <Title>🎉 2025 Listing Blowout Sale! 🎉</Title>
-            <Subtitle>First 25 Sellers Get Exclusive Pricing</Subtitle>
+            <Title>Looking to sell in 2025?</Title>
+            <Subtitle>Limited time discount pricing on your listing</Subtitle>
             
             <SpotsText>
               Only <span>{loading ? '...' : spotsRemaining}</span> Spots Left!
@@ -339,13 +339,12 @@ const WelcomeModal = ({ isOpen, onClose, onContact }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <FaDollarSign size={20} style={{ display: 'inline', marginRight: '0.5rem' }} />
-              <span className="button-text-desktop">Register Now - Only {spotsRemaining} Spots Left!</span>
+              <span className="button-text-desktop">Register Now!</span>
               <span className="button-text-mobile">Register Now!</span>
             </CTAButton>
             
             <Disclaimer>
-              * Limited to first 25 registrations for 2025. Standard commission rates apply after promotional spots are filled.
+              * First come, first serve. Home needs to be listed by 12/31/2025. Standard commission rates apply after promotional spots are filled or home does not go on market in 2025.
             </Disclaimer>
           </ModalContainer>
         </ModalOverlay>
