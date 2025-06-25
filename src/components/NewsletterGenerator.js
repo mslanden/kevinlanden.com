@@ -910,35 +910,72 @@ const NewsletterGenerator = () => {
           }
         } : null,
         
-        // Buyers/Sellers Market Gauge
-        marketGauge: {
-          data: {
-            labels: ['Sellers', 'Balanced', 'Buyers'],
-            datasets: [{
-              data: [40, 20, 40],
-              backgroundColor: ['#8b4513', '#d2b48c', '#a0522d'],
-              borderWidth: 0,
-              cutout: '70%',
-              circumference: 180,
-              rotation: 270
-            }]
-          },
-          options: {
-            ...baseOptions,
-            plugins: {
-              ...baseOptions.plugins,
-              legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                  usePointStyle: true,
-                  font: { size: 10 },
-                  color: '#333'
+        // Buyers/Sellers Market Gauge (calculated from extracted data)
+        marketGauge: (() => {
+          // Calculate market conditions based on extracted data
+          const activeListings = statusData.active;
+          const recentSales = statusData.closed + statusData.pending;
+          const totalMarketListings = totalListings;
+          
+          // Market indicators:
+          // - High active inventory + low sales = Buyers market
+          // - Low active inventory + high sales = Sellers market
+          // - Balanced = everything else
+          
+          let sellersMarket = 20;
+          let balanced = 60;
+          let buyersMarket = 20;
+          
+          if (totalMarketListings > 0) {
+            const inventoryToSalesRatio = activeListings / Math.max(recentSales, 1);
+            
+            if (inventoryToSalesRatio < 2) {
+              // Low inventory relative to sales = Sellers market
+              sellersMarket = 70;
+              balanced = 20;
+              buyersMarket = 10;
+            } else if (inventoryToSalesRatio > 5) {
+              // High inventory relative to sales = Buyers market
+              sellersMarket = 10;
+              balanced = 20;
+              buyersMarket = 70;
+            } else {
+              // Moderate inventory = Balanced market
+              sellersMarket = 25;
+              balanced = 50;
+              buyersMarket = 25;
+            }
+          }
+          
+          return {
+            data: {
+              labels: ['Sellers', 'Balanced', 'Buyers'],
+              datasets: [{
+                data: [sellersMarket, balanced, buyersMarket],
+                backgroundColor: ['#8b4513', '#d2b48c', '#a0522d'],
+                borderWidth: 0,
+                cutout: '70%',
+                circumference: 180,
+                rotation: 270
+              }]
+            },
+            options: {
+              ...baseOptions,
+              plugins: {
+                ...baseOptions.plugins,
+                legend: {
+                  display: true,
+                  position: 'bottom',
+                  labels: {
+                    usePointStyle: true,
+                    font: { size: 10 },
+                    color: '#333'
+                  }
                 }
               }
             }
-          }
-        },
+          };
+        })(),
         
         // Sales Activity and Median Prices (Combined Bar + Line)
         unitSalesChart: {
