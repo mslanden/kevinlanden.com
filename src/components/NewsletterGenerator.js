@@ -348,15 +348,22 @@ const NewsletterPreview = styled.div`
     
     .logo-section {
       text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
       
-      .logo {
-        color: #f5f5f5;
-        font-family: "Bodoni Moda", serif;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        letter-spacing: 2px;
+      .logo-container {
+        margin-bottom: 0.5rem;
+        
+        .hero-logo {
+          height: 80px;
+          width: auto;
+          max-width: 200px;
+          filter: brightness(1.1) contrast(1.1);
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 0.5rem;
+        }
       }
       
       .brand-name {
@@ -1597,7 +1604,9 @@ const NewsletterGenerator = () => {
                   </div>
                 </div>
                 <div className="logo-section">
-                  <div className="logo">OUTRIDER</div>
+                  <div className="logo-container">
+                    <img src="/logo/hero.svg" alt="Outrider Real Estate Logo" className="hero-logo" />
+                  </div>
                   <div className="brand-name">Kevin Landen Real Estate</div>
                   <div className="tagline">Serving Anza • Aguanga • Idyllwild • Mountain Center</div>
                   <div className="contact-info">
