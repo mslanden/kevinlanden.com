@@ -180,12 +180,21 @@ const DataVisualization = styled.div`
     border-radius: ${props => props.theme.borderRadius.default};
     padding: 1.5rem;
     border: 1px solid ${props => props.theme.colors.border};
+    height: 300px;
+    display: flex;
+    flex-direction: column;
     
     h4 {
       color: ${props => props.theme.colors.text.secondary};
       margin-bottom: 1rem;
       text-align: center;
       font-family: ${props => props.theme.fonts.heading};
+      flex-shrink: 0;
+    }
+    
+    canvas {
+      max-height: 250px !important;
+      flex: 1;
     }
   }
 `;
@@ -717,6 +726,8 @@ const NewsletterGenerator = () => {
           },
           options: {
             ...baseOptions,
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               ...baseOptions.plugins,
               legend: {
@@ -744,8 +755,7 @@ const NewsletterGenerator = () => {
           options: {
             ...baseOptions,
             responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 2,
+            maintainAspectRatio: false,
             scales: {
               y: {
                 beginAtZero: true,
