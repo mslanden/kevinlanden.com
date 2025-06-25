@@ -8,6 +8,14 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement, ChartDataLabels);
 
+// Import Google Fonts for western theme
+const fontLink = document.createElement('link');
+fontLink.href = 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap';
+fontLink.rel = 'stylesheet';
+if (!document.querySelector(`link[href="${fontLink.href}"]`)) {
+  document.head.appendChild(fontLink);
+}
+
 const NewsletterSection = styled(motion.div)`
   margin-bottom: 3rem;
   background-color: rgba(20, 20, 20, 0.85);
@@ -301,32 +309,40 @@ const PreviewContainer = styled.div`
 
 const NewsletterPreview = styled.div`
   width: 100%;
-  background: white;
-  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  font-family: "Poppins", sans-serif;
+  border: 2px solid #8b4513;
+  border-radius: 8px;
+  overflow: hidden;
   
   .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     padding: 1.5rem;
-    border-bottom: 2px solid #003366;
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+    color: #f5f5f5;
+    border-bottom: 3px solid #d2b48c;
     
     .title-section {
       flex: 1;
       
       h1 {
-        color: #003366;
+        color: #f5f5f5;
+        font-family: "Bodoni Moda", serif;
         font-size: 1.8rem;
-        font-weight: bold;
-        margin: 0 0 0.25rem 0;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
         text-transform: uppercase;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
       }
       
       .location {
-        color: #003366;
+        color: #deb394;
         font-size: 0.9rem;
-        font-weight: normal;
+        font-weight: 500;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     }
     
@@ -334,16 +350,38 @@ const NewsletterPreview = styled.div`
       text-align: right;
       
       .logo {
-        color: #003366;
-        font-size: 1.5rem;
-        font-weight: bold;
+        color: #f5f5f5;
+        font-family: "Bodoni Moda", serif;
+        font-size: 2rem;
+        font-weight: 700;
         margin-bottom: 0.25rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        letter-spacing: 2px;
+      }
+      
+      .brand-name {
+        color: #deb394;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
       }
       
       .tagline {
-        color: #666;
+        color: #d2b48c;
         font-size: 0.7rem;
-        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+      
+      .contact-info {
+        font-size: 0.65rem;
+        color: #deb394;
+        font-weight: 400;
+        
+        div {
+          margin-bottom: 0.2rem;
+        }
       }
     }
   }
@@ -361,44 +399,61 @@ const NewsletterPreview = styled.div`
     .left-column {
       .quick-analysis {
         margin-bottom: 1.5rem;
+        background: rgba(139, 69, 19, 0.05);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #8b4513;
         
         h3 {
-          color: #003366;
-          font-size: 0.9rem;
+          color: #8b4513;
+          font-family: "Bodoni Moda", serif;
+          font-size: 1rem;
           font-weight: bold;
           margin-bottom: 0.5rem;
           text-transform: uppercase;
         }
         
         .analysis-text {
-          font-size: 0.75rem;
-          line-height: 1.4;
-          color: #333;
+          font-size: 0.85rem;
+          line-height: 1.5;
+          color: #3a200c;
         }
       }
       
       .summary-section {
+        background: rgba(210, 180, 140, 0.1);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #d2b48c;
+        
         h3 {
-          color: #003366;
-          font-size: 0.9rem;
+          color: #8b4513;
+          font-family: "Bodoni Moda", serif;
+          font-size: 1rem;
           font-weight: bold;
           margin-bottom: 0.5rem;
           text-transform: uppercase;
         }
         
         .summary-text {
-          font-size: 0.75rem;
-          line-height: 1.4;
-          color: #333;
+          font-size: 0.85rem;
+          line-height: 1.5;
+          color: #3a200c;
         }
       }
     }
     
     .right-column {
       .key-stats {
+        background: rgba(160, 82, 45, 0.05);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(139, 69, 19, 0.2);
+        
         h3 {
-          color: #003366;
-          font-size: 0.9rem;
+          color: #8b4513;
+          font-family: "Bodoni Moda", serif;
+          font-size: 1rem;
           font-weight: bold;
           margin-bottom: 0.75rem;
           text-transform: uppercase;
@@ -407,24 +462,34 @@ const NewsletterPreview = styled.div`
         .stats-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 0.7rem;
+          font-size: 0.75rem;
+          border-radius: 6px;
+          overflow: hidden;
           
           th {
-            background: #f0f0f0;
-            padding: 0.4rem 0.5rem;
+            background: linear-gradient(135deg, #8b4513, #a0522d);
+            color: #f5f5f5;
+            padding: 0.6rem 0.5rem;
             text-align: center;
-            border: 1px solid #ddd;
             font-weight: bold;
+            font-size: 0.7rem;
           }
           
           td {
-            padding: 0.4rem 0.5rem;
+            padding: 0.5rem;
             text-align: center;
-            border: 1px solid #ddd;
+            border-bottom: 1px solid rgba(139, 69, 19, 0.1);
+            color: #3a200c;
           }
           
           .year-col {
-            background: #f8f8f8;
+            background: rgba(210, 180, 140, 0.15);
+            font-weight: 600;
+            color: #8b4513;
+          }
+          
+          tr:hover {
+            background: rgba(210, 180, 140, 0.1);
           }
         }
       }
@@ -432,10 +497,15 @@ const NewsletterPreview = styled.div`
       .buyers-sellers {
         margin-top: 1.5rem;
         text-align: center;
+        background: rgba(210, 180, 140, 0.05);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(210, 180, 140, 0.3);
         
         h3 {
-          color: #003366;
-          font-size: 0.9rem;
+          color: #8b4513;
+          font-family: "Bodoni Moda", serif;
+          font-size: 1rem;
           font-weight: bold;
           margin-bottom: 0.75rem;
           text-transform: uppercase;
@@ -452,13 +522,19 @@ const NewsletterPreview = styled.div`
     
     .charts-section {
       margin-top: 2rem;
+      background: rgba(139, 69, 19, 0.02);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid rgba(139, 69, 19, 0.1);
       
       .chart-title {
-        color: #003366;
-        font-size: 0.9rem;
+        color: #8b4513;
+        font-family: "Bodoni Moda", serif;
+        font-size: 1.1rem;
         font-weight: bold;
         margin-bottom: 0.75rem;
         text-transform: uppercase;
+        text-align: center;
       }
       
       .chart-grid {
@@ -470,6 +546,9 @@ const NewsletterPreview = styled.div`
       
       .single-chart {
         margin-bottom: 2rem;
+        background: rgba(210, 180, 140, 0.05);
+        padding: 1rem;
+        border-radius: 6px;
         
         .chart-container {
           height: 300px;
@@ -478,6 +557,10 @@ const NewsletterPreview = styled.div`
       }
       
       .chart-item {
+        background: rgba(210, 180, 140, 0.05);
+        padding: 1rem;
+        border-radius: 6px;
+        
         .chart-container {
           height: 200px;
           margin-top: 0.5rem;
@@ -488,41 +571,59 @@ const NewsletterPreview = styled.div`
     .properties-section {
       margin-top: 2rem;
       page-break-inside: avoid;
+      background: rgba(160, 82, 45, 0.02);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid rgba(139, 69, 19, 0.1);
       
       h3 {
-        color: #003366;
-        font-size: 0.9rem;
+        color: #8b4513;
+        font-family: "Bodoni Moda", serif;
+        font-size: 1.1rem;
         font-weight: bold;
         margin-bottom: 0.75rem;
         text-transform: uppercase;
+        text-align: center;
       }
       
       .properties-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
+        border-radius: 6px;
+        overflow: hidden;
         
         th {
-          background: #f0f0f0;
-          padding: 0.4rem 0.3rem;
+          background: linear-gradient(135deg, #8b4513, #a0522d);
+          color: #f5f5f5;
+          padding: 0.6rem 0.4rem;
           text-align: left;
-          border: 1px solid #ddd;
           font-weight: bold;
+          font-size: 0.65rem;
         }
         
         td {
-          padding: 0.4rem 0.3rem;
-          border: 1px solid #ddd;
+          padding: 0.5rem 0.4rem;
+          border-bottom: 1px solid rgba(139, 69, 19, 0.1);
+          color: #3a200c;
+        }
+        
+        tr:nth-child(even) {
+          background: rgba(210, 180, 140, 0.05);
+        }
+        
+        tr:hover {
+          background: rgba(210, 180, 140, 0.1);
         }
         
         .mls-col { width: 8%; }
         .status-col { width: 8%; }
-        .price-col { width: 12%; }
+        .price-col { width: 12%; font-weight: 600; color: #8b4513; }
         .address-col { width: 35%; }
-        .beds-col { width: 6%; }
-        .baths-col { width: 6%; }
-        .sqft-col { width: 8%; }
-        .year-col { width: 8%; }
+        .beds-col { width: 6%; text-align: center; }
+        .baths-col { width: 6%; text-align: center; }
+        .sqft-col { width: 8%; text-align: center; }
+        .year-col { width: 8%; text-align: center; }
       }
     }
   }
@@ -719,7 +820,7 @@ const NewsletterGenerator = () => {
             labels: ['Active', 'Pending', 'Closed', 'Other'],
             datasets: [{
               data: [statusData.active, statusData.pending, statusData.closed, statusData.other],
-              backgroundColor: ['#87CEEB', '#FFD700', '#32CD32', '#FF6347'],
+              backgroundColor: ['#8b4513', '#d2b48c', '#a0522d', '#deb394'],
               borderWidth: 2,
               borderColor: '#fff'
             }]
@@ -747,8 +848,8 @@ const NewsletterGenerator = () => {
             labels: extractedData.priceRanges.map(range => range.label),
             datasets: [{
               data: extractedData.priceRanges.map(range => range.count),
-              backgroundColor: '#4682B4',
-              borderColor: '#87CEEB',
+              backgroundColor: '#8b4513',
+              borderColor: '#d2b48c',
               borderWidth: 1
             }]
           },
@@ -790,7 +891,7 @@ const NewsletterGenerator = () => {
           labels: ['Sellers', 'Balanced', 'Buyers'],
           datasets: [{
             data: [40, 20, 40],
-            backgroundColor: ['#FFD700', '#32CD32', '#4169E1'],
+            backgroundColor: ['#8b4513', '#d2b48c', '#a0522d'],
             borderWidth: 0,
             cutout: '70%',
             circumference: 180,
@@ -823,8 +924,8 @@ const NewsletterGenerator = () => {
               type: 'bar',
               label: 'Unit Sales',
               data: unitSalesData,
-              backgroundColor: '#87CEEB',
-              borderColor: '#4682B4',
+              backgroundColor: '#8b4513',
+              borderColor: '#a0522d',
               borderWidth: 1,
               yAxisID: 'y'
             },
@@ -832,11 +933,11 @@ const NewsletterGenerator = () => {
               type: 'line',
               label: 'Median Sale Price',
               data: medianPriceData,
-              borderColor: '#FF6347',
+              borderColor: '#d2b48c',
               backgroundColor: 'transparent',
               borderWidth: 2,
               pointRadius: 4,
-              pointBackgroundColor: '#FF6347',
+              pointBackgroundColor: '#d2b48c',
               yAxisID: 'y1'
             }
           ]
@@ -1207,8 +1308,13 @@ const NewsletterGenerator = () => {
                   </div>
                 </div>
                 <div className="logo-section">
-                  <div className="logo">CDAR</div>
-                  <div className="tagline">Serving the Greater<br/>Palm Springs Area</div>
+                  <div className="logo">OUTRIDER</div>
+                  <div className="brand-name">Kevin Landen Real Estate</div>
+                  <div className="tagline">Serving Anza • Aguanga • Idyllwild • Mountain Center</div>
+                  <div className="contact-info">
+                    <div>landenmsjd@gmail.com</div>
+                    <div>License #02113445</div>
+                  </div>
                 </div>
               </div>
               
