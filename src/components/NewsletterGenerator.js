@@ -317,6 +317,22 @@ const NewsletterPreview = styled.div`
   border-radius: 8px;
   overflow: hidden;
   
+  /* PDF page break controls */
+  .page-break-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+  
+  .page-break-after {
+    page-break-after: always;
+    break-after: page;
+  }
+  
   .header {
     display: flex;
     justify-content: space-between;
@@ -785,12 +801,27 @@ const NewsletterGenerator = () => {
 
       // Create canvas from the preview element
       const canvas = await html2canvas(element, {
-        scale: 2, // Higher quality
+        scale: 1.5, // Good quality without being too large
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         width: element.scrollWidth,
-        height: element.scrollHeight
+        height: element.scrollHeight,
+        logging: false,
+        removeContainer: true,
+        imageTimeout: 0,
+        onclone: (clonedDoc) => {
+          // Add print styles to cloned document
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            .page-break-avoid { page-break-inside: avoid !important; break-inside: avoid !important; }
+            .page-break-before { page-break-before: always !important; break-before: page !important; }
+            .page-break-after { page-break-after: always !important; break-after: page !important; }
+            table { page-break-inside: auto !important; }
+            tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       });
 
       // Create PDF
@@ -1627,7 +1658,7 @@ const NewsletterGenerator = () => {
         {showPreview && (
           <PreviewContainer ref={previewRef}>
             <NewsletterPreview>
-              <div className="header">
+              <div className="header page-break-avoid">
                 <div className="title-section">
                   <h1>Monthly Market Summary</h1>
                   <div className="location">
@@ -1649,9 +1680,9 @@ const NewsletterGenerator = () => {
               </div>
               
               <div className="content">
-                <div className="main-grid">
+                <div className="main-grid page-break-avoid">
                   <div className="left-column">
-                    <div className="quick-analysis">
+                    <div className="quick-analysis page-break-avoid">
                       <h3>Quick Analysis</h3>
                       <div className="analysis-text">
                         {extractedData?.summary?.quickAnalysis || newsletterData.quickAnalysis || (extractedData?.statusSummary ? 
@@ -1661,7 +1692,7 @@ const NewsletterGenerator = () => {
                       </div>
                     </div>
                     
-                    <div className="summary-section">
+                    <div className="summary-section page-break-avoid">
                       <h3>Summary</h3>
                       <div className="summary-text">
                         {newsletterData.summary || (extractedData?.statusSummary ? 
@@ -1673,7 +1704,7 @@ const NewsletterGenerator = () => {
                   </div>
                   
                   <div className="right-column">
-                    <div className="key-stats">
+                    <div className="key-stats page-break-avoid">
                       <h3>Market Summary</h3>
                       <table className="stats-table">
                         <thead>
@@ -1707,7 +1738,7 @@ const NewsletterGenerator = () => {
                       </table>
                     </div>
                     
-                    <div className="buyers-sellers">
+                    <div className="buyers-sellers page-break-avoid">
                       <h3>Buyers/Sellers Market</h3>
                       <div className="gauge-container">
                         {createChartData()?.marketGauge && (
@@ -1718,8 +1749,8 @@ const NewsletterGenerator = () => {
                   </div>
                 </div>
                 
-                <div className="charts-section">
-                  <div className="single-chart">
+                <div className="charts-section page-break-before">
+                  <div className="single-chart page-break-avoid">
                     <div className="chart-title">Current Market Status Distribution</div>
                     <div className="chart-container">
                       {createChartData()?.unitSalesChart && (
@@ -1729,7 +1760,7 @@ const NewsletterGenerator = () => {
                   </div>
                   
                   <div className="chart-grid">
-                    <div className="chart-item">
+                    <div className="chart-item page-break-avoid">
                       <div className="chart-title">Price Range Distribution</div>
                       <div className="chart-container">
                         {createChartData()?.inventoryChart && (
@@ -1738,7 +1769,7 @@ const NewsletterGenerator = () => {
                       </div>
                     </div>
                     
-                    <div className="chart-item">
+                    <div className="chart-item page-break-avoid">
                       <div className="chart-title">Price Per Sq Ft by Bedroom Count</div>
                       <div className="chart-container">
                         {createChartData()?.pricePerSqFtChart && (
@@ -1750,7 +1781,7 @@ const NewsletterGenerator = () => {
                 </div>
                 
                 {extractedData?.listings && (
-                  <div className="properties-section">
+                  <div className="properties-section page-break-before">
                     <h3>Property Listings ({extractedData.listings.length} Properties)</h3>
                     <table className="properties-table">
                       <thead>
