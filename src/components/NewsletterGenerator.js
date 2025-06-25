@@ -580,6 +580,7 @@ const NewsletterGenerator = () => {
       formData.append('community', newsletterData.community);
       
       // Send to backend for processing
+      console.log('Sending files to backend for processing...');
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/newsletter/process-mls`, {
         method: 'POST',
         headers: {
@@ -588,8 +589,12 @@ const NewsletterGenerator = () => {
         body: formData
       });
       
+      console.log('Received response from backend:', response.status);
+      
       if (response.ok) {
+        console.log('Parsing JSON response...');
         const data = await response.json();
+        console.log('Received data from backend:', data);
         setExtractedData(data);
         
         // Auto-populate form with extracted data
@@ -603,6 +608,7 @@ const NewsletterGenerator = () => {
         }));
         
         // Update file status
+        console.log('Updating file status to completed');
         setUploadedFiles(prev => 
           prev.map(f => newFiles.find(nf => nf.id === f.id) 
             ? { ...f, status: 'completed' } 
@@ -623,6 +629,7 @@ const NewsletterGenerator = () => {
       );
       alert('Error processing MLS files. Please try again.');
     } finally {
+      console.log('Processing finished, setting isProcessing to false');
       setIsProcessing(false);
     }
   };
