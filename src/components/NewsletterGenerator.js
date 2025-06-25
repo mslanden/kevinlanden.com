@@ -700,6 +700,65 @@ const NewsletterGenerator = () => {
       }
     };
 
+    // If we have extracted data, use it for charts
+    if (extractedData && extractedData.statusSummary) {
+      console.log('Using extracted data for charts:', extractedData);
+      const statusData = extractedData.statusSummary;
+      return {
+        statusChart: {
+          data: {
+            labels: ['Active', 'Pending', 'Closed', 'Other'],
+            datasets: [{
+              data: [statusData.active, statusData.pending, statusData.closed, statusData.other],
+              backgroundColor: ['#87CEEB', '#FFD700', '#32CD32', '#FF6347'],
+              borderWidth: 2,
+              borderColor: '#fff'
+            }]
+          },
+          options: {
+            ...baseOptions,
+            plugins: {
+              ...baseOptions.plugins,
+              legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                  usePointStyle: true,
+                  font: { size: 12 },
+                  color: '#333'
+                }
+              }
+            }
+          }
+        },
+        priceChart: extractedData.priceRanges ? {
+          data: {
+            labels: extractedData.priceRanges.map(range => range.label),
+            datasets: [{
+              data: extractedData.priceRanges.map(range => range.count),
+              backgroundColor: '#4682B4',
+              borderColor: '#87CEEB',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            ...baseOptions,
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: '#e0e0e0' },
+                ticks: { font: { size: 10 }, color: '#333' }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 }, color: '#333' }
+              }
+            }
+          }
+        } : null
+      };
+    }
+
     // Generate sample data for charts
     const months = ['Jan 23', 'Jul 23', 'Jan 24', 'Jul 24', 'Jan 25'];
     const unitSalesData = [120, 140, 110, 150, parseInt(newsletterData.unitSales) || 89];
