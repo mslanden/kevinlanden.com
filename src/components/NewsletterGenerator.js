@@ -660,10 +660,6 @@ const NewsletterGenerator = () => {
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
     quickAnalysis: '',
-    unitSales: '89',
-    medianPrice: '$620k',
-    inventory: '447',
-    daysOnMarket: '63',
     summary: ''
   });
   
@@ -735,10 +731,6 @@ const NewsletterGenerator = () => {
         // Auto-populate form with extracted data
         setNewsletterData(prev => ({
           ...prev,
-          unitSales: data.summary?.unitSales || '',
-          medianPrice: data.summary?.medianPrice || '',
-          inventory: data.summary?.inventory || '',
-          daysOnMarket: data.summary?.daysOnMarket || '',
           quickAnalysis: data.summary?.quickAnalysis || ''
         }));
         
@@ -1476,62 +1468,6 @@ const NewsletterGenerator = () => {
           </InputGroup>
         </FormSection>
 
-        <FormSection>
-          <h3>
-            <FaChartBar />
-            Market Statistics
-          </h3>
-          <FormGrid>
-            <InputGroup>
-              <label>Unit Sales</label>
-              <input 
-                type="number"
-                value={newsletterData.unitSales}
-                onChange={(e) => handleInputChange('unitSales', e.target.value)}
-                placeholder="89"
-              />
-            </InputGroup>
-            
-            <InputGroup>
-              <label>Median Sale Price</label>
-              <input 
-                type="text"
-                value={newsletterData.medianPrice}
-                onChange={(e) => handleInputChange('medianPrice', e.target.value)}
-                placeholder="$620k"
-              />
-            </InputGroup>
-            
-            <InputGroup>
-              <label>Inventory</label>
-              <input 
-                type="number"
-                value={newsletterData.inventory}
-                onChange={(e) => handleInputChange('inventory', e.target.value)}
-                placeholder="447"
-              />
-            </InputGroup>
-            
-            <InputGroup>
-              <label>Days on Market</label>
-              <input 
-                type="number"
-                value={newsletterData.daysOnMarket}
-                onChange={(e) => handleInputChange('daysOnMarket', e.target.value)}
-                placeholder="63"
-              />
-            </InputGroup>
-          </FormGrid>
-          
-          <InputGroup>
-            <label>Market Summary</label>
-            <textarea 
-              value={newsletterData.summary}
-              onChange={(e) => handleInputChange('summary', e.target.value)}
-              placeholder="Detailed analysis of sales, prices, inventory, and market conditions..."
-            />
-          </InputGroup>
-        </FormSection>
 
         <FormSection>
           <h3>
