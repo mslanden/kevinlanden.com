@@ -5,6 +5,8 @@ import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaUpload, F
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Chart, Doughnut, Bar, Line } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement, ChartDataLabels);
 
@@ -768,32 +770,62 @@ const NewsletterGenerator = () => {
   };
 
   const generatePDF = async () => {
+    if (!showPreview) {
+      alert('Please generate a preview first before creating PDF');
+      return;
+    }
+
     setIsGenerating(true);
     
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/newsletter/generate-pdf`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
-        body: JSON.stringify({
-          newsletterData,
-          extractedData
-        })
-      });
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${communities[newsletterData.community]}-Newsletter-${months[newsletterData.month - 1]}-${newsletterData.year}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      } else {
-        throw new Error('Failed to generate PDF');
+      const element = previewRef.current;
+      if (!element) {
+        throw new Error('Preview element not found');
       }
+
+      // Create canvas from the preview element
+      const canvas = await html2canvas(element, {
+        scale: 2, // Higher quality
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: element.scrollWidth,
+        height: element.scrollHeight
+      });
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Calculate dimensions to fit A4
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      // Download the PDF
+      const fileName = `${communities[newsletterData.community]}-Newsletter-${months[newsletterData.month - 1]}-${newsletterData.year}.pdf`;
+      pdf.save(fileName);
+
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -1605,13 +1637,13 @@ const NewsletterGenerator = () => {
                 </div>
                 <div className="logo-section">
                   <div className="logo-container">
-                    <img src="/logo/hero.svg" alt="Outrider Real Estate Logo" className="hero-logo" />
+                    <img src="/logo/logo_2.svg" alt="Outrider Real Estate Logo" className="hero-logo" />
                   </div>
-                  <div className="brand-name">Kevin Landen Real Estate</div>
+                  <div className="brand-name">Outrider</div>
                   <div className="tagline">Serving Anza • Aguanga • Idyllwild • Mountain Center</div>
                   <div className="contact-info">
-                    <div>landenmsjd@gmail.com</div>
-                    <div>License #02113445</div>
+                    <div>kevin@outriderrealestate.com</div>
+                    <div>(951) 491-4890</div>
                   </div>
                 </div>
               </div>
