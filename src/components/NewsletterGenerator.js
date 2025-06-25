@@ -1004,17 +1004,17 @@ const NewsletterGenerator = () => {
               ref={fileInputRef}
               type="file"
               multiple
-              accept=".pdf"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,image/*"
               onChange={(e) => handleFileUpload(e.target.files)}
             />
             <div className="upload-icon">
               {isProcessing ? <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> : <FaUpload />}
             </div>
             <div className="upload-text">
-              {isProcessing ? 'Processing files...' : 'Drop MLS PDF files here or click to browse'}
+              {isProcessing ? 'Processing files...' : 'Drop MLS files here or click to browse'}
             </div>
             <div className="upload-hint">
-              Upload housing stats, listings, and market data PDFs
+              Supports PDF, JPEG, PNG, and WebP files
             </div>
           </FileUploadArea>
           
