@@ -791,58 +791,118 @@ const NewsletterGenerator = () => {
         throw new Error('Preview element not found');
       }
 
-      // Create canvas from the preview element
-      const canvas = await html2canvas(element, {
-        scale: 1.5, // Good quality without being too large
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        logging: false,
-        removeContainer: true,
-        imageTimeout: 0,
-        onclone: (clonedDoc) => {
-          // Add print styles to cloned document
-          const style = clonedDoc.createElement('style');
-          style.textContent = `
-            .page-break-avoid { page-break-inside: avoid !important; break-inside: avoid !important; }
-            .page-break-before { page-break-before: always !important; break-before: page !important; }
-            .page-break-after { page-break-after: always !important; break-after: page !important; }
-            table { page-break-inside: auto !important; }
-            tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-          `;
-          clonedDoc.head.appendChild(style);
-        }
-      });
-
       // Create PDF
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      // Calculate dimensions to fit A4
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      let heightLeft = imgHeight;
-      let position = 0;
+      // Find all major sections to capture separately
+      const header = element.querySelector('.header');
+      const mainGrid = element.querySelector('.main-grid');
+      const chartsSection = element.querySelector('.charts-section');
+      const propertiesSection = element.querySelector('.properties-section');
 
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
+      let currentY = 0;
 
-      // Add additional pages if needed
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
+      // Capture header
+      if (header) {
+        const headerCanvas = await html2canvas(header, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        const headerImgData = headerCanvas.toDataURL('image/png');
+        const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
+        
+        pdf.addImage(headerImgData, 'PNG', 0, currentY, pdfWidth, headerHeight);
+        currentY += headerHeight;
+      }
+
+      // Capture main grid (analysis + stats)
+      if (mainGrid) {
+        const mainCanvas = await html2canvas(mainGrid, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        const mainImgData = mainCanvas.toDataURL('image/png');
+        const mainHeight = (mainCanvas.height * pdfWidth) / mainCanvas.width;
+        
+        // Check if we need a new page
+        if (currentY + mainHeight > pdfHeight) {
+          pdf.addPage();
+          currentY = 0;
+        }
+        
+        pdf.addImage(mainImgData, 'PNG', 0, currentY, pdfWidth, mainHeight);
+        currentY += mainHeight;
+      }
+
+      // Capture charts section on new page
+      if (chartsSection) {
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+        currentY = 0;
+        
+        const chartsCanvas = await html2canvas(chartsSection, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        const chartsImgData = chartsCanvas.toDataURL('image/png');
+        const chartsHeight = (chartsCanvas.height * pdfWidth) / chartsCanvas.width;
+        
+        pdf.addImage(chartsImgData, 'PNG', 0, currentY, pdfWidth, chartsHeight);
+      }
+
+      // Capture properties section on new page(s)
+      if (propertiesSection) {
+        pdf.addPage();
+        currentY = 0;
+        
+        const propertiesCanvas = await html2canvas(propertiesSection, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        const propertiesImgData = propertiesCanvas.toDataURL('image/png');
+        const propertiesHeight = (propertiesCanvas.height * pdfWidth) / propertiesCanvas.width;
+        
+        // If table is too long, split it across multiple pages
+        if (propertiesHeight > pdfHeight) {
+          let remainingHeight = propertiesHeight;
+          let yOffset = 0;
+          
+          while (remainingHeight > 0) {
+            const pageHeight = Math.min(remainingHeight, pdfHeight);
+            
+            pdf.addImage(
+              propertiesImgData, 
+              'PNG', 
+              0, 
+              -yOffset, 
+              pdfWidth, 
+              propertiesHeight
+            );
+            
+            remainingHeight -= pdfHeight;
+            yOffset += pdfHeight;
+            
+            if (remainingHeight > 0) {
+              pdf.addPage();
+            }
+          }
+        } else {
+          pdf.addImage(propertiesImgData, 'PNG', 0, currentY, pdfWidth, propertiesHeight);
+        }
       }
 
       // Download the PDF
