@@ -922,7 +922,7 @@ const NewsletterGenerator = () => {
           // Calculate market conditions based on extracted data
           const activeListings = statusData.active;
           const recentSales = statusData.closed + statusData.pending;
-          const totalMarketListings = totalListings;
+          const totalMarketListings = statusData.active + statusData.pending + statusData.closed + statusData.other;
           
           // Market indicators:
           // - High active inventory + low sales = Buyers market
@@ -1012,7 +1012,7 @@ const NewsletterGenerator = () => {
               },
               title: {
                 display: true,
-                text: `Total: ${totalMarketListings} Properties`,
+                text: `Total: ${statusData.active + statusData.pending + statusData.closed + statusData.other} Properties`,
                 font: { size: 12 },
                 color: '#333'
               }
