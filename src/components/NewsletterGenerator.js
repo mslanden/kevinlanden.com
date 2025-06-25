@@ -731,7 +731,7 @@ const NewsletterGenerator = () => {
             }
           }
         },
-        priceChart: extractedData.priceRanges ? {
+        priceChart: extractedData.priceRanges && extractedData.priceRanges.some(range => range.count > 0) ? {
           data: {
             labels: extractedData.priceRanges.map(range => range.label),
             datasets: [{
@@ -743,11 +743,18 @@ const NewsletterGenerator = () => {
           },
           options: {
             ...baseOptions,
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
             scales: {
               y: {
                 beginAtZero: true,
                 grid: { color: '#e0e0e0' },
-                ticks: { font: { size: 10 }, color: '#333' }
+                ticks: { 
+                  font: { size: 10 }, 
+                  color: '#333',
+                  stepSize: 1
+                }
               },
               x: {
                 grid: { display: false },
