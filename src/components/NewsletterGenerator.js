@@ -811,150 +811,156 @@ const NewsletterGenerator = () => {
 
       // Capture header
       if (header) {
-        const headerCanvas = await html2canvas(header, {
-          scale: 1.5,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff'
-        });
-        const headerImgData = headerCanvas.toDataURL('image/png');
-        const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
-        
-        pdf.addImage(headerImgData, 'PNG', 0, currentY, pdfWidth, headerHeight);
-        currentY += headerHeight;
-      }
-
-      // Capture main grid (analysis + stats)
-      if (mainGrid) {
-        const mainCanvas = await html2canvas(mainGrid, {
-          scale: 1.5,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff'
-        });
-        const mainImgData = mainCanvas.toDataURL('image/png');
-        const mainHeight = (mainCanvas.height * pdfWidth) / mainCanvas.width;
-        
-        // Check if we need a new page
-        if (currentY + mainHeight > pdfHeight) {
-          pdf.addPage();
-          currentY = 0;
-        }
-        
-        pdf.addImage(mainImgData, 'PNG', 0, currentY, pdfWidth, mainHeight);
-        currentY += mainHeight;
-      }
-
-      // Capture charts section on new page
-      if (chartsSection) {
-        pdf.addPage();
-        currentY = 0;
-        
-        const chartsCanvas = await html2canvas(chartsSection, {
-          scale: 1.5,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff'
-        });
-        const chartsImgData = chartsCanvas.toDataURL('image/png');
-        const chartsHeight = (chartsCanvas.height * pdfWidth) / chartsCanvas.width;
-        
-        pdf.addImage(chartsImgData, 'PNG', 0, currentY, pdfWidth, chartsHeight);
-      }
-
-      // Capture properties section with smart table pagination
-      if (propertiesSection && extractedData?.listings) {
-        pdf.addPage();
-        currentY = 0;
-        
-        // Capture table header first
-        const tableHeader = propertiesSection.querySelector('h3');
-        const table = propertiesSection.querySelector('table');
-        const thead = table?.querySelector('thead');
-        const tbody = table?.querySelector('tbody');
-        
-        if (tableHeader) {
-          const headerCanvas = await html2canvas(tableHeader, {
-            scale: 1.5,
+        try {
+          const headerCanvas = await html2canvas(header, {
+            scale: 1.3,
             useCORS: true,
             allowTaint: true,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            logging: false
           });
           const headerImgData = headerCanvas.toDataURL('image/png');
           const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
           
           pdf.addImage(headerImgData, 'PNG', 0, currentY, pdfWidth, headerHeight);
-          currentY += headerHeight + 5; // Add small margin
+          currentY += headerHeight;
+        } catch (headerError) {
+          console.warn('Error capturing header, skipping section:', headerError);
         }
-        
-        if (thead && tbody) {
-          // Capture table header
-          const theadCanvas = await html2canvas(thead, {
-            scale: 1.5,
+      }
+
+      // Capture main grid (analysis + stats)
+      if (mainGrid) {
+        try {
+          const mainCanvas = await html2canvas(mainGrid, {
+            scale: 1.3,
             useCORS: true,
             allowTaint: true,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            logging: false
           });
-          const theadImgData = theadCanvas.toDataURL('image/png');
-          const theadHeight = (theadCanvas.height * pdfWidth) / theadCanvas.width;
+          const mainImgData = mainCanvas.toDataURL('image/png');
+          const mainHeight = (mainCanvas.height * pdfWidth) / mainCanvas.width;
           
-          // Add table header to current page
-          pdf.addImage(theadImgData, 'PNG', 0, currentY, pdfWidth, theadHeight);
-          currentY += theadHeight;
-          
-          // Process table rows in batches to fit pages properly
-          const rows = tbody.querySelectorAll('tr');
-          const rowsPerPage = 25; // Adjust based on testing
-          
-          for (let i = 0; i < rows.length; i += rowsPerPage) {
-            const rowBatch = Array.from(rows).slice(i, i + rowsPerPage);
-            
-            // Create temporary tbody with just this batch of rows
-            const tempTable = table.cloneNode(true);
-            const tempTbody = tempTable.querySelector('tbody');
-            tempTbody.innerHTML = '';
-            
-            rowBatch.forEach(row => {
-              tempTbody.appendChild(row.cloneNode(true));
-            });
-            
-            // Capture this batch of rows
-            const batchCanvas = await html2canvas(tempTbody, {
-              scale: 1.5,
-              useCORS: true,
-              allowTaint: true,
-              backgroundColor: '#ffffff'
-            });
-            const batchImgData = batchCanvas.toDataURL('image/png');
-            const batchHeight = (batchCanvas.height * pdfWidth) / batchCanvas.width;
-            
-            // Check if we need a new page
-            if (currentY + batchHeight > pdfHeight - 10) { // Leave small margin
-              pdf.addPage();
-              currentY = 0;
-              
-              // Add table header to new page
-              pdf.addImage(theadImgData, 'PNG', 0, currentY, pdfWidth, theadHeight);
-              currentY += theadHeight;
-            }
-            
-            // Add the batch of rows
-            pdf.addImage(batchImgData, 'PNG', 0, currentY, pdfWidth, batchHeight);
-            currentY += batchHeight;
+          // Check if we need a new page
+          if (currentY + mainHeight > pdfHeight) {
+            pdf.addPage();
+            currentY = 0;
           }
-        } else {
-          // Fallback to original method if table structure is unexpected
-          const propertiesCanvas = await html2canvas(propertiesSection, {
-            scale: 1.5,
+          
+          pdf.addImage(mainImgData, 'PNG', 0, currentY, pdfWidth, mainHeight);
+          currentY += mainHeight;
+        } catch (mainError) {
+          console.warn('Error capturing main grid, skipping section:', mainError);
+        }
+      }
+
+      // Capture charts section on new page
+      if (chartsSection) {
+        try {
+          pdf.addPage();
+          currentY = 0;
+          
+          const chartsCanvas = await html2canvas(chartsSection, {
+            scale: 1.3,
             useCORS: true,
             allowTaint: true,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            logging: false
           });
+          const chartsImgData = chartsCanvas.toDataURL('image/png');
+          const chartsHeight = (chartsCanvas.height * pdfWidth) / chartsCanvas.width;
+          
+          pdf.addImage(chartsImgData, 'PNG', 0, currentY, pdfWidth, chartsHeight);
+        } catch (chartsError) {
+          console.warn('Error capturing charts, skipping section:', chartsError);
+        }
+      }
+
+      // Capture properties section with smart table pagination
+      if (propertiesSection && extractedData?.listings && extractedData.listings.length > 0) {
+        try {
+          pdf.addPage();
+          currentY = 0;
+          
+          // Use simpler approach - capture entire properties section and split if needed
+          const propertiesCanvas = await html2canvas(propertiesSection, {
+            scale: 1.3,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            onclone: function(clonedDoc) {
+              // Ensure all styles are available in cloned document
+              const originalStyles = document.querySelectorAll('style, link[rel="stylesheet"]');
+              originalStyles.forEach(style => {
+                if (style.tagName === 'STYLE') {
+                  const clonedStyle = clonedDoc.createElement('style');
+                  clonedStyle.textContent = style.textContent;
+                  clonedDoc.head.appendChild(clonedStyle);
+                } else if (style.tagName === 'LINK') {
+                  const clonedLink = clonedDoc.createElement('link');
+                  clonedLink.rel = 'stylesheet';
+                  clonedLink.href = style.href;
+                  clonedDoc.head.appendChild(clonedLink);
+                }
+              });
+            }
+          });
+          
           const propertiesImgData = propertiesCanvas.toDataURL('image/png');
           const propertiesHeight = (propertiesCanvas.height * pdfWidth) / propertiesCanvas.width;
           
-          pdf.addImage(propertiesImgData, 'PNG', 0, currentY, pdfWidth, propertiesHeight);
+          // If table is too long, split it across multiple pages
+          if (propertiesHeight > pdfHeight) {
+            let remainingHeight = propertiesHeight;
+            let sourceY = 0;
+            
+            while (remainingHeight > 0) {
+              const pageHeight = Math.min(remainingHeight, pdfHeight);
+              
+              // Create a canvas for this page section
+              const pageCanvas = document.createElement('canvas');
+              const pageCtx = pageCanvas.getContext('2d');
+              pageCanvas.width = propertiesCanvas.width;
+              pageCanvas.height = (pageHeight * propertiesCanvas.width) / pdfWidth;
+              
+              // Draw the appropriate section of the original canvas
+              pageCtx.drawImage(
+                propertiesCanvas,
+                0, sourceY * propertiesCanvas.height / propertiesHeight,
+                propertiesCanvas.width, pageCanvas.height,
+                0, 0,
+                pageCanvas.width, pageCanvas.height
+              );
+              
+              const pageImgData = pageCanvas.toDataURL('image/png');
+              pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, pageHeight);
+              
+              remainingHeight -= pdfHeight;
+              sourceY += pdfHeight;
+              
+              if (remainingHeight > 0) {
+                pdf.addPage();
+              }
+            }
+          } else {
+            pdf.addImage(propertiesImgData, 'PNG', 0, currentY, pdfWidth, propertiesHeight);
+          }
+        } catch (tableError) {
+          console.warn('Error capturing properties table, skipping section:', tableError);
+          // Continue without the properties section rather than failing entirely
         }
+      }
+
+      // Ensure we have at least one page with content
+      if (pdf.internal.pages.length === 1) {
+        // Add a simple text page if no sections were captured
+        pdf.setFontSize(16);
+        pdf.text('Newsletter Generation Error', 20, 30);
+        pdf.setFontSize(12);
+        pdf.text('Unable to capture newsletter content. Please try again.', 20, 50);
+        pdf.text('If the problem persists, please contact support.', 20, 70);
       }
 
       // Download the PDF
