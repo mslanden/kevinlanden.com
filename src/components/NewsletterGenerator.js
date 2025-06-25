@@ -977,65 +977,21 @@ const NewsletterGenerator = () => {
           };
         })(),
         
-        // Sales Activity and Median Prices (Combined Bar + Line)
+        // Current Market Status Distribution
         unitSalesChart: {
           data: {
-            labels: months,
-            datasets: [
-              {
-                type: 'bar',
-                label: 'Closed Sales',
-                data: salesHistoryData,
-                backgroundColor: '#8b4513',
-                borderColor: '#a0522d',
-                borderWidth: 1,
-                yAxisID: 'y'
-              },
-              {
-                type: 'line',
-                label: 'Median List Price',
-                data: priceHistoryData,
-                borderColor: '#d2b48c',
-                backgroundColor: 'transparent',
-                borderWidth: 2,
-                pointRadius: 4,
-                pointBackgroundColor: '#d2b48c',
-                yAxisID: 'y1'
-              }
-            ]
+            labels: ['Active Listings', 'Pending Sales', 'Recently Closed', 'Other'],
+            datasets: [{
+              label: 'Current Market Status',
+              data: [statusData.active, statusData.pending, statusData.closed, statusData.other],
+              backgroundColor: ['#8b4513', '#d2b48c', '#a0522d', '#deb394'],
+              borderColor: '#fff',
+              borderWidth: 2
+            }]
           },
           options: {
             ...baseOptions,
-            scales: {
-              x: {
-                grid: { display: false },
-                ticks: { font: { size: 10 }, color: '#333' }
-              },
-              y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-                beginAtZero: true,
-                max: Math.max(...salesHistoryData) * 1.2,
-                grid: { color: '#e0e0e0' },
-                ticks: { font: { size: 10 }, color: '#333' }
-              },
-              y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                min: Math.min(...priceHistoryData) * 0.9,
-                max: Math.max(...priceHistoryData) * 1.1,
-                grid: { drawOnChartArea: false },
-                ticks: { 
-                  font: { size: 10 }, 
-                  color: '#333',
-                  callback: function(value) {
-                    return '$' + Math.round(value / 1000) + 'k';
-                  }
-                }
-              }
-            },
+            responsive: true,
             plugins: {
               ...baseOptions.plugins,
               legend: {
@@ -1046,18 +1002,35 @@ const NewsletterGenerator = () => {
                   font: { size: 10 },
                   color: '#333'
                 }
+              },
+              title: {
+                display: true,
+                text: `Total: ${totalMarketListings} Properties`,
+                font: { size: 12 },
+                color: '#333'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: '#e0e0e0' },
+                ticks: { font: { size: 10 }, color: '#333' }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 }, color: '#333' }
               }
             }
           }
         },
         
-        // Total Listings Chart
-        inventoryChart: {
+        // Price Distribution Chart (uses extracted priceRanges data)
+        inventoryChart: extractedData.priceRanges && extractedData.priceRanges.length > 0 ? {
           data: {
-            labels: months,
+            labels: extractedData.priceRanges.map(range => range.label),
             datasets: [{
-              label: 'Total Listings',
-              data: inventoryHistoryData,
+              label: 'Properties by Price Range',
+              data: extractedData.priceRanges.map(range => range.count),
               backgroundColor: '#8b4513',
               borderColor: '#a0522d',
               borderWidth: 1
@@ -1065,58 +1038,131 @@ const NewsletterGenerator = () => {
           },
           options: {
             ...baseOptions,
+            responsive: true,
             scales: {
               x: {
                 grid: { display: false },
-                ticks: { font: { size: 10 }, color: '#333' }
+                ticks: { 
+                  font: { size: 9 }, 
+                  color: '#333',
+                  maxRotation: 45
+                }
               },
               y: {
                 beginAtZero: true,
-                max: Math.max(...inventoryHistoryData) * 1.2,
-                grid: { color: '#e0e0e0' },
-                ticks: { font: { size: 10 }, color: '#333' }
-              }
-            }
-          }
-        },
-        
-        // Median Sale Price per Sq Ft
-        pricePerSqFtChart: {
-          data: {
-            labels: months,
-            datasets: [{
-              label: 'Price per Sq Ft',
-              data: pricePerSqFtData,
-              borderColor: '#8b4513',
-              backgroundColor: 'transparent',
-              borderWidth: 2,
-              pointRadius: 4,
-              pointBackgroundColor: '#8b4513',
-              fill: false
-            }]
-          },
-          options: {
-            ...baseOptions,
-            scales: {
-              x: {
-                grid: { display: false },
-                ticks: { font: { size: 10 }, color: '#333' }
-              },
-              y: {
-                min: 250,
-                max: 350,
                 grid: { color: '#e0e0e0' },
                 ticks: { 
                   font: { size: 10 }, 
                   color: '#333',
-                  callback: function(value) {
-                    return '$' + value;
-                  }
+                  stepSize: 1
                 }
+              }
+            },
+            plugins: {
+              ...baseOptions.plugins,
+              title: {
+                display: true,
+                text: 'Current Market Distribution',
+                font: { size: 12 },
+                color: '#333'
               }
             }
           }
-        }
+        } : {
+          data: {
+            labels: ['No Price Data'],
+            datasets: [{
+              data: [0],
+              backgroundColor: '#8b4513'
+            }]
+          },
+          options: baseOptions
+        },
+        
+        // Property Statistics from Current Listings
+        pricePerSqFtChart: (() => {
+          // Calculate actual statistics from current listings
+          const validListings = extractedData.listings.filter(listing => 
+            listing.sqft && listing.sqft > 0 && 
+            listing.price && !isNaN(parseFloat(listing.price.replace(/[^\d.]/g, '')))
+          );
+          
+          if (validListings.length === 0) {
+            return {
+              data: {
+                labels: ['No Data Available'],
+                datasets: [{
+                  data: [0],
+                  backgroundColor: '#8b4513'
+                }]
+              },
+              options: baseOptions
+            };
+          }
+          
+          // Group listings by bedroom count
+          const bedCounts = {};
+          validListings.forEach(listing => {
+            const beds = listing.beds || 0;
+            const price = parseFloat(listing.price.replace(/[^\d.]/g, ''));
+            const pricePerSqFt = listing.sqft > 0 ? price / listing.sqft : 0;
+            
+            if (!bedCounts[beds]) {
+              bedCounts[beds] = [];
+            }
+            bedCounts[beds].push(pricePerSqFt);
+          });
+          
+          // Calculate average price per sq ft for each bedroom count
+          const bedLabels = Object.keys(bedCounts).sort((a, b) => a - b);
+          const avgPricePerSqFt = bedLabels.map(beds => {
+            const prices = bedCounts[beds];
+            return prices.reduce((sum, price) => sum + price, 0) / prices.length;
+          });
+          
+          return {
+            data: {
+              labels: bedLabels.map(beds => `${beds} Bed${beds !== '1' ? 's' : ''}`),
+              datasets: [{
+                label: 'Avg Price per Sq Ft',
+                data: avgPricePerSqFt,
+                backgroundColor: '#8b4513',
+                borderColor: '#a0522d',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              ...baseOptions,
+              responsive: true,
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10 }, color: '#333' }
+                },
+                y: {
+                  beginAtZero: true,
+                  grid: { color: '#e0e0e0' },
+                  ticks: { 
+                    font: { size: 10 }, 
+                    color: '#333',
+                    callback: function(value) {
+                      return '$' + Math.round(value);
+                    }
+                  }
+                }
+              },
+              plugins: {
+                ...baseOptions.plugins,
+                title: {
+                  display: true,
+                  text: 'Current Market - Price per Sq Ft by Bedroom Count',
+                  font: { size: 11 },
+                  color: '#333'
+                }
+              }
+            }
+          };
+        })()
       };
     }
 
@@ -1633,17 +1679,17 @@ const NewsletterGenerator = () => {
                 
                 <div className="charts-section">
                   <div className="single-chart">
-                    <div className="chart-title">Closed Sales & Median List Price Trends</div>
+                    <div className="chart-title">Current Market Status Distribution</div>
                     <div className="chart-container">
                       {createChartData()?.unitSalesChart && (
-                        <Chart type="bar" {...createChartData().unitSalesChart} />
+                        <Bar {...createChartData().unitSalesChart} />
                       )}
                     </div>
                   </div>
                   
                   <div className="chart-grid">
                     <div className="chart-item">
-                      <div className="chart-title">Total Market Listings</div>
+                      <div className="chart-title">Price Range Distribution</div>
                       <div className="chart-container">
                         {createChartData()?.inventoryChart && (
                           <Bar {...createChartData().inventoryChart} />
@@ -1652,10 +1698,10 @@ const NewsletterGenerator = () => {
                     </div>
                     
                     <div className="chart-item">
-                      <div className="chart-title">Price Per Square Foot Trends</div>
+                      <div className="chart-title">Price Per Sq Ft by Bedroom Count</div>
                       <div className="chart-container">
                         {createChartData()?.pricePerSqFtChart && (
-                          <Line {...createChartData().pricePerSqFtChart} />
+                          <Bar {...createChartData().pricePerSqFtChart} />
                         )}
                       </div>
                     </div>
@@ -1679,7 +1725,7 @@ const NewsletterGenerator = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {extractedData.listings.slice(0, 25).map((listing, index) => (
+                        {extractedData.listings.map((listing, index) => (
                           <tr key={index}>
                             <td>{listing.mls}</td>
                             <td>{listing.status}</td>
