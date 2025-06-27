@@ -1045,6 +1045,25 @@ const NewsletterGenerator = () => {
                 table.style.width = '100%';
                 table.style.tableLayout = 'fixed';
               });
+              
+              // Add spacers before major sections to encourage page breaks
+              const chartsSection = clonedDoc.querySelector('.charts-section');
+              if (chartsSection) {
+                const spacer = clonedDoc.createElement('div');
+                spacer.style.height = '100px';
+                spacer.style.backgroundColor = 'white';
+                spacer.className = 'page-break-spacer';
+                chartsSection.parentNode.insertBefore(spacer, chartsSection);
+              }
+              
+              const propertiesSection = clonedDoc.querySelector('.properties-section');
+              if (propertiesSection) {
+                const spacer = clonedDoc.createElement('div');
+                spacer.style.height = '150px';
+                spacer.style.backgroundColor = 'white';
+                spacer.className = 'page-break-spacer';
+                propertiesSection.parentNode.insertBefore(spacer, propertiesSection);
+              }
             }
           };
 
@@ -1090,87 +1109,113 @@ const NewsletterGenerator = () => {
 
       console.log(`PDF will have ${totalPages} pages, canvas: ${canvas.width}x${canvas.height}, final: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}`);
 
-      // Improved page splitting to avoid cutting charts/sections
-      let currentY = 0;
-      let pageIndex = 0;
+      // Use section-based approach for cleaner page breaks
       const canvasScale = canvas.width / finalWidth;
+      const maxCanvasHeightPerPage = contentHeight * canvasScale;
       
-      while (currentY < canvas.height) {
-        if (pageIndex > 0) {
-          pdf.addPage();
-        }
-
-        // Calculate how much canvas height fits in one PDF page
-        const maxCanvasHeightPerPage = contentHeight * canvasScale;
-        let sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
-        
-        // Try to avoid cutting content by looking for natural break points
-        if (pageIndex > 0 && currentY + sourceHeight < canvas.height) {
-          // Look for a good break point in the last 20% of the intended page
-          const breakSearchStart = currentY + sourceHeight * 0.8;
-          const breakSearchEnd = currentY + sourceHeight;
+      // Capture sections separately to avoid cutting charts
+      let sections = [];
+      
+      try {
+        // Try to identify major sections by looking for spacers we added
+        const sectionsFound = await new Promise((resolve) => {
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          tempCtx.drawImage(canvas, 0, 0);
           
-          // Sample some pixels to find white space (potential break points)
-          let bestBreakPoint = currentY + sourceHeight;
-          let maxWhiteSpace = 0;
+          let foundSections = [];
+          let lastBreak = 0;
           
-          for (let y = breakSearchStart; y < breakSearchEnd; y += 10) {
-            let whiteSpaceCount = 0;
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = 1;
+          // Look for the spacer areas (white blocks) we added
+          for (let y = 0; y < canvas.height - 50; y += 50) {
+            tempCtx.clearRect(0, 0, tempCanvas.width, 1);
+            tempCtx.drawImage(canvas, 0, y, canvas.width, 50, 0, 0, canvas.width, 50);
+            const imageData = tempCtx.getImageData(0, 0, canvas.width, 50);
             
-            tempCtx.drawImage(canvas, 0, y, canvas.width, 1, 0, 0, canvas.width, 1);
-            const imageData = tempCtx.getImageData(0, 0, canvas.width, 1);
-            
+            let whitePixelCount = 0;
             for (let i = 0; i < imageData.data.length; i += 4) {
               const r = imageData.data[i];
               const g = imageData.data[i + 1];
               const b = imageData.data[i + 2];
-              if (r > 240 && g > 240 && b > 240) { // Near white
-                whiteSpaceCount++;
+              if (r > 250 && g > 250 && b > 250) {
+                whitePixelCount++;
               }
             }
             
-            if (whiteSpaceCount > maxWhiteSpace) {
-              maxWhiteSpace = whiteSpaceCount;
-              bestBreakPoint = y;
+            // If we find a large white area (spacer), break here
+            if (whitePixelCount > (canvas.width * 50 * 0.8)) {
+              if (y - lastBreak > 300) { // Minimum section height
+                foundSections.push({
+                  start: lastBreak,
+                  end: y,
+                  height: y - lastBreak
+                });
+                lastBreak = y + 100; // Skip the spacer
+              }
             }
           }
           
-          // Use the better break point if we found significant white space
-          if (maxWhiteSpace > canvas.width * 0.7) {
-            sourceHeight = bestBreakPoint - currentY;
+          // Add the final section
+          if (canvas.height - lastBreak > 200) {
+            foundSections.push({
+              start: lastBreak,
+              end: canvas.height,
+              height: canvas.height - lastBreak
+            });
           }
+          
+          resolve(foundSections);
+        });
+        
+        sections = sectionsFound.length > 0 ? sectionsFound : [
+          { start: 0, end: canvas.height, height: canvas.height }
+        ];
+        
+      } catch (error) {
+        console.warn('Section detection failed, using simple splitting:', error);
+        sections = [{ start: 0, end: canvas.height, height: canvas.height }];
+      }
+      
+      console.log(`Found ${sections.length} sections:`, sections.map(s => `${s.start}-${s.end}`));
+      
+      // Now split sections across pages if they're too tall
+      let pageIndex = 0;
+      for (const section of sections) {
+        let sectionY = section.start;
+        
+        while (sectionY < section.end) {
+          if (pageIndex > 0) {
+            pdf.addPage();
+          }
+          
+          const remainingHeight = section.end - sectionY;
+          const sourceHeight = Math.min(maxCanvasHeightPerPage, remainingHeight);
+          const actualPageHeight = sourceHeight / canvasScale;
+          
+          // Create canvas for this page
+          const pageCanvas = document.createElement('canvas');
+          const pageCtx = pageCanvas.getContext('2d');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sourceHeight;
+          
+          pageCtx.drawImage(
+            canvas,
+            0, sectionY,
+            canvas.width, sourceHeight,
+            0, 0,
+            canvas.width, sourceHeight
+          );
+          
+          const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
+          pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
+          
+          console.log(`Added page ${pageIndex + 1} - section ${sectionY.toFixed(0)}-${(sectionY + sourceHeight).toFixed(0)}`);
+          
+          sectionY += sourceHeight;
+          pageIndex++;
         }
-
-        const actualPageHeight = sourceHeight / canvasScale;
-
-        // Create a canvas for this page section
-        const pageCanvas = document.createElement('canvas');
-        const pageCtx = pageCanvas.getContext('2d');
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sourceHeight;
-
-        // Draw the appropriate section
-        pageCtx.drawImage(
-          canvas,
-          0, currentY,
-          canvas.width, sourceHeight,
-          0, 0,
-          canvas.width, sourceHeight
-        );
-
-        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
-        
-        // Add to PDF
-        pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
-        
-        console.log(`Added page ${pageIndex + 1} - canvas section ${currentY.toFixed(0)}-${(currentY + sourceHeight).toFixed(0)} (${sourceHeight.toFixed(0)}px)`);
-        
-        currentY += sourceHeight;
-        pageIndex++;
       }
 
       // Download the PDF
