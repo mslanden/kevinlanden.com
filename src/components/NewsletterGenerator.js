@@ -382,6 +382,18 @@ const NewsletterPreview = styled.div`
           border-radius: 8px;
           padding: 0.5rem;
         }
+        
+        .text-logo {
+          font-family: "Bodoni Moda", serif;
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: #f5f5f5;
+          text-transform: uppercase;
+          letter-spacing: 3px;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+          margin: 0;
+          padding: 0.5rem;
+        }
       }
       
       .brand-name {
@@ -668,6 +680,7 @@ const NewsletterGenerator = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [extractedData, setExtractedData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const previewRef = useRef();
   const fileInputRef = useRef();
 
@@ -809,15 +822,27 @@ const NewsletterGenerator = () => {
 
       let currentY = 0;
 
+      // Wait for logo image to load
+      const logoImg = element.querySelector('.hero-logo');
+      if (logoImg && !logoImg.complete) {
+        await new Promise((resolve, reject) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = reject;
+          setTimeout(resolve, 3000); // Timeout after 3 seconds
+        }).catch(err => console.warn('Logo load timeout:', err));
+      }
+
       // Capture header
       if (header) {
         try {
           const headerCanvas = await html2canvas(header, {
             scale: 1.3,
             useCORS: true,
-            allowTaint: true,
+            allowTaint: false,
             backgroundColor: '#ffffff',
-            logging: false
+            logging: false,
+            imageTimeout: 5000,
+            proxy: undefined
           });
           const headerImgData = headerCanvas.toDataURL('image/png');
           const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
@@ -835,9 +860,10 @@ const NewsletterGenerator = () => {
           const mainCanvas = await html2canvas(mainGrid, {
             scale: 1.3,
             useCORS: true,
-            allowTaint: true,
+            allowTaint: false,
             backgroundColor: '#ffffff',
-            logging: false
+            logging: false,
+            imageTimeout: 5000
           });
           const mainImgData = mainCanvas.toDataURL('image/png');
           const mainHeight = (mainCanvas.height * pdfWidth) / mainCanvas.width;
@@ -1722,9 +1748,23 @@ const NewsletterGenerator = () => {
                 </div>
                 <div className="logo-section">
                   <div className="logo-container">
-                    <img src="/logo/logo_2.svg" alt="Outrider Real Estate Logo" className="hero-logo" />
+                    {!logoError ? (
+                      <img 
+                        src="/logo/logo_2.svg" 
+                        alt="Outrider Real Estate Logo" 
+                        className="hero-logo"
+                        crossOrigin="anonymous"
+                        onLoad={() => setLogoError(false)}
+                        onError={(e) => {
+                          console.warn('Logo failed to load, using text fallback');
+                          setLogoError(true);
+                        }}
+                      />
+                    ) : (
+                      <div className="text-logo">OUTRIDER</div>
+                    )}
                   </div>
-                  <div className="brand-name">Outrider</div>
+                  <div className="brand-name">Real Estate</div>
                   <div className="tagline">Serving Anza • Aguanga • Idyllwild • Mountain Center</div>
                   <div className="contact-info">
                     <div>kevin@outriderrealestate.com</div>
