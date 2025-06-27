@@ -1046,14 +1046,18 @@ const NewsletterGenerator = () => {
                 table.style.tableLayout = 'fixed';
               });
               
-              // Only add a strategic spacer before the charts section to protect the Current Market Status Distribution
+              // Add page break hints using CSS instead of spacers
               const chartsSection = clonedDoc.querySelector('.charts-section');
               if (chartsSection) {
-                const spacer = clonedDoc.createElement('div');
-                spacer.style.height = '80px';
-                spacer.style.backgroundColor = 'white';
-                spacer.className = 'chart-break-spacer';
-                chartsSection.parentNode.insertBefore(spacer, chartsSection);
+                chartsSection.style.pageBreakBefore = 'auto';
+                chartsSection.style.breakBefore = 'auto';
+              }
+              
+              // Try to keep the Current Market Status Distribution together
+              const singleChart = clonedDoc.querySelector('.single-chart');
+              if (singleChart) {
+                singleChart.style.pageBreakInside = 'avoid';
+                singleChart.style.breakInside = 'avoid';
               }
             }
           };
@@ -1100,78 +1104,44 @@ const NewsletterGenerator = () => {
 
       console.log(`PDF will have ${totalPages} pages, canvas: ${canvas.width}x${canvas.height}, final: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}`);
 
-      // Smart page breaking that fills pages but respects the chart spacer
-      const canvasScale = canvas.width / finalWidth;
-      const maxCanvasHeightPerPage = contentHeight * canvasScale;
-      
-      let currentY = 0;
-      let pageIndex = 0;
-      
-      while (currentY < canvas.height) {
+      // Simple page breaking that fills pages efficiently
+      const imgWidth = finalWidth;
+      const imgHeight = (canvas.height * finalWidth) / canvas.width;
+      const totalPages = Math.ceil(imgHeight / contentHeight);
+
+      console.log(`PDF will have ${totalPages} pages`);
+
+      for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
         if (pageIndex > 0) {
           pdf.addPage();
         }
 
-        let sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
-        
-        // Only look for chart spacer to avoid cutting the Current Market Status Distribution
-        if (pageIndex === 0 && currentY + sourceHeight < canvas.height) {
-          // Look for our chart spacer in the intended page area
-          const breakSearchStart = currentY + sourceHeight * 0.7;
-          const breakSearchEnd = Math.min(currentY + sourceHeight, canvas.height);
-          
-          for (let y = breakSearchStart; y < breakSearchEnd; y += 20) {
-            // Sample a strip to check for the spacer
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = 80;
-            
-            tempCtx.drawImage(canvas, 0, y, canvas.width, 80, 0, 0, canvas.width, 80);
-            const imageData = tempCtx.getImageData(0, 0, canvas.width, 80);
-            
-            let whitePixelCount = 0;
-            for (let i = 0; i < imageData.data.length; i += 4) {
-              const r = imageData.data[i];
-              const g = imageData.data[i + 1];  
-              const b = imageData.data[i + 2];
-              if (r > 245 && g > 245 && b > 245) {
-                whitePixelCount++;
-              }
-            }
-            
-            // If we found our chart spacer (large white area), break before it
-            if (whitePixelCount > (canvas.width * 80 * 0.6)) {
-              sourceHeight = y - currentY;
-              console.log(`Found chart spacer at ${y}, breaking page 1 early`);
-              break;
-            }
-          }
-        }
+        // Calculate what portion of the image goes on this page
+        const sourceY = pageIndex * contentHeight * (canvas.width / finalWidth);
+        const sourceHeight = Math.min(contentHeight * (canvas.width / finalWidth), canvas.height - sourceY);
+        const pageHeight = (sourceHeight * finalWidth) / canvas.width;
 
-        const actualPageHeight = sourceHeight / canvasScale;
-
-        // Create canvas for this page
+        // Create a canvas for this page section
         const pageCanvas = document.createElement('canvas');
         const pageCtx = pageCanvas.getContext('2d');
         pageCanvas.width = canvas.width;
         pageCanvas.height = sourceHeight;
 
+        // Draw the appropriate section
         pageCtx.drawImage(
           canvas,
-          0, currentY,
+          0, sourceY,
           canvas.width, sourceHeight,
           0, 0,
           canvas.width, sourceHeight
         );
 
         const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
-        pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
         
-        console.log(`Added page ${pageIndex + 1} - canvas ${currentY.toFixed(0)}-${(currentY + sourceHeight).toFixed(0)} (${sourceHeight.toFixed(0)}px)`);
+        // Add to PDF
+        pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, imgWidth, pageHeight);
         
-        currentY += sourceHeight;
-        pageIndex++;
+        console.log(`Added page ${pageIndex + 1}/${totalPages}`);
       }
 
       // Download the PDF
