@@ -312,27 +312,28 @@ const PreviewContainer = styled.div`
 `;
 
 const NewsletterPreview = styled.div`
-  width: 210mm; /* A4 width for consistent PDF output */
-  max-width: 800px;
+  width: 800px; /* Fixed width for consistent capture */
+  max-width: 100%;
   background: white;
   font-family: "Poppins", sans-serif;
   border: 1px solid #ddd;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   line-height: 1.6;
   color: #333;
-  margin: 0;
+  margin: 0 auto;
   position: relative;
+  
+  @media (max-width: 900px) {
+    width: 95%;
+    max-width: calc(100vw - 2rem);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
   
   @media (max-width: 768px) {
     width: 100%;
     max-width: calc(100vw - 1rem);
     margin: 0 auto;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  
-  @media (min-width: 769px) and (max-width: 1024px) {
-    width: 90vw;
-    max-width: 700px;
   }
   
   /* PDF page break controls matching buyers guide */
@@ -950,7 +951,7 @@ const NewsletterGenerator = () => {
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
+      const margin = 5; // Smaller margins for better page usage
       const contentWidth = pdfWidth - (2 * margin);
       const contentHeight = pdfHeight - (2 * margin);
 
@@ -979,16 +980,12 @@ const NewsletterGenerator = () => {
           console.log(`Canvas capture attempt ${captureAttempt}...`);
           
           const options = {
-            scale: captureAttempt === 1 ? 1.2 : 1.0, // Higher quality on first attempt
+            scale: 1.0, // Consistent scale for proper sizing
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
             logging: true,
             imageTimeout: 8000,
-            width: 800, // Fixed width for consistent output
-            height: null, // Let height be calculated
-            scrollX: 0,
-            scrollY: 0,
             onclone: function(clonedDoc) {
               console.log('Cloning document for canvas capture...');
               
@@ -1006,24 +1003,29 @@ const NewsletterGenerator = () => {
                 clonedDoc.head.appendChild(clonedStyle);
               });
               
-              // Force consistent styling on preview element
+              // Force consistent styling on preview element for full-width capture
               const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
               if (previewElement) {
                 previewElement.style.backgroundColor = '#ffffff';
                 previewElement.style.color = '#333333';
-                previewElement.style.width = '800px';
-                previewElement.style.maxWidth = '800px';
+                previewElement.style.width = '100%';
+                previewElement.style.maxWidth = 'none';
                 previewElement.style.margin = '0';
+                previewElement.style.padding = '20px';
                 previewElement.style.border = 'none';
                 previewElement.style.boxShadow = 'none';
+                previewElement.style.transform = 'none';
               }
               
-              // Remove any container backgrounds that might cause gray areas
+              // Ensure container doesn't interfere
               const container = clonedDoc.querySelector('[class*="PreviewContainer"]');
               if (container) {
                 container.style.background = 'transparent';
                 container.style.padding = '0';
                 container.style.margin = '0';
+                container.style.width = '100%';
+                container.style.display = 'block';
+                container.style.justifyContent = 'flex-start';
               }
             }
           };
@@ -1058,21 +1060,41 @@ const NewsletterGenerator = () => {
 
       console.log('Canvas data generated, creating PDF pages...');
 
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * contentWidth) / canvas.width;
-      const totalPages = Math.ceil(imgHeight / contentHeight);
+      // Calculate the best fit for the canvas in the PDF
+      const canvasAspectRatio = canvas.width / canvas.height;
+      const pageAspectRatio = contentWidth / contentHeight;
+      
+      let finalWidth, finalHeight;
+      
+      // Scale to fit the page properly
+      if (canvasAspectRatio > pageAspectRatio) {
+        // Canvas is wider - fit to width
+        finalWidth = contentWidth;
+        finalHeight = contentWidth / canvasAspectRatio;
+      } else {
+        // Canvas is taller - fit to height
+        finalHeight = contentHeight;
+        finalWidth = contentHeight * canvasAspectRatio;
+      }
+      
+      // Center the content on the page
+      const xOffset = margin + (contentWidth - finalWidth) / 2;
+      const yOffset = margin;
+      
+      const totalPages = Math.ceil(canvas.height / (contentHeight * (canvas.width / finalWidth)));
 
-      console.log(`PDF will have ${totalPages} pages`);
+      console.log(`PDF will have ${totalPages} pages, canvas: ${canvas.width}x${canvas.height}, final: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}`);
 
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
         if (pageIndex > 0) {
           pdf.addPage();
         }
 
-        // Calculate what portion of the image goes on this page
-        const sourceY = pageIndex * contentHeight * (canvas.width / contentWidth);
-        const sourceHeight = Math.min(contentHeight * (canvas.width / contentWidth), canvas.height - sourceY);
-        const pageHeight = (sourceHeight * contentWidth) / canvas.width;
+        // Calculate what portion of the canvas goes on this page
+        const canvasHeightPerPage = contentHeight * (canvas.width / finalWidth);
+        const sourceY = pageIndex * canvasHeightPerPage;
+        const sourceHeight = Math.min(canvasHeightPerPage, canvas.height - sourceY);
+        const actualPageHeight = (sourceHeight / canvas.width) * finalWidth;
 
         // Create a canvas for this page section
         const pageCanvas = document.createElement('canvas');
@@ -1091,10 +1113,10 @@ const NewsletterGenerator = () => {
 
         const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
         
-        // Add to PDF with proper margins
-        pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageHeight);
+        // Add to PDF centered with proper scaling
+        pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
         
-        console.log(`Added page ${pageIndex + 1}/${totalPages}`);
+        console.log(`Added page ${pageIndex + 1}/${totalPages} - positioned at (${xOffset.toFixed(1)}, ${yOffset}) with size ${finalWidth.toFixed(1)}x${actualPageHeight.toFixed(1)}`);
       }
 
       // Download the PDF
