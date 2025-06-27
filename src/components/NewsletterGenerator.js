@@ -804,11 +804,12 @@ const NewsletterGenerator = () => {
         throw new Error('Preview element not found');
       }
 
-      // Create PDF
+      // Create PDF with compression
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
+        compress: true
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -836,7 +837,7 @@ const NewsletterGenerator = () => {
       if (header) {
         try {
           const headerCanvas = await html2canvas(header, {
-            scale: 1.3,
+            scale: 1.0, // Reduced from 1.3
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -844,10 +845,10 @@ const NewsletterGenerator = () => {
             imageTimeout: 5000,
             proxy: undefined
           });
-          const headerImgData = headerCanvas.toDataURL('image/png');
+          const headerImgData = headerCanvas.toDataURL('image/jpeg', 0.8); // JPEG with 80% quality
           const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
           
-          pdf.addImage(headerImgData, 'PNG', 0, currentY, pdfWidth, headerHeight);
+          pdf.addImage(headerImgData, 'JPEG', 0, currentY, pdfWidth, headerHeight);
           currentY += headerHeight;
         } catch (headerError) {
           console.warn('Error capturing header, skipping section:', headerError);
@@ -858,14 +859,14 @@ const NewsletterGenerator = () => {
       if (mainGrid) {
         try {
           const mainCanvas = await html2canvas(mainGrid, {
-            scale: 1.3,
+            scale: 1.0, // Reduced from 1.3
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
             logging: false,
             imageTimeout: 5000
           });
-          const mainImgData = mainCanvas.toDataURL('image/png');
+          const mainImgData = mainCanvas.toDataURL('image/jpeg', 0.8); // JPEG compression
           const mainHeight = (mainCanvas.height * pdfWidth) / mainCanvas.width;
           
           // Check if we need a new page
@@ -874,7 +875,7 @@ const NewsletterGenerator = () => {
             currentY = 0;
           }
           
-          pdf.addImage(mainImgData, 'PNG', 0, currentY, pdfWidth, mainHeight);
+          pdf.addImage(mainImgData, 'JPEG', 0, currentY, pdfWidth, mainHeight);
           currentY += mainHeight;
         } catch (mainError) {
           console.warn('Error capturing main grid, skipping section:', mainError);
@@ -888,16 +889,16 @@ const NewsletterGenerator = () => {
           currentY = 0;
           
           const chartsCanvas = await html2canvas(chartsSection, {
-            scale: 1.3,
+            scale: 1.0, // Reduced from 1.3
             useCORS: true,
-            allowTaint: true,
+            allowTaint: false,
             backgroundColor: '#ffffff',
             logging: false
           });
-          const chartsImgData = chartsCanvas.toDataURL('image/png');
+          const chartsImgData = chartsCanvas.toDataURL('image/jpeg', 0.8); // JPEG compression
           const chartsHeight = (chartsCanvas.height * pdfWidth) / chartsCanvas.width;
           
-          pdf.addImage(chartsImgData, 'PNG', 0, currentY, pdfWidth, chartsHeight);
+          pdf.addImage(chartsImgData, 'JPEG', 0, currentY, pdfWidth, chartsHeight);
         } catch (chartsError) {
           console.warn('Error capturing charts, skipping section:', chartsError);
         }
@@ -911,9 +912,9 @@ const NewsletterGenerator = () => {
           
           // Use simpler approach - capture entire properties section and split if needed
           const propertiesCanvas = await html2canvas(propertiesSection, {
-            scale: 1.3,
+            scale: 0.9, // Reduced even more for large tables
             useCORS: true,
-            allowTaint: true,
+            allowTaint: false,
             backgroundColor: '#ffffff',
             logging: false,
             onclone: function(clonedDoc) {
@@ -934,7 +935,7 @@ const NewsletterGenerator = () => {
             }
           });
           
-          const propertiesImgData = propertiesCanvas.toDataURL('image/png');
+          const propertiesImgData = propertiesCanvas.toDataURL('image/jpeg', 0.75); // Lower quality for tables
           const propertiesHeight = (propertiesCanvas.height * pdfWidth) / propertiesCanvas.width;
           
           // If table is too long, split it across multiple pages
@@ -960,8 +961,8 @@ const NewsletterGenerator = () => {
                 pageCanvas.width, pageCanvas.height
               );
               
-              const pageImgData = pageCanvas.toDataURL('image/png');
-              pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, pageHeight);
+              const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.75);
+              pdf.addImage(pageImgData, 'JPEG', 0, 0, pdfWidth, pageHeight);
               
               remainingHeight -= pdfHeight;
               sourceY += pdfHeight;
@@ -971,7 +972,7 @@ const NewsletterGenerator = () => {
               }
             }
           } else {
-            pdf.addImage(propertiesImgData, 'PNG', 0, currentY, pdfWidth, propertiesHeight);
+            pdf.addImage(propertiesImgData, 'JPEG', 0, currentY, pdfWidth, propertiesHeight);
           }
         } catch (tableError) {
           console.warn('Error capturing properties table, skipping section:', tableError);
