@@ -311,13 +311,16 @@ const PreviewContainer = styled.div`
 
 const NewsletterPreview = styled.div`
   width: 100%;
-  background: #f5f5f5;
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
   font-family: "Poppins", sans-serif;
-  border: 2px solid #8b4513;
-  border-radius: 8px;
-  overflow: hidden;
+  border: none;
+  box-shadow: 0 0 30px rgba(0,0,0,0.1);
+  line-height: 1.6;
+  color: #333;
   
-  /* PDF page break controls */
+  /* PDF page break controls matching buyers guide */
   .page-break-avoid {
     page-break-inside: avoid;
     break-inside: avoid;
@@ -334,222 +337,244 @@ const NewsletterPreview = styled.div`
   }
   
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 1.5rem;
     background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
-    color: #f5f5f5;
-    border-bottom: 3px solid #d2b48c;
+    color: white;
+    text-align: center;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
     
-    .title-section {
-      flex: 1;
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('/images/pdf_cow.png') center/cover;
+      opacity: 0.2;
+      z-index: 1;
+    }
+    
+    .header-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+    
+    .logo-container {
+      width: 200px;
+      height: 120px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       
-      h1 {
-        color: #f5f5f5;
-        font-family: "Bodoni Moda", serif;
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        text-transform: uppercase;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      .hero-logo {
+        max-width: 100%;
+        max-height: 100%;
+        filter: brightness(1.1);
       }
       
-      .location {
-        color: #deb394;
-        font-size: 0.9rem;
-        font-weight: 500;
+      .text-logo {
+        font-family: "Bodoni Moda", serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
       }
     }
     
-    .logo-section {
-      text-align: right;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
+    h1 {
+      font-family: "Bodoni Moda", serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      color: white;
+    }
+    
+    .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 1rem;
+    }
+    
+    .contact-info {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.3);
       
-      .logo-container {
-        margin-bottom: 0.5rem;
-        
-        .hero-logo {
-          height: 80px;
-          width: auto;
-          max-width: 200px;
-          filter: brightness(1.1) contrast(1.1);
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          padding: 0.5rem;
-        }
-        
-        .text-logo {
-          font-family: "Bodoni Moda", serif;
-          font-size: 2.5rem;
-          font-weight: 700;
-          color: #f5f5f5;
-          text-transform: uppercase;
-          letter-spacing: 3px;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-          margin: 0;
-          padding: 0.5rem;
-        }
+      h2 {
+        font-family: "Bodoni Moda", serif;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
       }
       
-      .brand-name {
-        color: #deb394;
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        text-transform: uppercase;
-      }
-      
-      .tagline {
-        color: #d2b48c;
-        font-size: 0.7rem;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-      }
-      
-      .contact-info {
-        font-size: 0.65rem;
-        color: #deb394;
-        font-weight: 400;
+      .contact-details {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
         
-        div {
-          margin-bottom: 0.2rem;
+        .contact-item {
+          text-align: center;
+          
+          strong {
+            display: block;
+            margin-bottom: 0.25rem;
+          }
         }
       }
     }
   }
   
   .content {
-    padding: 1.5rem;
+    padding: 2rem;
+    
+    h2 {
+      font-family: "Bodoni Moda", serif;
+      color: #8b4513;
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #d2b48c;
+    }
+    
+    h3 {
+      font-family: "Bodoni Moda", serif;
+      color: #a0522d;
+      font-size: 1.3rem;
+      margin: 1.5rem 0 0.5rem 0;
+    }
+    
+    p {
+      margin-bottom: 1rem;
+      text-align: justify;
+    }
     
     .main-grid {
       display: grid;
-      grid-template-columns: 1fr 300px;
+      grid-template-columns: 1fr 350px;
       gap: 2rem;
       margin-bottom: 2rem;
     }
     
     .left-column {
       .quick-analysis {
-        margin-bottom: 1.5rem;
-        background: rgba(139, 69, 19, 0.05);
-        padding: 1rem;
-        border-radius: 8px;
+        background: #f9f9f9;
         border-left: 4px solid #8b4513;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border-radius: 0 8px 8px 0;
         
         h3 {
+          margin-top: 0;
           color: #8b4513;
           font-family: "Bodoni Moda", serif;
-          font-size: 1rem;
-          font-weight: bold;
-          margin-bottom: 0.5rem;
-          text-transform: uppercase;
+          font-size: 1.3rem;
         }
         
         .analysis-text {
-          font-size: 0.85rem;
-          line-height: 1.5;
-          color: #3a200c;
+          font-size: 1rem;
+          line-height: 1.6;
+          color: #333;
+          text-align: justify;
         }
       }
       
       .summary-section {
-        background: rgba(210, 180, 140, 0.1);
-        padding: 1rem;
+        background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+        color: white;
+        padding: 1.5rem;
         border-radius: 8px;
-        border-left: 4px solid #d2b48c;
+        margin: 1.5rem 0;
         
         h3 {
-          color: #8b4513;
+          color: white;
+          margin-top: 0;
           font-family: "Bodoni Moda", serif;
-          font-size: 1rem;
-          font-weight: bold;
-          margin-bottom: 0.5rem;
-          text-transform: uppercase;
+          font-size: 1.3rem;
         }
         
         .summary-text {
-          font-size: 0.85rem;
-          line-height: 1.5;
-          color: #3a200c;
+          font-size: 1rem;
+          line-height: 1.6;
+          color: white;
+          text-align: justify;
         }
       }
     }
     
     .right-column {
       .key-stats {
-        background: rgba(160, 82, 45, 0.05);
-        padding: 1rem;
+        background: #f8f8f8;
+        border: 1px solid #e0e0e0;
+        padding: 1.5rem;
         border-radius: 8px;
-        border: 1px solid rgba(139, 69, 19, 0.2);
         
         h3 {
           color: #8b4513;
           font-family: "Bodoni Moda", serif;
-          font-size: 1rem;
-          font-weight: bold;
-          margin-bottom: 0.75rem;
-          text-transform: uppercase;
+          font-size: 1.3rem;
+          margin-top: 0;
+          margin-bottom: 1rem;
         }
         
         .stats-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 0.75rem;
-          border-radius: 6px;
-          overflow: hidden;
+          font-size: 0.9rem;
           
           th {
-            background: linear-gradient(135deg, #8b4513, #a0522d);
-            color: #f5f5f5;
-            padding: 0.6rem 0.5rem;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.7rem;
+            background: #8b4513;
+            color: white;
+            padding: 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
           }
           
           td {
-            padding: 0.5rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(139, 69, 19, 0.1);
-            color: #3a200c;
+            padding: 0.8rem;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333;
           }
           
           .year-col {
-            background: rgba(210, 180, 140, 0.15);
+            background: #f8f8f8;
             font-weight: 600;
             color: #8b4513;
           }
           
           tr:hover {
-            background: rgba(210, 180, 140, 0.1);
+            background: #f0f0f0;
           }
         }
       }
       
       .buyers-sellers {
         margin-top: 1.5rem;
-        text-align: center;
-        background: rgba(210, 180, 140, 0.05);
-        padding: 1rem;
+        background: #f8f8f8;
+        border: 1px solid #e0e0e0;
+        padding: 1.5rem;
         border-radius: 8px;
-        border: 1px solid rgba(210, 180, 140, 0.3);
         
         h3 {
           color: #8b4513;
           font-family: "Bodoni Moda", serif;
-          font-size: 1rem;
-          font-weight: bold;
-          margin-bottom: 0.75rem;
-          text-transform: uppercase;
+          font-size: 1.3rem;
+          margin-top: 0;
+          margin-bottom: 1rem;
+          text-align: center;
         }
         
         .gauge-container {
-          height: 150px;
+          height: 180px;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -559,18 +584,22 @@ const NewsletterPreview = styled.div`
     
     .charts-section {
       margin-top: 2rem;
-      background: rgba(139, 69, 19, 0.02);
-      padding: 1.5rem;
-      border-radius: 8px;
-      border: 1px solid rgba(139, 69, 19, 0.1);
+      
+      h2 {
+        font-family: "Bodoni Moda", serif;
+        color: #8b4513;
+        font-size: 1.8rem;
+        margin: 2rem 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #d2b48c;
+        text-align: center;
+      }
       
       .chart-title {
         color: #8b4513;
         font-family: "Bodoni Moda", serif;
-        font-size: 1.1rem;
-        font-weight: bold;
-        margin-bottom: 0.75rem;
-        text-transform: uppercase;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
         text-align: center;
       }
       
@@ -583,24 +612,26 @@ const NewsletterPreview = styled.div`
       
       .single-chart {
         margin-bottom: 2rem;
-        background: rgba(210, 180, 140, 0.05);
-        padding: 1rem;
-        border-radius: 6px;
+        background: #f9f9f9;
+        border-left: 4px solid #8b4513;
+        padding: 1.5rem;
+        border-radius: 0 8px 8px 0;
         
         .chart-container {
           height: 300px;
-          margin-top: 0.5rem;
+          margin-top: 1rem;
         }
       }
       
       .chart-item {
-        background: rgba(210, 180, 140, 0.05);
-        padding: 1rem;
-        border-radius: 6px;
+        background: #f8f8f8;
+        border: 1px solid #e0e0e0;
+        padding: 1.5rem;
+        border-radius: 8px;
         
         .chart-container {
-          height: 200px;
-          margin-top: 0.5rem;
+          height: 220px;
+          margin-top: 1rem;
         }
       }
     }
@@ -608,59 +639,108 @@ const NewsletterPreview = styled.div`
     .properties-section {
       margin-top: 2rem;
       page-break-inside: avoid;
-      background: rgba(160, 82, 45, 0.02);
-      padding: 1.5rem;
-      border-radius: 8px;
-      border: 1px solid rgba(139, 69, 19, 0.1);
       
       h3 {
         color: #8b4513;
         font-family: "Bodoni Moda", serif;
-        font-size: 1.1rem;
-        font-weight: bold;
-        margin-bottom: 0.75rem;
-        text-transform: uppercase;
+        font-size: 1.8rem;
+        margin: 2rem 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #d2b48c;
         text-align: center;
       }
       
       .properties-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.7rem;
-        border-radius: 6px;
-        overflow: hidden;
+        font-size: 0.8rem;
+        margin-top: 1rem;
         
         th {
-          background: linear-gradient(135deg, #8b4513, #a0522d);
-          color: #f5f5f5;
-          padding: 0.6rem 0.4rem;
+          background: #8b4513;
+          color: white;
+          padding: 0.8rem 0.5rem;
           text-align: left;
-          font-weight: bold;
-          font-size: 0.65rem;
+          font-weight: 600;
+          font-size: 0.8rem;
+          border-bottom: 1px solid #a0522d;
         }
         
         td {
-          padding: 0.5rem 0.4rem;
-          border-bottom: 1px solid rgba(139, 69, 19, 0.1);
-          color: #3a200c;
+          padding: 0.7rem 0.5rem;
+          border-bottom: 1px solid #e0e0e0;
+          color: #333;
         }
         
         tr:nth-child(even) {
-          background: rgba(210, 180, 140, 0.05);
+          background: #f8f8f8;
         }
         
         tr:hover {
-          background: rgba(210, 180, 140, 0.1);
+          background: #f0f0f0;
         }
         
-        .mls-col { width: 8%; }
-        .status-col { width: 8%; }
-        .price-col { width: 12%; font-weight: 600; color: #8b4513; }
+        .mls-col { width: 8%; text-align: center; }
+        .status-col { width: 8%; text-align: center; }
+        .price-col { width: 12%; font-weight: 600; color: #8b4513; text-align: right; }
         .address-col { width: 35%; }
         .beds-col { width: 6%; text-align: center; }
         .baths-col { width: 6%; text-align: center; }
-        .sqft-col { width: 8%; text-align: center; }
+        .sqft-col { width: 10%; text-align: right; }
         .year-col { width: 8%; text-align: center; }
+      }
+    }
+    
+    /* Print-specific styles matching buyers guide */
+    @media print {
+      background: white !important;
+      font-size: 12pt;
+      line-height: 1.4;
+      
+      .header {
+        background: white !important;
+        color: #333 !important;
+        padding: 1rem !important;
+        page-break-inside: avoid;
+      }
+      
+      h1 {
+        color: #8b4513 !important;
+        font-size: 24pt !important;
+        text-shadow: none !important;
+      }
+      
+      h2 {
+        color: #8b4513 !important;
+        font-size: 16pt !important;
+        page-break-after: avoid;
+        margin-top: 1.5rem !important;
+      }
+      
+      h3 {
+        color: #a0522d !important;
+        font-size: 14pt !important;
+        page-break-after: avoid;
+      }
+      
+      .quick-analysis,
+      .summary-section,
+      .chart-item,
+      .single-chart {
+        background: white !important;
+        border: 1px solid #ddd !important;
+        color: #333 !important;
+        page-break-inside: avoid;
+        margin: 1rem 0 !important;
+      }
+      
+      .properties-table th {
+        background: #8b4513 !important;
+        color: white !important;
+      }
+      
+      .properties-table tr:nth-child(even) {
+        background: #f8f8f8 !important;
       }
     }
   }
@@ -804,7 +884,7 @@ const NewsletterGenerator = () => {
         throw new Error('Preview element not found');
       }
 
-      // Create PDF with compression
+      // Create PDF with A4 dimensions and margins
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -814,180 +894,85 @@ const NewsletterGenerator = () => {
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10; // 10mm margins like buyers guide
+      const contentWidth = pdfWidth - (2 * margin);
+      const contentHeight = pdfHeight - (2 * margin);
 
-      // Find all major sections to capture separately
-      const header = element.querySelector('.header');
-      const mainGrid = element.querySelector('.main-grid');
-      const chartsSection = element.querySelector('.charts-section');
-      const propertiesSection = element.querySelector('.properties-section');
+      // Wait for all images to load
+      const images = element.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = resolve; // Don't fail on image errors
+          setTimeout(resolve, 3000); // 3 second timeout
+        });
+      }));
 
+      // Capture the entire newsletter at once with improved settings
+      const canvas = await html2canvas(element, {
+        scale: 1.2, // Higher quality but manageable size
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        imageTimeout: 10000,
+        removeContainer: true,
+        foreignObjectRendering: true,
+        onclone: function(clonedDoc) {
+          // Ensure all fonts and styles are loaded
+          const fontLink = clonedDoc.createElement('link');
+          fontLink.href = 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap';
+          fontLink.rel = 'stylesheet';
+          clonedDoc.head.appendChild(fontLink);
+          
+          // Copy all existing styles
+          const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
+          styles.forEach(style => {
+            if (style.cloneNode) {
+              clonedDoc.head.appendChild(style.cloneNode(true));
+            }
+          });
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * contentWidth) / canvas.width;
+
+      // Calculate how many pages we need
+      const totalPages = Math.ceil(imgHeight / contentHeight);
       let currentY = 0;
 
-      // Wait for logo image to load
-      const logoImg = element.querySelector('.hero-logo');
-      if (logoImg && !logoImg.complete) {
-        await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-          setTimeout(resolve, 3000); // Timeout after 3 seconds
-        }).catch(err => console.warn('Logo load timeout:', err));
-      }
-
-      // Capture header
-      if (header) {
-        try {
-          const headerCanvas = await html2canvas(header, {
-            scale: 1.0, // Reduced from 1.3
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: false,
-            imageTimeout: 5000,
-            proxy: undefined
-          });
-          const headerImgData = headerCanvas.toDataURL('image/jpeg', 0.8); // JPEG with 80% quality
-          const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
-          
-          pdf.addImage(headerImgData, 'JPEG', 0, currentY, pdfWidth, headerHeight);
-          currentY += headerHeight;
-        } catch (headerError) {
-          console.warn('Error capturing header, skipping section:', headerError);
-        }
-      }
-
-      // Capture main grid (analysis + stats)
-      if (mainGrid) {
-        try {
-          const mainCanvas = await html2canvas(mainGrid, {
-            scale: 1.0, // Reduced from 1.3
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: false,
-            imageTimeout: 5000
-          });
-          const mainImgData = mainCanvas.toDataURL('image/jpeg', 0.8); // JPEG compression
-          const mainHeight = (mainCanvas.height * pdfWidth) / mainCanvas.width;
-          
-          // Check if we need a new page
-          if (currentY + mainHeight > pdfHeight) {
-            pdf.addPage();
-            currentY = 0;
-          }
-          
-          pdf.addImage(mainImgData, 'JPEG', 0, currentY, pdfWidth, mainHeight);
-          currentY += mainHeight;
-        } catch (mainError) {
-          console.warn('Error capturing main grid, skipping section:', mainError);
-        }
-      }
-
-      // Capture charts section on new page
-      if (chartsSection) {
-        try {
+      for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+        if (pageIndex > 0) {
           pdf.addPage();
-          currentY = 0;
-          
-          const chartsCanvas = await html2canvas(chartsSection, {
-            scale: 1.0, // Reduced from 1.3
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: false
-          });
-          const chartsImgData = chartsCanvas.toDataURL('image/jpeg', 0.8); // JPEG compression
-          const chartsHeight = (chartsCanvas.height * pdfWidth) / chartsCanvas.width;
-          
-          pdf.addImage(chartsImgData, 'JPEG', 0, currentY, pdfWidth, chartsHeight);
-        } catch (chartsError) {
-          console.warn('Error capturing charts, skipping section:', chartsError);
         }
-      }
 
-      // Capture properties section with smart table pagination
-      if (propertiesSection && extractedData?.listings && extractedData.listings.length > 0) {
-        try {
-          pdf.addPage();
-          currentY = 0;
-          
-          // Use simpler approach - capture entire properties section and split if needed
-          const propertiesCanvas = await html2canvas(propertiesSection, {
-            scale: 0.9, // Reduced even more for large tables
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: false,
-            onclone: function(clonedDoc) {
-              // Ensure all styles are available in cloned document
-              const originalStyles = document.querySelectorAll('style, link[rel="stylesheet"]');
-              originalStyles.forEach(style => {
-                if (style.tagName === 'STYLE') {
-                  const clonedStyle = clonedDoc.createElement('style');
-                  clonedStyle.textContent = style.textContent;
-                  clonedDoc.head.appendChild(clonedStyle);
-                } else if (style.tagName === 'LINK') {
-                  const clonedLink = clonedDoc.createElement('link');
-                  clonedLink.rel = 'stylesheet';
-                  clonedLink.href = style.href;
-                  clonedDoc.head.appendChild(clonedLink);
-                }
-              });
-            }
-          });
-          
-          const propertiesImgData = propertiesCanvas.toDataURL('image/jpeg', 0.75); // Lower quality for tables
-          const propertiesHeight = (propertiesCanvas.height * pdfWidth) / propertiesCanvas.width;
-          
-          // If table is too long, split it across multiple pages
-          if (propertiesHeight > pdfHeight) {
-            let remainingHeight = propertiesHeight;
-            let sourceY = 0;
-            
-            while (remainingHeight > 0) {
-              const pageHeight = Math.min(remainingHeight, pdfHeight);
-              
-              // Create a canvas for this page section
-              const pageCanvas = document.createElement('canvas');
-              const pageCtx = pageCanvas.getContext('2d');
-              pageCanvas.width = propertiesCanvas.width;
-              pageCanvas.height = (pageHeight * propertiesCanvas.width) / pdfWidth;
-              
-              // Draw the appropriate section of the original canvas
-              pageCtx.drawImage(
-                propertiesCanvas,
-                0, sourceY * propertiesCanvas.height / propertiesHeight,
-                propertiesCanvas.width, pageCanvas.height,
-                0, 0,
-                pageCanvas.width, pageCanvas.height
-              );
-              
-              const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.75);
-              pdf.addImage(pageImgData, 'JPEG', 0, 0, pdfWidth, pageHeight);
-              
-              remainingHeight -= pdfHeight;
-              sourceY += pdfHeight;
-              
-              if (remainingHeight > 0) {
-                pdf.addPage();
-              }
-            }
-          } else {
-            pdf.addImage(propertiesImgData, 'JPEG', 0, currentY, pdfWidth, propertiesHeight);
-          }
-        } catch (tableError) {
-          console.warn('Error capturing properties table, skipping section:', tableError);
-          // Continue without the properties section rather than failing entirely
-        }
-      }
+        // Calculate what portion of the image goes on this page
+        const sourceY = pageIndex * contentHeight * (canvas.width / contentWidth);
+        const sourceHeight = Math.min(contentHeight * (canvas.width / contentWidth), canvas.height - sourceY);
+        const pageHeight = (sourceHeight * contentWidth) / canvas.width;
 
-      // Ensure we have at least one page with content
-      if (pdf.internal.pages.length === 1) {
-        // Add a simple text page if no sections were captured
-        pdf.setFontSize(16);
-        pdf.text('Newsletter Generation Error', 20, 30);
-        pdf.setFontSize(12);
-        pdf.text('Unable to capture newsletter content. Please try again.', 20, 50);
-        pdf.text('If the problem persists, please contact support.', 20, 70);
+        // Create a canvas for this page section
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sourceHeight;
+
+        // Draw the appropriate section
+        pageCtx.drawImage(
+          canvas,
+          0, sourceY,
+          canvas.width, sourceHeight,
+          0, 0,
+          canvas.width, sourceHeight
+        );
+
+        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
+        
+        // Add to PDF with proper margins and sizing
+        pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageHeight);
       }
 
       // Download the PDF
@@ -1740,18 +1725,11 @@ const NewsletterGenerator = () => {
           <PreviewContainer ref={previewRef}>
             <NewsletterPreview>
               <div className="header page-break-avoid">
-                <div className="title-section">
-                  <h1>Monthly Market Summary</h1>
-                  <div className="location">
-                    {communities[newsletterData.community]}, CA - Single Family<br/>
-                    {months[newsletterData.month - 1]}, {newsletterData.year}
-                  </div>
-                </div>
-                <div className="logo-section">
+                <div className="header-content">
                   <div className="logo-container">
                     {!logoError ? (
                       <img 
-                        src="/logo/logo_2.svg" 
+                        src="/logo/logo_2.png" 
                         alt="Outrider Real Estate Logo" 
                         className="hero-logo"
                         crossOrigin="anonymous"
@@ -1765,11 +1743,27 @@ const NewsletterGenerator = () => {
                       <div className="text-logo">OUTRIDER</div>
                     )}
                   </div>
-                  <div className="brand-name">Real Estate</div>
-                  <div className="tagline">Serving Anza • Aguanga • Idyllwild • Mountain Center</div>
+                  <h1>Monthly Market Summary</h1>
+                  <p className="subtitle">
+                    {communities[newsletterData.community]}, CA - Single Family | {months[newsletterData.month - 1]} {newsletterData.year}
+                  </p>
+                  
                   <div className="contact-info">
-                    <div>kevin@outriderrealestate.com</div>
-                    <div>(951) 491-4890</div>
+                    <h2>Outrider Real Estate</h2>
+                    <div className="contact-details">
+                      <div className="contact-item">
+                        <strong>Phone</strong>
+                        (951) 491-4890
+                      </div>
+                      <div className="contact-item">
+                        <strong>Email</strong>
+                        kevin@outriderrealestate.com
+                      </div>
+                      <div className="contact-item">
+                        <strong>Website</strong>
+                        outriderrealestate.com
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
