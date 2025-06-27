@@ -1100,16 +1100,12 @@ const NewsletterGenerator = () => {
       const xOffset = margin;
       const yOffset = margin;
       
-      const totalPages = Math.ceil(canvas.height / (contentHeight * (canvas.width / finalWidth)));
-
-      console.log(`PDF will have ${totalPages} pages, canvas: ${canvas.width}x${canvas.height}, final: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}`);
-
       // Simple page breaking that fills pages efficiently
       const imgWidth = finalWidth;
       const imgHeight = (canvas.height * finalWidth) / canvas.width;
       const totalPages = Math.ceil(imgHeight / contentHeight);
 
-      console.log(`PDF will have ${totalPages} pages`);
+      console.log(`PDF will have ${totalPages} pages, canvas: ${canvas.width}x${canvas.height}, final: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}`);
 
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
         if (pageIndex > 0) {
