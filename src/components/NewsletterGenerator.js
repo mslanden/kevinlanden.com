@@ -296,29 +296,44 @@ const ActionButton = styled.button`
 `;
 
 const PreviewContainer = styled.div`
-  background-color: white;
-  border-radius: ${props => props.theme.borderRadius.default};
-  padding: 2rem;
+  background: transparent;
+  border: none;
+  padding: 1rem;
   margin-top: 2rem;
-  color: #333;
-  font-family: 'Arial', sans-serif;
-  min-height: 800px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    margin-top: 1rem;
+  }
 `;
 
 const NewsletterPreview = styled.div`
-  width: 100%;
+  width: 210mm; /* A4 width for consistent PDF output */
   max-width: 800px;
-  margin: 0 auto;
   background: white;
   font-family: "Poppins", sans-serif;
-  border: none;
-  box-shadow: 0 0 30px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   line-height: 1.6;
   color: #333;
+  margin: 0;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: calc(100vw - 1rem);
+    margin: 0 auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    width: 90vw;
+    max-width: 700px;
+  }
   
   /* PDF page break controls matching buyers guide */
   .page-break-avoid {
@@ -462,6 +477,12 @@ const NewsletterPreview = styled.div`
       grid-template-columns: 1fr 350px;
       gap: 2rem;
       margin-bottom: 2rem;
+      
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
     }
     
     .left-column {
@@ -608,6 +629,12 @@ const NewsletterPreview = styled.div`
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
         margin-bottom: 2rem;
+        
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
       }
       
       .single-chart {
@@ -656,6 +683,13 @@ const NewsletterPreview = styled.div`
         font-size: 0.8rem;
         margin-top: 1rem;
         
+        @media (max-width: 768px) {
+          font-size: 0.7rem;
+          overflow-x: auto;
+          display: block;
+          white-space: nowrap;
+        }
+        
         th {
           background: #8b4513;
           color: white;
@@ -664,12 +698,21 @@ const NewsletterPreview = styled.div`
           font-weight: 600;
           font-size: 0.8rem;
           border-bottom: 1px solid #a0522d;
+          
+          @media (max-width: 768px) {
+            padding: 0.5rem 0.3rem;
+            font-size: 0.7rem;
+          }
         }
         
         td {
           padding: 0.7rem 0.5rem;
           border-bottom: 1px solid #e0e0e0;
           color: #333;
+          
+          @media (max-width: 768px) {
+            padding: 0.4rem 0.3rem;
+          }
         }
         
         tr:nth-child(even) {
@@ -688,6 +731,17 @@ const NewsletterPreview = styled.div`
         .baths-col { width: 6%; text-align: center; }
         .sqft-col { width: 10%; text-align: right; }
         .year-col { width: 8%; text-align: center; }
+        
+        @media (max-width: 768px) {
+          .mls-col { width: 10%; }
+          .status-col { width: 10%; }
+          .price-col { width: 15%; }
+          .address-col { width: 30%; }
+          .beds-col { width: 8%; }
+          .baths-col { width: 8%; }
+          .sqft-col { width: 12%; }
+          .year-col { width: 10%; }
+        }
       }
     }
     
@@ -925,12 +979,16 @@ const NewsletterGenerator = () => {
           console.log(`Canvas capture attempt ${captureAttempt}...`);
           
           const options = {
-            scale: captureAttempt === 1 ? 1.0 : 0.8, // Lower scale on retries
+            scale: captureAttempt === 1 ? 1.2 : 1.0, // Higher quality on first attempt
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
             logging: true,
             imageTimeout: 8000,
+            width: 800, // Fixed width for consistent output
+            height: null, // Let height be calculated
+            scrollX: 0,
+            scrollY: 0,
             onclone: function(clonedDoc) {
               console.log('Cloning document for canvas capture...');
               
@@ -948,11 +1006,24 @@ const NewsletterGenerator = () => {
                 clonedDoc.head.appendChild(clonedStyle);
               });
               
-              // Force white background on preview element
+              // Force consistent styling on preview element
               const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
               if (previewElement) {
                 previewElement.style.backgroundColor = '#ffffff';
                 previewElement.style.color = '#333333';
+                previewElement.style.width = '800px';
+                previewElement.style.maxWidth = '800px';
+                previewElement.style.margin = '0';
+                previewElement.style.border = 'none';
+                previewElement.style.boxShadow = 'none';
+              }
+              
+              // Remove any container backgrounds that might cause gray areas
+              const container = clonedDoc.querySelector('[class*="PreviewContainer"]');
+              if (container) {
+                container.style.background = 'transparent';
+                container.style.padding = '0';
+                container.style.margin = '0';
               }
             }
           };
