@@ -884,7 +884,9 @@ const NewsletterGenerator = () => {
         throw new Error('Preview element not found');
       }
 
-      // Create PDF with A4 dimensions and margins
+      console.log('Starting PDF generation...');
+
+      // Create PDF with compression
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -894,55 +896,102 @@ const NewsletterGenerator = () => {
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10; // 10mm margins like buyers guide
+      const margin = 10;
       const contentWidth = pdfWidth - (2 * margin);
       const contentHeight = pdfHeight - (2 * margin);
 
       // Wait for all images to load
       const images = element.querySelectorAll('img');
+      console.log(`Found ${images.length} images, waiting for them to load...`);
+      
       await Promise.all(Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           img.onload = resolve;
           img.onerror = resolve; // Don't fail on image errors
-          setTimeout(resolve, 3000); // 3 second timeout
+          setTimeout(resolve, 2000); // 2 second timeout
         });
       }));
 
-      // Capture the entire newsletter at once with improved settings
-      const canvas = await html2canvas(element, {
-        scale: 1.2, // Higher quality but manageable size
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        logging: false,
-        imageTimeout: 10000,
-        removeContainer: true,
-        foreignObjectRendering: true,
-        onclone: function(clonedDoc) {
-          // Ensure all fonts and styles are loaded
-          const fontLink = clonedDoc.createElement('link');
-          fontLink.href = 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap';
-          fontLink.rel = 'stylesheet';
-          clonedDoc.head.appendChild(fontLink);
-          
-          // Copy all existing styles
-          const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
-          styles.forEach(style => {
-            if (style.cloneNode) {
-              clonedDoc.head.appendChild(style.cloneNode(true));
-            }
-          });
-        }
-      });
+      console.log('All images loaded, capturing canvas...');
 
+      // Try different capture approaches if the first fails
+      let canvas;
+      let captureAttempt = 1;
+      const maxAttempts = 3;
+
+      while (captureAttempt <= maxAttempts) {
+        try {
+          console.log(`Canvas capture attempt ${captureAttempt}...`);
+          
+          const options = {
+            scale: captureAttempt === 1 ? 1.0 : 0.8, // Lower scale on retries
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: true,
+            imageTimeout: 8000,
+            onclone: function(clonedDoc) {
+              console.log('Cloning document for canvas capture...');
+              
+              // Ensure all fonts are loaded in cloned document
+              const fontLink = clonedDoc.createElement('link');
+              fontLink.href = 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap';
+              fontLink.rel = 'stylesheet';
+              clonedDoc.head.appendChild(fontLink);
+              
+              // Copy all styled-components and other styles
+              const styles = document.querySelectorAll('style');
+              styles.forEach(style => {
+                const clonedStyle = clonedDoc.createElement('style');
+                clonedStyle.textContent = style.textContent;
+                clonedDoc.head.appendChild(clonedStyle);
+              });
+              
+              // Force white background on preview element
+              const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
+              if (previewElement) {
+                previewElement.style.backgroundColor = '#ffffff';
+                previewElement.style.color = '#333333';
+              }
+            }
+          };
+
+          canvas = await html2canvas(element, options);
+          
+          if (canvas && canvas.width > 0 && canvas.height > 0) {
+            console.log(`Canvas captured successfully: ${canvas.width}x${canvas.height}`);
+            break;
+          } else {
+            throw new Error('Canvas is empty or invalid');
+          }
+          
+        } catch (captureError) {
+          console.warn(`Canvas capture attempt ${captureAttempt} failed:`, captureError);
+          captureAttempt++;
+          
+          if (captureAttempt > maxAttempts) {
+            throw new Error(`Failed to capture canvas after ${maxAttempts} attempts: ${captureError.message}`);
+          }
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Verify canvas has content
       const imgData = canvas.toDataURL('image/jpeg', 0.85);
+      if (!imgData || imgData === 'data:,') {
+        throw new Error('Canvas generated empty image data');
+      }
+
+      console.log('Canvas data generated, creating PDF pages...');
+
       const imgWidth = contentWidth;
       const imgHeight = (canvas.height * contentWidth) / canvas.width;
-
-      // Calculate how many pages we need
       const totalPages = Math.ceil(imgHeight / contentHeight);
-      let currentY = 0;
+
+      console.log(`PDF will have ${totalPages} pages`);
 
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
         if (pageIndex > 0) {
@@ -971,17 +1020,21 @@ const NewsletterGenerator = () => {
 
         const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
         
-        // Add to PDF with proper margins and sizing
+        // Add to PDF with proper margins
         pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageHeight);
+        
+        console.log(`Added page ${pageIndex + 1}/${totalPages}`);
       }
 
       // Download the PDF
       const fileName = `${communities[newsletterData.community]}-Newsletter-${months[newsletterData.month - 1]}-${newsletterData.year}.pdf`;
       pdf.save(fileName);
+      
+      console.log('PDF generated and downloaded successfully');
 
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error generating PDF. Please try again.');
+      alert(`Error generating PDF: ${error.message}. Please check the console for details and try again.`);
     } finally {
       setIsGenerating(false);
     }
