@@ -1090,16 +1090,62 @@ const NewsletterGenerator = () => {
 
       console.log(`PDF will have ${totalPages} pages, canvas: ${canvas.width}x${canvas.height}, final: ${finalWidth.toFixed(1)}x${finalHeight.toFixed(1)}`);
 
-      for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+      // Improved page splitting to avoid cutting charts/sections
+      let currentY = 0;
+      let pageIndex = 0;
+      const canvasScale = canvas.width / finalWidth;
+      
+      while (currentY < canvas.height) {
         if (pageIndex > 0) {
           pdf.addPage();
         }
 
-        // Calculate what portion of the canvas goes on this page
-        const canvasHeightPerPage = contentHeight * (canvas.width / finalWidth);
-        const sourceY = pageIndex * canvasHeightPerPage;
-        const sourceHeight = Math.min(canvasHeightPerPage, canvas.height - sourceY);
-        const actualPageHeight = (sourceHeight / canvas.width) * finalWidth;
+        // Calculate how much canvas height fits in one PDF page
+        const maxCanvasHeightPerPage = contentHeight * canvasScale;
+        let sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
+        
+        // Try to avoid cutting content by looking for natural break points
+        if (pageIndex > 0 && currentY + sourceHeight < canvas.height) {
+          // Look for a good break point in the last 20% of the intended page
+          const breakSearchStart = currentY + sourceHeight * 0.8;
+          const breakSearchEnd = currentY + sourceHeight;
+          
+          // Sample some pixels to find white space (potential break points)
+          let bestBreakPoint = currentY + sourceHeight;
+          let maxWhiteSpace = 0;
+          
+          for (let y = breakSearchStart; y < breakSearchEnd; y += 10) {
+            let whiteSpaceCount = 0;
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = 1;
+            
+            tempCtx.drawImage(canvas, 0, y, canvas.width, 1, 0, 0, canvas.width, 1);
+            const imageData = tempCtx.getImageData(0, 0, canvas.width, 1);
+            
+            for (let i = 0; i < imageData.data.length; i += 4) {
+              const r = imageData.data[i];
+              const g = imageData.data[i + 1];
+              const b = imageData.data[i + 2];
+              if (r > 240 && g > 240 && b > 240) { // Near white
+                whiteSpaceCount++;
+              }
+            }
+            
+            if (whiteSpaceCount > maxWhiteSpace) {
+              maxWhiteSpace = whiteSpaceCount;
+              bestBreakPoint = y;
+            }
+          }
+          
+          // Use the better break point if we found significant white space
+          if (maxWhiteSpace > canvas.width * 0.7) {
+            sourceHeight = bestBreakPoint - currentY;
+          }
+        }
+
+        const actualPageHeight = sourceHeight / canvasScale;
 
         // Create a canvas for this page section
         const pageCanvas = document.createElement('canvas');
@@ -1110,7 +1156,7 @@ const NewsletterGenerator = () => {
         // Draw the appropriate section
         pageCtx.drawImage(
           canvas,
-          0, sourceY,
+          0, currentY,
           canvas.width, sourceHeight,
           0, 0,
           canvas.width, sourceHeight
@@ -1118,10 +1164,13 @@ const NewsletterGenerator = () => {
 
         const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
         
-        // Add to PDF centered with proper scaling
+        // Add to PDF
         pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
         
-        console.log(`Added page ${pageIndex + 1}/${totalPages} - positioned at (${xOffset.toFixed(1)}, ${yOffset}) with size ${finalWidth.toFixed(1)}x${actualPageHeight.toFixed(1)}`);
+        console.log(`Added page ${pageIndex + 1} - canvas section ${currentY.toFixed(0)}-${(currentY + sourceHeight).toFixed(0)} (${sourceHeight.toFixed(0)}px)`);
+        
+        currentY += sourceHeight;
+        pageIndex++;
       }
 
       // Download the PDF
