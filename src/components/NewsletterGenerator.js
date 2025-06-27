@@ -980,7 +980,7 @@ const NewsletterGenerator = () => {
           console.log(`Canvas capture attempt ${captureAttempt}...`);
           
           const options = {
-            scale: 1.0, // Consistent scale for proper sizing
+            scale: 1.3, // Higher scale for better text quality in PDF
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -1003,21 +1003,22 @@ const NewsletterGenerator = () => {
                 clonedDoc.head.appendChild(clonedStyle);
               });
               
-              // Force consistent styling on preview element for full-width capture
+              // Force consistent styling on preview element for full-width PDF capture
               const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
               if (previewElement) {
                 previewElement.style.backgroundColor = '#ffffff';
                 previewElement.style.color = '#333333';
-                previewElement.style.width = '100%';
+                previewElement.style.width = '1000px'; // Wider for better PDF readability
                 previewElement.style.maxWidth = 'none';
                 previewElement.style.margin = '0';
-                previewElement.style.padding = '20px';
+                previewElement.style.padding = '30px';
                 previewElement.style.border = 'none';
                 previewElement.style.boxShadow = 'none';
                 previewElement.style.transform = 'none';
+                previewElement.style.fontSize = '16px'; // Ensure readable font size
               }
               
-              // Ensure container doesn't interfere
+              // Ensure container doesn't interfere and adjust content for better PDF layout
               const container = clonedDoc.querySelector('[class*="PreviewContainer"]');
               if (container) {
                 container.style.background = 'transparent';
@@ -1027,6 +1028,23 @@ const NewsletterGenerator = () => {
                 container.style.display = 'block';
                 container.style.justifyContent = 'flex-start';
               }
+              
+              // Enhance text readability in PDF
+              const contentElements = clonedDoc.querySelectorAll('h1, h2, h3, p, td, th');
+              contentElements.forEach(el => {
+                const computedStyle = window.getComputedStyle(el);
+                const currentSize = parseFloat(computedStyle.fontSize);
+                if (currentSize < 12) {
+                  el.style.fontSize = '12px'; // Minimum readable size
+                }
+              });
+              
+              // Ensure tables have proper width
+              const tables = clonedDoc.querySelectorAll('table');
+              tables.forEach(table => {
+                table.style.width = '100%';
+                table.style.tableLayout = 'fixed';
+              });
             }
           };
 
@@ -1060,25 +1078,12 @@ const NewsletterGenerator = () => {
 
       console.log('Canvas data generated, creating PDF pages...');
 
-      // Calculate the best fit for the canvas in the PDF
-      const canvasAspectRatio = canvas.width / canvas.height;
-      const pageAspectRatio = contentWidth / contentHeight;
+      // Always use full width for better readability - newsletter should fill the page
+      const finalWidth = contentWidth;
+      const finalHeight = (canvas.height * contentWidth) / canvas.width;
       
-      let finalWidth, finalHeight;
-      
-      // Scale to fit the page properly
-      if (canvasAspectRatio > pageAspectRatio) {
-        // Canvas is wider - fit to width
-        finalWidth = contentWidth;
-        finalHeight = contentWidth / canvasAspectRatio;
-      } else {
-        // Canvas is taller - fit to height
-        finalHeight = contentHeight;
-        finalWidth = contentHeight * canvasAspectRatio;
-      }
-      
-      // Center the content on the page
-      const xOffset = margin + (contentWidth - finalWidth) / 2;
+      // Center horizontally (should be minimal since we're using full width)
+      const xOffset = margin;
       const yOffset = margin;
       
       const totalPages = Math.ceil(canvas.height / (contentHeight * (canvas.width / finalWidth)));
