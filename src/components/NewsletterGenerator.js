@@ -1046,21 +1046,11 @@ const NewsletterGenerator = () => {
                 table.style.tableLayout = 'fixed';
               });
               
-              // Add a page break right after the buyers/sellers market component
+              // Add simple page break after buyers/sellers market component
               const buyersSellerSection = clonedDoc.querySelector('.buyers-sellers');
               if (buyersSellerSection) {
-                const pageBreakSpacer = clonedDoc.createElement('div');
-                pageBreakSpacer.style.height = '100px';
-                pageBreakSpacer.style.backgroundColor = 'white';
-                pageBreakSpacer.style.width = '100%';
-                pageBreakSpacer.className = 'page-break-after-buyers-sellers';
-                
-                // Insert after the buyers-sellers component
-                if (buyersSellerSection.parentNode && buyersSellerSection.nextSibling) {
-                  buyersSellerSection.parentNode.insertBefore(pageBreakSpacer, buyersSellerSection.nextSibling);
-                } else {
-                  buyersSellerSection.parentNode.appendChild(pageBreakSpacer);
-                }
+                buyersSellerSection.style.pageBreakAfter = 'always';
+                buyersSellerSection.style.marginBottom = '50px';
               }
             }
           };
@@ -1103,7 +1093,7 @@ const NewsletterGenerator = () => {
       const xOffset = margin;
       const yOffset = margin;
       
-      // Page breaking with specific break after buyers/sellers market
+      // Simple page breaking - just fit content to pages naturally
       const canvasScale = canvas.width / finalWidth;
       const maxCanvasHeightPerPage = contentHeight * canvasScale;
       
@@ -1115,43 +1105,7 @@ const NewsletterGenerator = () => {
           pdf.addPage();
         }
 
-        let sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
-        
-        // Only on first page: look for the buyers/sellers spacer
-        if (pageIndex === 0 && currentY + sourceHeight < canvas.height) {
-          // Look for the spacer we added after buyers/sellers
-          const searchStart = currentY + sourceHeight * 0.7;
-          const searchEnd = Math.min(currentY + sourceHeight + 150, canvas.height);
-          
-          for (let y = searchStart; y < searchEnd; y += 15) {
-            // Sample a horizontal strip
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = 50;
-            
-            tempCtx.drawImage(canvas, 0, y, canvas.width, 50, 0, 0, canvas.width, 50);
-            const imageData = tempCtx.getImageData(0, 0, canvas.width, 50);
-            
-            let whitePixelCount = 0;
-            for (let i = 0; i < imageData.data.length; i += 4) {
-              const r = imageData.data[i];
-              const g = imageData.data[i + 1];
-              const b = imageData.data[i + 2];
-              if (r > 250 && g > 250 && b > 250) {
-                whitePixelCount++;
-              }
-            }
-            
-            // If we found our spacer (large white area), break here
-            if (whitePixelCount > (canvas.width * 50 * 0.8)) {
-              sourceHeight = y - currentY;
-              console.log(`Found buyers/sellers spacer at ${y}, breaking page 1`);
-              break;
-            }
-          }
-        }
-
+        const sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
         const actualPageHeight = sourceHeight / canvasScale;
 
         // Create canvas for this page
@@ -1348,8 +1302,9 @@ const NewsletterGenerator = () => {
               labels: ['Sellers', 'Balanced', 'Buyers'],
               datasets: [{
                 data: [sellersMarket, balanced, buyersMarket],
-                backgroundColor: ['#8b4513', '#d2b48c', '#a0522d'],
-                borderWidth: 0,
+                backgroundColor: ['#b8860b', '#daa520', '#8b4513'], // Better contrast: dark goldenrod, goldenrod, saddle brown
+                borderWidth: 2,
+                borderColor: '#fff',
                 cutout: '70%',
                 circumference: 180,
                 rotation: 270
@@ -1373,52 +1328,7 @@ const NewsletterGenerator = () => {
           };
         })(),
         
-        // Current Market Status Distribution
-        unitSalesChart: {
-          data: {
-            labels: ['Active Listings', 'Pending Sales', 'Recently Closed', 'Other'],
-            datasets: [{
-              label: 'Current Market Status',
-              data: [statusData.active, statusData.pending, statusData.closed, statusData.other],
-              backgroundColor: ['#8b4513', '#d2b48c', '#a0522d', '#deb394'],
-              borderColor: '#fff',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            ...baseOptions,
-            responsive: true,
-            plugins: {
-              ...baseOptions.plugins,
-              legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                  usePointStyle: true,
-                  font: { size: 10 },
-                  color: '#333'
-                }
-              },
-              title: {
-                display: true,
-                text: `Total: ${statusData.active + statusData.pending + statusData.closed + statusData.other} Properties`,
-                font: { size: 12 },
-                color: '#333'
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: { color: '#e0e0e0' },
-                ticks: { font: { size: 10 }, color: '#333' }
-              },
-              x: {
-                grid: { display: false },
-                ticks: { font: { size: 10 }, color: '#333' }
-              }
-            }
-          }
-        },
+        // Removed Current Market Status Distribution chart as requested
         
         // Price Distribution Chart (uses extracted priceRanges data)
         inventoryChart: extractedData.priceRanges && extractedData.priceRanges.length > 0 ? {
@@ -1889,6 +1799,7 @@ const NewsletterGenerator = () => {
                         <th>Beds</th>
                         <th>Baths</th>
                         <th>Sq Ft</th>
+                        <th>$/Sq Ft</th>
                         <th>Year Built</th>
                       </tr>
                     </thead>
@@ -1902,6 +1813,7 @@ const NewsletterGenerator = () => {
                           <td>{listing.beds}</td>
                           <td>{listing.baths}</td>
                           <td>{listing.sqft}</td>
+                          <td>{listing.pricePerSqft ? `$${listing.pricePerSqft}` : 'N/A'}</td>
                           <td>{listing.yearBuilt}</td>
                         </tr>
                       ))}
@@ -2043,15 +1955,6 @@ const NewsletterGenerator = () => {
                 </div>
                 
                 <div className="charts-section page-break-before">
-                  <div className="single-chart page-break-avoid">
-                    <div className="chart-title">Current Market Status Distribution</div>
-                    <div className="chart-container">
-                      {createChartData()?.unitSalesChart && (
-                        <Bar {...createChartData().unitSalesChart} />
-                      )}
-                    </div>
-                  </div>
-                  
                   <div className="chart-grid">
                     <div className="chart-item page-break-avoid">
                       <div className="chart-title">Price Range Distribution</div>
@@ -2086,6 +1989,7 @@ const NewsletterGenerator = () => {
                           <th className="beds-col">Beds</th>
                           <th className="baths-col">Baths</th>
                           <th className="sqft-col">Sq Ft</th>
+                          <th className="price-per-sqft-col">$/Sq Ft</th>
                           <th className="year-col">Year</th>
                         </tr>
                       </thead>
@@ -2099,6 +2003,7 @@ const NewsletterGenerator = () => {
                             <td>{listing.beds}</td>
                             <td>{listing.baths}</td>
                             <td>{listing.sqft?.toLocaleString()}</td>
+                            <td>{listing.pricePerSqft ? `$${listing.pricePerSqft}` : 'N/A'}</td>
                             <td>{listing.yearBuilt}</td>
                           </tr>
                         ))}
