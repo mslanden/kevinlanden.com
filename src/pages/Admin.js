@@ -7,6 +7,7 @@ import { getNewsletterSubscribers } from '../utils/api';
 import api from '../utils/api';
 import AdminLogin from '../components/AdminLogin';
 import NewsletterGenerator from '../components/NewsletterGenerator';
+import MarketDataManager from '../components/MarketDataManager';
 
 const PageContainer = styled.div`
   padding-top: 80px; /* Account for navbar */
@@ -868,6 +869,9 @@ const Admin = () => {
               )}
             </div>
           </ContactSubmissionsSection>
+          
+          {/* Market Data Management Section */}
+          <MarketDataManager />
           
           {/* Newsletter Generator Section */}
           <NewsletterGenerator />

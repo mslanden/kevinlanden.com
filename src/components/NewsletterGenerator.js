@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaUpload, FaFileAlt, FaSpinner } from 'react-icons/fa';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { Chart, Doughnut, Bar, Line } from 'react-chartjs-2';
+import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -816,6 +816,10 @@ const NewsletterGenerator = () => {
   const [extractedData, setExtractedData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [marketData, setMarketData] = useState({
+    pricePerSqft: [],
+    daysOnMarket: []
+  });
   const previewRef = useRef();
   const fileInputRef = useRef();
 
@@ -830,12 +834,42 @@ const NewsletterGenerator = () => {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+  
+  // Fetch initial market data
+  useEffect(() => {
+    fetchMarketData(newsletterData.community);
+  }, []);
 
   const handleInputChange = (field, value) => {
     setNewsletterData(prev => ({
       ...prev,
       [field]: value
     }));
+    // Fetch market data when community changes
+    if (field === 'community') {
+      fetchMarketData(value);
+    }
+  };
+  
+  const fetchMarketData = async (community) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/all/${community}?limit=6`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setMarketData({
+          pricePerSqft: data.pricePerSqft || [],
+          daysOnMarket: data.daysOnMarket || []
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+    }
   };
 
   const handleFileUpload = async (files) => {
@@ -1647,7 +1681,101 @@ const NewsletterGenerator = () => {
             }
           }
         }
-      }
+      },
+      
+      // New: Price per Sq Ft 6-Month Trend Chart
+      pricePerSqftTrendChart: marketData.pricePerSqft.length > 0 ? {
+        data: {
+          labels: marketData.pricePerSqft.slice(0, 6).reverse().map(item => 
+            `${months[item.month - 1].substring(0, 3)} ${item.year}`
+          ),
+          datasets: [{
+            label: 'Price per Sq Ft',
+            data: marketData.pricePerSqft.slice(0, 6).reverse().map(item => item.price_per_sqft),
+            borderColor: '#8b4513',
+            backgroundColor: 'rgba(139, 69, 19, 0.1)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#8b4513',
+            tension: 0.1
+          }]
+        },
+        options: {
+          ...baseOptions,
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#333' }
+            },
+            y: {
+              grid: { color: '#e0e0e0' },
+              ticks: { 
+                font: { size: 10 }, 
+                color: '#333',
+                callback: function(value) {
+                  return '$' + value;
+                }
+              }
+            }
+          },
+          plugins: {
+            ...baseOptions.plugins,
+            title: {
+              display: true,
+              text: 'Price per Sq Ft - 6 Month Trend',
+              font: { size: 12 },
+              color: '#333'
+            }
+          }
+        }
+      } : null,
+      
+      // New: Days on Market Average Chart
+      daysOnMarketChart: marketData.daysOnMarket.length > 0 ? {
+        data: {
+          labels: marketData.daysOnMarket.slice(0, 6).reverse().map(item => 
+            `${months[item.month - 1].substring(0, 3)} ${item.year}`
+          ),
+          datasets: [{
+            label: 'Average Days on Market',
+            data: marketData.daysOnMarket.slice(0, 6).reverse().map(item => item.average_days_on_market),
+            backgroundColor: '#d2b48c',
+            borderColor: '#8b4513',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          ...baseOptions,
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#333' }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#e0e0e0' },
+              ticks: { 
+                font: { size: 10 }, 
+                color: '#333',
+                stepSize: 10
+              }
+            }
+          },
+          plugins: {
+            ...baseOptions.plugins,
+            title: {
+              display: true,
+              text: 'Average Days on Market - 6 Month Trend',
+              font: { size: 12 },
+              color: '#333'
+            }
+          }
+        }
+      } : null
     };
   };
 
@@ -1973,6 +2101,27 @@ const NewsletterGenerator = () => {
                         )}
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* New row for market trend charts */}
+                  <div className="chart-grid" style={{ marginTop: '2rem' }}>
+                    {createChartData()?.pricePerSqftTrendChart && (
+                      <div className="chart-item page-break-avoid">
+                        <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
+                        <div className="chart-container">
+                          <Line {...createChartData().pricePerSqftTrendChart} />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {createChartData()?.daysOnMarketChart && (
+                      <div className="chart-item page-break-avoid">
+                        <div className="chart-title">Average Days on Market - 6 Month Trend</div>
+                        <div className="chart-container">
+                          <Bar {...createChartData().daysOnMarketChart} />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
