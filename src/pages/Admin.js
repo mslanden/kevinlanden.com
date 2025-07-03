@@ -1,59 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { FaUsers, FaCopy, FaTag, FaRedo, FaSignOutAlt, FaEnvelope, FaTrash, FaCheckCircle } from 'react-icons/fa';
+import { FaUsers, FaCopy, FaTag, FaRedo, FaEnvelope, FaTrash, FaCheckCircle } from 'react-icons/fa';
 import { getNewsletterSubscribers } from '../utils/api';
 import api from '../utils/api';
 import AdminLogin from '../components/AdminLogin';
 import NewsletterGenerator from '../components/NewsletterGenerator';
 import MarketDataManager from '../components/MarketDataManager';
+import AdminLayout from '../components/admin/AdminLayout';
+import AdminDashboard from '../components/admin/AdminDashboard';
+import AdminCard from '../components/admin/AdminCard';
 
 const PageContainer = styled.div`
-  padding-top: 80px; /* Account for navbar */
   min-height: 100vh;
   background-color: ${props => props.theme.colors.background.dark};
 `;
 
-const PageHeader = styled.div`
-  background-color: ${props => props.theme.colors.background.richDark};
-  padding: 3rem 0;
+const LoginContainer = styled.div`
+  padding-top: 80px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LoginHeader = styled.div`
   text-align: center;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-`;
-
-const HeaderContent = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-`;
-
-const PageTitle = styled(motion.h1)`
-  font-family: ${props => props.theme.fonts.heading};
-  font-size: 3rem;
-  color: ${props => props.theme.colors.text.secondary};
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    font-size: 2.5rem;
+  h1 {
+    font-family: ${props => props.theme.fonts.heading};
+    font-size: 3rem;
+    color: ${props => props.theme.colors.text.secondary};
+    margin-bottom: 1rem;
   }
-`;
-
-const PageDescription = styled(motion.p)`
-  font-size: 1.1rem;
-  color: ${props => props.theme.colors.text.primary};
-  max-width: 600px;
-  margin: 0 auto;
-`;
-
-const ContentSection = styled.section`
-  padding: 3rem 0;
-`;
-
-const ContentContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
 `;
 
 const StatsContainer = styled(motion.div)`
@@ -79,38 +60,6 @@ const StatCard = styled(motion.div)`
   p {
     color: ${props => props.theme.colors.text.secondary};
     font-size: 1.1rem;
-  }
-`;
-
-const CommunitySection = styled(motion.div)`
-  margin-bottom: 3rem;
-  background-color: rgba(20, 20, 20, 0.85);
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: ${props => props.theme.borderRadius.default};
-  overflow: hidden;
-`;
-
-const CommunityHeader = styled.div`
-  background-color: rgba(139, 69, 19, 0.2);
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  
-  h2 {
-    font-family: ${props => props.theme.fonts.heading};
-    font-size: 1.8rem;
-    color: ${props => props.theme.colors.text.secondary};
-    margin: 0;
-    text-transform: capitalize;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    
-    svg {
-      color: ${props => props.theme.colors.primary};
-    }
   }
 `;
 
@@ -188,7 +137,6 @@ const SubscriberTable = styled.table`
   }
 `;
 
-
 const LoadingMessage = styled.div`
   text-align: center;
   padding: 4rem;
@@ -205,34 +153,6 @@ const ErrorMessage = styled.div`
   border-radius: ${props => props.theme.borderRadius.default};
   margin: 2rem auto;
   max-width: 600px;
-`;
-
-const BlowoutSaleSection = styled(motion.div)`
-  margin-bottom: 3rem;
-  background-color: rgba(20, 20, 20, 0.85);
-  border: 2px solid ${props => props.theme.colors.primary};
-  border-radius: ${props => props.theme.borderRadius.default};
-  overflow: hidden;
-`;
-
-const BlowoutHeader = styled.div`
-  background: linear-gradient(135deg, rgba(139, 69, 19, 0.3) 0%, rgba(184, 134, 11, 0.3) 100%);
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-  
-  h2 {
-    font-family: ${props => props.theme.fonts.heading};
-    font-size: 2rem;
-    color: ${props => props.theme.colors.text.secondary};
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    
-    svg {
-      color: ${props => props.theme.colors.accent};
-    }
-  }
 `;
 
 const BlowoutContent = styled.div`
@@ -337,15 +257,6 @@ const SuccessMessage = styled.div`
   margin-top: 1rem;
 `;
 
-// Contact Submissions Styles
-const ContactSubmissionsSection = styled(motion.div)`
-  margin-bottom: 3rem;
-  background-color: rgba(20, 20, 20, 0.85);
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: ${props => props.theme.borderRadius.default};
-  overflow: hidden;
-`;
-
 const ContactMessage = styled.div`
   padding: 1.5rem;
   border-bottom: 1px solid ${props => props.theme.colors.border};
@@ -417,28 +328,6 @@ const MessageContent = styled.div`
   white-space: pre-wrap;
 `;
 
-const LogoutButton = styled.button`
-  position: fixed;
-  top: 100px;
-  right: 2rem;
-  background-color: ${props => props.theme.colors.primary};
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: ${props => props.theme.borderRadius.small};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  z-index: 1000;
-  
-  &:hover {
-    background-color: ${props => props.theme.colors.tertiary};
-  }
-`;
-
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
@@ -446,6 +335,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copiedCommunity, setCopiedCommunity] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
   
   // Blowout Sale States
   const [blowoutSale, setBlowoutSale] = useState(null);
@@ -484,16 +374,6 @@ const Admin = () => {
       setLoading(false);
     }
   }, []);
-  
-  const [headerRef, headerInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.2,
-  });
-  
-  const [contentRef, contentInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
   
   const fetchSubscribers = async () => {
     try {
@@ -632,6 +512,7 @@ const Admin = () => {
     setLoading(true);
     fetchSubscribers();
     fetchBlowoutSaleStatus();
+    fetchContactSubmissions();
   };
 
   const handleLogout = () => {
@@ -662,289 +543,288 @@ const Admin = () => {
     });
   };
   
+  // Calculate stats for dashboard
+  const unreadMessagesCount = contactSubmissions.filter(msg => !msg.read).length;
+  const recentActivity = [];
+  
+  // Add recent contact submissions to activity
+  contactSubmissions.slice(0, 3).forEach(submission => {
+    recentActivity.push({
+      type: 'contact',
+      message: `New message from ${submission.name}`,
+      time: new Date(submission.created_at).toLocaleString()
+    });
+  });
+  
   // Show login form if not authenticated
   if (!isAuthenticated) {
     return (
       <PageContainer>
-        <PageHeader>
-          <HeaderContent>
-            <PageTitle>Newsletter Admin</PageTitle>
-          </HeaderContent>
-        </PageHeader>
-        <AdminLogin onLoginSuccess={handleLoginSuccess} />
-      </PageContainer>
-    );
-  }
-
-  if (loading) {
-    return (
-      <PageContainer>
-        <LogoutButton onClick={handleLogout}>
-          <FaSignOutAlt />
-          Logout
-        </LogoutButton>
-        <PageHeader>
-          <HeaderContent>
-            <PageTitle>Newsletter Admin</PageTitle>
-          </HeaderContent>
-        </PageHeader>
-        <LoadingMessage>Loading subscribers...</LoadingMessage>
+        <LoginContainer>
+          <LoginHeader>
+            <h1>Admin Portal</h1>
+          </LoginHeader>
+          <AdminLogin onLoginSuccess={handleLoginSuccess} />
+        </LoginContainer>
       </PageContainer>
     );
   }
   
-  if (error) {
+  if (loading) {
     return (
       <PageContainer>
-        <LogoutButton onClick={handleLogout}>
-          <FaSignOutAlt />
-          Logout
-        </LogoutButton>
-        <PageHeader>
-          <HeaderContent>
-            <PageTitle>Newsletter Admin</PageTitle>
-          </HeaderContent>
-        </PageHeader>
-        <ErrorMessage>{error}</ErrorMessage>
+        <AdminLayout 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          user={user} 
+          onLogout={handleLogout}
+        >
+          <LoadingMessage>Loading data...</LoadingMessage>
+        </AdminLayout>
       </PageContainer>
     );
   }
   
   const communities = ['anza', 'aguanga', 'idyllwild', 'mountain-center'];
   
+  const renderContent = () => {
+    switch(activeTab) {
+      case 'dashboard':
+        return (
+          <AdminDashboard
+            subscribersCount={subscribers?.total || 0}
+            unreadMessagesCount={unreadMessagesCount}
+            totalMessagesCount={contactSubmissions.length}
+            blowoutSaleData={blowoutSale}
+            recentActivity={recentActivity}
+            onNavigate={setActiveTab}
+          />
+        );
+        
+      case 'subscribers':
+        return renderSubscribersContent();
+        
+      case 'contacts':
+        return renderContactsContent();
+        
+      case 'blowout':
+        return renderBlowoutContent();
+        
+      case 'market':
+        return <MarketDataManager />;
+        
+      case 'newsletter':
+        return <NewsletterGenerator />;
+        
+      default:
+        return null;
+    }
+  };
+  
+  const renderSubscribersContent = () => (
+    <>
+      <StatsContainer>
+        <StatCard>
+          <h3>{subscribers?.total || 0}</h3>
+          <p>Total Subscribers</p>
+        </StatCard>
+        {communities.map(community => (
+          <StatCard key={community}>
+            <h3>{subscribers?.subscribersByCommunity[community]?.length || 0}</h3>
+            <p>{community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')}</p>
+          </StatCard>
+        ))}
+      </StatsContainer>
+      
+      {communities.map((community, index) => (
+        <AdminCard
+          key={community}
+          title={`${community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')} Subscribers`}
+          icon={FaUsers}
+          headerActions={
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <SubscriberCount>
+                {subscribers?.subscribersByCommunity[community]?.length || 0} subscribers
+              </SubscriberCount>
+              <CopyButton onClick={() => copyEmailsToClipboard(community)}>
+                <FaCopy />
+                {copiedCommunity === community ? 'Copied!' : 'Copy Emails'}
+              </CopyButton>
+            </div>
+          }
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 * index }}
+        >
+          <SubscriberList>
+            {subscribers?.subscribersByCommunity[community]?.length > 0 ? (
+              <SubscriberTable>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subscribed Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.subscribersByCommunity[community].map((subscriber, idx) => (
+                    <tr key={idx}>
+                      <td>{subscriber.name}</td>
+                      <td>{subscriber.email}</td>
+                      <td>{formatDate(subscriber.subscribedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </SubscriberTable>
+            ) : (
+              <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                No subscribers yet for this community
+              </p>
+            )}
+          </SubscriberList>
+        </AdminCard>
+      ))}
+    </>
+  );
+  
+  const renderContactsContent = () => (
+    <AdminCard
+      title="Contact Submissions"
+      icon={FaEnvelope}
+      headerActions={
+        <SubscriberCount>
+          {contactSubmissions.length} messages
+        </SubscriberCount>
+      }
+      noPadding
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      {contactLoading ? (
+        <LoadingMessage>Loading contact submissions...</LoadingMessage>
+      ) : contactSubmissions.length > 0 ? (
+        contactSubmissions.map((submission) => (
+          <ContactMessage 
+            key={submission.id}
+            className={!submission.read ? 'unread' : ''}
+          >
+            <MessageHeader>
+              <MessageInfo>
+                <h4>{submission.subject}</h4>
+                <p><strong>From:</strong> {submission.name} ({submission.email})</p>
+                {submission.phone && <p><strong>Phone:</strong> {submission.phone}</p>}
+                <p><strong>Submitted:</strong> {new Date(submission.created_at).toLocaleString()}</p>
+              </MessageInfo>
+              <MessageActions>
+                {!submission.read && (
+                  <MessageActionButton onClick={() => markAsRead(submission.id)}>
+                    <FaCheckCircle />
+                    Mark Read
+                  </MessageActionButton>
+                )}
+                <MessageActionButton 
+                  variant="danger" 
+                  onClick={() => deleteSubmission(submission.id)}
+                >
+                  <FaTrash />
+                  Delete
+                </MessageActionButton>
+              </MessageActions>
+            </MessageHeader>
+            <MessageContent>{submission.message}</MessageContent>
+          </ContactMessage>
+        ))
+      ) : (
+        <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+          No contact submissions yet
+        </p>
+      )}
+    </AdminCard>
+  );
+  
+  const renderBlowoutContent = () => (
+    <AdminCard
+      title="2025 Blowout Sale Management"
+      icon={FaTag}
+      iconColor={props => props.theme.colors.accent}
+      headerBg="linear-gradient(135deg, rgba(139, 69, 19, 0.3) 0%, rgba(184, 134, 11, 0.3) 100%)"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <BlowoutContent>
+        <BlowoutStats>
+          <BlowoutStatCard>
+            <h3>{blowoutSale?.spotsRemaining || spotsRemaining}</h3>
+            <p>Spots Remaining</p>
+          </BlowoutStatCard>
+          <BlowoutStatCard>
+            <h3>{blowoutSale?.totalSpots || totalSpots}</h3>
+            <p>Total Spots</p>
+          </BlowoutStatCard>
+          <BlowoutStatCard>
+            <h3>{blowoutSale ? (blowoutSale.totalSpots - blowoutSale.spotsRemaining) : 0}</h3>
+            <p>Spots Claimed</p>
+          </BlowoutStatCard>
+        </BlowoutStats>
+        
+        <BlowoutControls>
+          <InputGroup>
+            <label>Spots Remaining:</label>
+            <input
+              type="number"
+              value={spotsRemaining}
+              onChange={(e) => setSpotsRemaining(parseInt(e.target.value) || 0)}
+              min="0"
+              max={totalSpots}
+            />
+          </InputGroup>
+          
+          <InputGroup>
+            <label>Total Spots:</label>
+            <input
+              type="number"
+              value={totalSpots}
+              onChange={(e) => setTotalSpots(parseInt(e.target.value) || 0)}
+              min="1"
+            />
+          </InputGroup>
+          
+          <ActionButton
+            onClick={updateBlowoutSale}
+            disabled={blowoutLoading}
+          >
+            Update Sale
+          </ActionButton>
+          
+          <ActionButton
+            variant="danger"
+            onClick={resetBlowoutSale}
+            disabled={blowoutLoading}
+          >
+            <FaRedo />
+            Reset Sale
+          </ActionButton>
+        </BlowoutControls>
+        
+        {blowoutSuccess && (
+          <SuccessMessage>{blowoutSuccess}</SuccessMessage>
+        )}
+      </BlowoutContent>
+    </AdminCard>
+  );
+  
   return (
     <PageContainer>
-      <LogoutButton onClick={handleLogout}>
-        <FaSignOutAlt />
-        Logout
-      </LogoutButton>
-      <PageHeader ref={headerRef}>
-        <HeaderContent>
-          <PageTitle
-            initial={{ opacity: 0, y: 30 }}
-            animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.8 }}
-          >
-            Newsletter Admin
-          </PageTitle>
-          <PageDescription
-            initial={{ opacity: 0, y: 30 }}
-            animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            Manage newsletter subscribers and export email lists for each community
-          </PageDescription>
-        </HeaderContent>
-      </PageHeader>
-      
-      <ContentSection>
-        <ContentContainer ref={contentRef}>
-          {/* Blowout Sale Management Section */}
-          <BlowoutSaleSection
-            initial={{ opacity: 0, y: 30 }}
-            animate={contentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.6 }}
-          >
-            <BlowoutHeader>
-              <h2>
-                <FaTag />
-                2025 Blowout Sale Management
-              </h2>
-            </BlowoutHeader>
-            <BlowoutContent>
-              <BlowoutStats>
-                <BlowoutStatCard>
-                  <h3>{blowoutSale?.spotsRemaining || spotsRemaining}</h3>
-                  <p>Spots Remaining</p>
-                </BlowoutStatCard>
-                <BlowoutStatCard>
-                  <h3>{blowoutSale?.totalSpots || totalSpots}</h3>
-                  <p>Total Spots</p>
-                </BlowoutStatCard>
-                <BlowoutStatCard>
-                  <h3>{blowoutSale ? (blowoutSale.totalSpots - blowoutSale.spotsRemaining) : 0}</h3>
-                  <p>Spots Claimed</p>
-                </BlowoutStatCard>
-              </BlowoutStats>
-              
-              <BlowoutControls>
-                <InputGroup>
-                  <label>Spots Remaining:</label>
-                  <input
-                    type="number"
-                    value={spotsRemaining}
-                    onChange={(e) => setSpotsRemaining(parseInt(e.target.value) || 0)}
-                    min="0"
-                    max={totalSpots}
-                  />
-                </InputGroup>
-                
-                <InputGroup>
-                  <label>Total Spots:</label>
-                  <input
-                    type="number"
-                    value={totalSpots}
-                    onChange={(e) => setTotalSpots(parseInt(e.target.value) || 0)}
-                    min="1"
-                  />
-                </InputGroup>
-                
-                <ActionButton
-                  onClick={updateBlowoutSale}
-                  disabled={blowoutLoading}
-                >
-                  Update Sale
-                </ActionButton>
-                
-                <ActionButton
-                  variant="danger"
-                  onClick={resetBlowoutSale}
-                  disabled={blowoutLoading}
-                >
-                  <FaRedo />
-                  Reset Sale
-                </ActionButton>
-              </BlowoutControls>
-              
-              {blowoutSuccess && (
-                <SuccessMessage>{blowoutSuccess}</SuccessMessage>
-              )}
-            </BlowoutContent>
-          </BlowoutSaleSection>
-          
-          {/* Contact Submissions Section */}
-          <ContactSubmissionsSection
-            initial={{ opacity: 0, y: 30 }}
-            animate={contentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <CommunityHeader>
-              <h2>
-                <FaEnvelope />
-                Contact Submissions
-              </h2>
-              <SubscriberCount>
-                {contactSubmissions.length} messages
-              </SubscriberCount>
-            </CommunityHeader>
-            <div style={{ padding: '0' }}>
-              {contactLoading ? (
-                <LoadingMessage>Loading contact submissions...</LoadingMessage>
-              ) : contactSubmissions.length > 0 ? (
-                contactSubmissions.map((submission) => (
-                  <ContactMessage 
-                    key={submission.id}
-                    className={!submission.read ? 'unread' : ''}
-                  >
-                    <MessageHeader>
-                      <MessageInfo>
-                        <h4>{submission.subject}</h4>
-                        <p><strong>From:</strong> {submission.name} ({submission.email})</p>
-                        {submission.phone && <p><strong>Phone:</strong> {submission.phone}</p>}
-                        <p><strong>Submitted:</strong> {new Date(submission.created_at).toLocaleString()}</p>
-                      </MessageInfo>
-                      <MessageActions>
-                        {!submission.read && (
-                          <MessageActionButton onClick={() => markAsRead(submission.id)}>
-                            <FaCheckCircle />
-                            Mark Read
-                          </MessageActionButton>
-                        )}
-                        <MessageActionButton 
-                          variant="danger" 
-                          onClick={() => deleteSubmission(submission.id)}
-                        >
-                          <FaTrash />
-                          Delete
-                        </MessageActionButton>
-                      </MessageActions>
-                    </MessageHeader>
-                    <MessageContent>{submission.message}</MessageContent>
-                  </ContactMessage>
-                ))
-              ) : (
-                <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
-                  No contact submissions yet
-                </p>
-              )}
-            </div>
-          </ContactSubmissionsSection>
-          
-          {/* Market Data Management Section */}
-          <MarketDataManager />
-          
-          {/* Newsletter Generator Section */}
-          <NewsletterGenerator />
-          
-          <StatsContainer
-            initial={{ opacity: 0, y: 30 }}
-            animate={contentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.6 }}
-          >
-            <StatCard>
-              <h3>{subscribers?.total || 0}</h3>
-              <p>Total Subscribers</p>
-            </StatCard>
-            {communities.map(community => (
-              <StatCard key={community}>
-                <h3>{subscribers?.subscribersByCommunity[community]?.length || 0}</h3>
-                <p>{community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')}</p>
-              </StatCard>
-            ))}
-          </StatsContainer>
-          
-          {communities.map((community, index) => (
-            <CommunitySection
-              key={community}
-              initial={{ opacity: 0, y: 30 }}
-              animate={contentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-              transition={{ duration: 0.6, delay: 0.1 * (index + 1) }}
-            >
-              <CommunityHeader>
-                <h2>
-                  <FaUsers />
-                  {community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')} Subscribers
-                </h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <SubscriberCount>
-                    {subscribers?.subscribersByCommunity[community]?.length || 0} subscribers
-                  </SubscriberCount>
-                  <CopyButton onClick={() => copyEmailsToClipboard(community)}>
-                    <FaCopy />
-                    {copiedCommunity === community ? 'Copied!' : 'Copy Emails'}
-                  </CopyButton>
-                </div>
-              </CommunityHeader>
-              <SubscriberList>
-                {subscribers?.subscribersByCommunity[community]?.length > 0 ? (
-                  <SubscriberTable>
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Subscribed Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {subscribers.subscribersByCommunity[community].map((subscriber, idx) => (
-                        <tr key={idx}>
-                          <td>{subscriber.name}</td>
-                          <td>{subscriber.email}</td>
-                          <td>{formatDate(subscriber.subscribedAt)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </SubscriberTable>
-                ) : (
-                  <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
-                    No subscribers yet for this community
-                  </p>
-                )}
-              </SubscriberList>
-            </CommunitySection>
-          ))}
-        </ContentContainer>
-      </ContentSection>
+      <AdminLayout 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        user={user} 
+        onLogout={handleLogout}
+      >
+        {renderContent()}
+      </AdminLayout>
     </PageContainer>
   );
 };
