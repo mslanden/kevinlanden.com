@@ -279,21 +279,29 @@ const MarketDataManager = () => {
   const fetchAllLocationData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/all/${selectedLocation}?limit=20`,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-          }
+      console.log('Fetching data for location:', selectedLocation);
+      const url = `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/all/${selectedLocation}?limit=20`;
+      console.log('API URL:', url);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
-      );
+      });
+      
+      console.log('Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Received data:', data);
         setAllLocationData({
           pricePerSqft: data.pricePerSqft || [],
           daysOnMarket: data.daysOnMarket || []
         });
+      } else {
+        const errorData = await response.text();
+        console.error('API Error:', errorData);
+        setMessage({ type: 'error', text: 'Failed to fetch location data' });
       }
     } catch (error) {
       console.error('Error fetching location data:', error);
