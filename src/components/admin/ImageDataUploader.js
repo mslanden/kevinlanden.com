@@ -11,7 +11,7 @@ const UploadContainer = styled.div`
 
 const DateForm = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
   
@@ -276,6 +276,7 @@ const ImageDataUploader = ({ onDataExtracted }) => {
   const [pdfSupported, setPdfSupported] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedLocation, setSelectedLocation] = useState('anza');
 
   // Check if PDF processing is supported by the backend
   const checkPdfSupport = async () => {
@@ -427,7 +428,8 @@ const ImageDataUploader = ({ onDataExtracted }) => {
         formData.append(`images`, image.file);
       });
       
-      // Add the selected month and year
+      // Add the selected location, month and year
+      formData.append('reportLocation', selectedLocation);
       formData.append('reportMonth', selectedMonth.toString());
       formData.append('reportYear', selectedYear.toString());
       
@@ -504,6 +506,18 @@ const ImageDataUploader = ({ onDataExtracted }) => {
     >
       <UploadContainer>
         <DateForm>
+          <div>
+            <label>Location *</label>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+            >
+              <option value="anza">Anza</option>
+              <option value="aguanga">Aguanga</option>
+              <option value="idyllwild">Idyllwild</option>
+              <option value="mountain_center">Mountain Center</option>
+            </select>
+          </div>
           <div>
             <label>Report Month *</label>
             <select
