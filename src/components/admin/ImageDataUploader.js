@@ -244,6 +244,38 @@ const ImageDataUploader = ({ onDataExtracted }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [extractedData, setExtractedData] = useState(null);
   const [error, setError] = useState(null);
+  const [pdfSupported, setPdfSupported] = useState(true);
+
+  // Check if PDF processing is supported by the backend
+  const checkPdfSupport = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/pdf-support`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPdfSupported(data.pdfSupported);
+        console.log('PDF support status:', data.pdfSupported ? 'Available' : 'Not available');
+      } else {
+        console.log('Could not check PDF support status');
+        // Default to false if we can't check
+        setPdfSupported(false);
+      }
+    } catch (error) {
+      console.log('PDF support check failed:', error);
+      // Default to false on network errors
+      setPdfSupported(false);
+    }
+  };
+
+  // Check PDF support on component mount
+  React.useEffect(() => {
+    checkPdfSupport();
+  }, []);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -267,40 +299,85 @@ const ImageDataUploader = ({ onDataExtracted }) => {
     handleFiles(files);
   };
 
-  const handleFiles = (files) => {
-    const validFiles = files.filter(file => 
-      file.type.startsWith('image/') || file.type === 'application/pdf'
-    );
-    
-    validFiles.forEach(file => {
+  const handleFiles = async (files) => {
+    for (const file of files) {
       if (file.type === 'application/pdf') {
-        // For PDFs, we don't need a preview
+        // Handle PDF - convert to images first
+        await handlePdfConversion(file);
+      } else if (file.type.startsWith('image/')) {
+        // Handle regular image
+        handleImageFile(file);
+      } else {
+        setError('Only image and PDF files are supported.');
+        setTimeout(() => setError(null), 3000);
+      }
+    }
+  };
+
+  const handlePdfConversion = async (pdfFile) => {
+    if (!pdfSupported) {
+      setError('PDF processing is not available on this server. Please convert PDFs to image format (PNG/JPG).');
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('pdf', pdfFile);
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/convert-pdf-to-images`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to convert PDF');
+      }
+      
+      const data = await response.json();
+      
+      // Add converted images to the list
+      data.images.forEach((imageData, index) => {
+        const blob = new Blob([Uint8Array.from(atob(imageData.data), c => c.charCodeAt(0))], { type: imageData.mimeType });
+        const imageFile = new File([blob], imageData.filename, { type: imageData.mimeType });
+        
         const newImage = {
-          id: Date.now() + Math.random(),
-          file,
-          preview: null,
-          name: file.name,
-          size: file.size,
-          status: 'pending'
+          id: Date.now() + Math.random() + index,
+          file: imageFile,
+          preview: `data:${imageData.mimeType};base64,${imageData.data}`,
+          name: imageData.filename,
+          size: imageFile.size,
+          status: 'converted',
+          originalPdf: pdfFile.name
         };
         setImages(prev => [...prev, newImage]);
-      } else {
-        // For images, create a preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const newImage = {
-            id: Date.now() + Math.random(),
-            file,
-            preview: e.target.result,
-            name: file.name,
-            size: file.size,
-            status: 'pending'
-          };
-          setImages(prev => [...prev, newImage]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+      });
+      
+    } catch (error) {
+      console.error('PDF conversion error:', error);
+      setError(error.message);
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
+  const handleImageFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const newImage = {
+        id: Date.now() + Math.random(),
+        file,
+        preview: e.target.result,
+        name: file.name,
+        size: file.size,
+        status: 'pending'
+      };
+      setImages(prev => [...prev, newImage]);
+    };
+    reader.readAsDataURL(file);
   };
 
   const removeImage = (imageId) => {
@@ -328,7 +405,8 @@ const ImageDataUploader = ({ onDataExtracted }) => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to process images');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to process images');
       }
       
       const data = await response.json();
@@ -339,6 +417,12 @@ const ImageDataUploader = ({ onDataExtracted }) => {
       
     } catch (err) {
       setError(err.message);
+      
+      // Check if this was a PDF processing error and update PDF support status
+      if (err.message && err.message.includes('PDF processing is not available')) {
+        setPdfSupported(false);
+      }
+      
       setImages(prev => prev.map(img => ({ ...img, status: 'error' })));
     } finally {
       setIsProcessing(false);
@@ -396,14 +480,14 @@ const ImageDataUploader = ({ onDataExtracted }) => {
           </UploadIcon>
           <UploadText>
             <h3>Upload Market Statistics Files</h3>
-            <p>Drag and drop images or PDFs here, or click to select files</p>
-            <p>Supports: PNG, JPG, JPEG, PDF (Max 10MB each)</p>
+            <p>Drag and drop images{pdfSupported ? ' or PDFs' : ''} here, or click to select files</p>
+            <p>Supports: PNG, JPG, JPEG{pdfSupported ? ', PDF' : ''} (Max 10MB each)</p>
           </UploadText>
           <HiddenInput
             id="imageInput"
             type="file"
             multiple
-            accept="image/*,application/pdf"
+            accept={pdfSupported ? "image/*,application/pdf" : "image/*"}
             onChange={handleFileInput}
           />
         </UploadZone>
@@ -428,6 +512,12 @@ const ImageDataUploader = ({ onDataExtracted }) => {
                   <p>Size: {(image.size / 1024 / 1024).toFixed(2)} MB</p>
                   <StatusIndicator className={image.status}>
                     {image.status === 'pending' && <span>Ready to process</span>}
+                    {image.status === 'converted' && (
+                      <>
+                        <FaCheckCircle />
+                        <span>Converted from PDF: {image.originalPdf}</span>
+                      </>
+                    )}
                     {image.status === 'uploading' && (
                       <>
                         <SpinningIcon as={FaSpinner} />
