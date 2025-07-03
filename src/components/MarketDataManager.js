@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaChartLine, FaSave, FaCalendarAlt, FaMapMarkedAlt, FaImage } from 'react-icons/fa';
+import { FaChartLine, FaSave, FaCalendarAlt, FaMapMarkedAlt, FaImage, FaTable } from 'react-icons/fa';
 import { Line, Bar } from 'react-chartjs-2';
 import ImageDataUploader from './admin/ImageDataUploader';
 
@@ -203,6 +203,10 @@ const MarketDataManager = () => {
     pricePerSqft: [],
     daysOnMarket: []
   });
+  const [allLocationData, setAllLocationData] = useState({
+    pricePerSqft: [],
+    daysOnMarket: []
+  });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   
@@ -240,7 +244,10 @@ const MarketDataManager = () => {
   
   useEffect(() => {
     fetchMarketData();
-  }, [selectedLocation]);
+    if (activeTab === 'view-data') {
+      fetchAllLocationData();
+    }
+  }, [selectedLocation, activeTab]);
   
   const fetchMarketData = async () => {
     setLoading(true);
@@ -264,6 +271,33 @@ const MarketDataManager = () => {
     } catch (error) {
       console.error('Error fetching market data:', error);
       setMessage({ type: 'error', text: 'Failed to fetch market data' });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const fetchAllLocationData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const result = await response.json();
+        setAllLocationData({
+          pricePerSqft: result.data.pricePerSqft || [],
+          daysOnMarket: result.data.daysOnMarket || []
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching all location data:', error);
+      setMessage({ type: 'error', text: 'Failed to fetch all location data' });
     } finally {
       setLoading(false);
     }
@@ -447,6 +481,13 @@ const MarketDataManager = () => {
             onClick={() => setActiveTab('days-on-market')}
           >
             Days on Market
+          </Tab>
+          <Tab
+            active={activeTab === 'view-data'}
+            onClick={() => setActiveTab('view-data')}
+          >
+            <FaTable style={{ marginRight: '0.5rem' }} />
+            View Data
           </Tab>
           <Tab
             active={activeTab === 'image-upload'}
@@ -691,6 +732,123 @@ const MarketDataManager = () => {
                 </tbody>
               </DataTable>
             )}
+          </>
+        )}
+        
+        {activeTab === 'view-data' && (
+          <>
+            <div style={{ 
+              backgroundColor: 'rgba(139, 69, 19, 0.1)', 
+              padding: '1.5rem', 
+              borderRadius: '8px',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ color: '#8b4513', marginBottom: '1rem' }}>
+                Current Market Data - All Locations
+              </h3>
+              <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+                Showing the most recent 6 months of data across all locations
+              </p>
+              
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}>Loading...</div>
+              ) : (
+                <>
+                  {/* Price Per Sq Ft Data */}
+                  {allLocationData.pricePerSqft.length > 0 && (
+                    <div style={{ marginBottom: '2rem' }}>
+                      <h4 style={{ color: '#8b4513', marginBottom: '1rem' }}>Price Per Square Foot</h4>
+                      <DataTable>
+                        <thead>
+                          <tr>
+                            <th>Location</th>
+                            <th>Month/Year</th>
+                            <th>Price/Sq Ft</th>
+                            <th>Average Price</th>
+                            <th>Total Sales</th>
+                            <th>Median Days</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allLocationData.pricePerSqft
+                            .sort((a, b) => {
+                              // Sort by year, then month, then location
+                              if (a.year !== b.year) return b.year - a.year;
+                              if (a.month !== b.month) return b.month - a.month;
+                              return a.location.localeCompare(b.location);
+                            })
+                            .map((item, index) => (
+                            <tr key={`${item.location}-${item.month}-${item.year}`}>
+                              <td style={{ textTransform: 'capitalize', fontWeight: '600' }}>
+                                {item.location.replace('_', ' ')}
+                              </td>
+                              <td>{months[item.month - 1]} {item.year}</td>
+                              <td>${item.price_per_sqft}</td>
+                              <td>{item.average_price ? `$${parseInt(item.average_price).toLocaleString()}` : 'N/A'}</td>
+                              <td>{item.total_sales || 'N/A'}</td>
+                              <td>{item.median_days_on_market || 'N/A'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </DataTable>
+                    </div>
+                  )}
+                  
+                  {/* Days on Market Data */}
+                  {allLocationData.daysOnMarket.length > 0 && (
+                    <div>
+                      <h4 style={{ color: '#8b4513', marginBottom: '1rem' }}>Days on Market</h4>
+                      <DataTable>
+                        <thead>
+                          <tr>
+                            <th>Location</th>
+                            <th>Month/Year</th>
+                            <th>Avg Days</th>
+                            <th>Median Days</th>
+                            <th>Min Days</th>
+                            <th>Max Days</th>
+                            <th>Properties Sold</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allLocationData.daysOnMarket
+                            .sort((a, b) => {
+                              // Sort by year, then month, then location
+                              if (a.year !== b.year) return b.year - a.year;
+                              if (a.month !== b.month) return b.month - a.month;
+                              return a.location.localeCompare(b.location);
+                            })
+                            .map((item, index) => (
+                            <tr key={`days-${item.location}-${item.month}-${item.year}`}>
+                              <td style={{ textTransform: 'capitalize', fontWeight: '600' }}>
+                                {item.location.replace('_', ' ')}
+                              </td>
+                              <td>{months[item.month - 1]} {item.year}</td>
+                              <td>{item.average_days_on_market}</td>
+                              <td>{item.median_days_on_market || 'N/A'}</td>
+                              <td>{item.min_days_on_market || 'N/A'}</td>
+                              <td>{item.max_days_on_market || 'N/A'}</td>
+                              <td>{item.total_properties_sold || 'N/A'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </DataTable>
+                    </div>
+                  )}
+                  
+                  {allLocationData.pricePerSqft.length === 0 && allLocationData.daysOnMarket.length === 0 && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      padding: '3rem',
+                      color: '#666',
+                      fontStyle: 'italic'
+                    }}>
+                      No market data available. Upload some PDF reports to get started!
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </>
         )}
         
