@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaChartLine, FaSave, FaCalendarAlt, FaMapMarkedAlt } from 'react-icons/fa';
+import { FaChartLine, FaSave, FaCalendarAlt, FaMapMarkedAlt, FaImage } from 'react-icons/fa';
 import { Line, Bar } from 'react-chartjs-2';
+import ImageDataUploader from './admin/ImageDataUploader';
 
 const MarketDataSection = styled(motion.div)`
   margin-bottom: 3rem;
@@ -447,6 +448,13 @@ const MarketDataManager = () => {
           >
             Days on Market
           </Tab>
+          <Tab
+            active={activeTab === 'image-upload'}
+            onClick={() => setActiveTab('image-upload')}
+          >
+            <FaImage style={{ marginRight: '0.5rem' }} />
+            Upload Images
+          </Tab>
         </TabContainer>
         
         {activeTab === 'price-per-sqft' && (
@@ -684,6 +692,19 @@ const MarketDataManager = () => {
               </DataTable>
             )}
           </>
+        )}
+        
+        {activeTab === 'image-upload' && (
+          <ImageDataUploader 
+            onDataExtracted={() => {
+              fetchMarketData();
+              setMessage({ 
+                type: 'success', 
+                text: 'Market data extracted and saved successfully!' 
+              });
+              setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+            }}
+          />
         )}
         
         {message.text && (
