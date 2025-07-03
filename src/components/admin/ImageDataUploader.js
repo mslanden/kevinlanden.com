@@ -9,6 +9,35 @@ const UploadContainer = styled.div`
   gap: 2rem;
 `;
 
+const DateForm = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  
+  label {
+    color: ${props => props.theme.colors.text.secondary};
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  
+  select {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid ${props => props.theme.colors.border};
+    color: ${props => props.theme.colors.text.primary};
+    padding: 0.75rem 1rem;
+    border-radius: ${props => props.theme.borderRadius.small};
+    font-size: 1rem;
+    
+    &:focus {
+      outline: none;
+      border-color: ${props => props.theme.colors.primary};
+    }
+  }
+`;
+
 const UploadZone = styled.div`
   border: 2px dashed ${props => props.isDragOver ? props.theme.colors.primary : props.theme.colors.border};
   border-radius: ${props => props.theme.borderRadius.default};
@@ -245,6 +274,8 @@ const ImageDataUploader = ({ onDataExtracted }) => {
   const [extractedData, setExtractedData] = useState(null);
   const [error, setError] = useState(null);
   const [pdfSupported, setPdfSupported] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   // Check if PDF processing is supported by the backend
   const checkPdfSupport = async () => {
@@ -396,6 +427,10 @@ const ImageDataUploader = ({ onDataExtracted }) => {
         formData.append(`images`, image.file);
       });
       
+      // Add the selected month and year
+      formData.append('reportMonth', selectedMonth.toString());
+      formData.append('reportYear', selectedYear.toString());
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/extract-from-images`, {
         method: 'POST',
         headers: {
@@ -468,6 +503,34 @@ const ImageDataUploader = ({ onDataExtracted }) => {
       transition={{ duration: 0.6 }}
     >
       <UploadContainer>
+        <DateForm>
+          <div>
+            <label>Report Month *</label>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+            >
+              {[
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+              ].map((month, index) => (
+                <option key={index} value={index + 1}>{month}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label>Report Year *</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            >
+              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+        </DateForm>
+        
         <UploadZone
           isDragOver={isDragOver}
           onDragOver={handleDragOver}

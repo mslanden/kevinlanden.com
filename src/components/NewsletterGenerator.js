@@ -267,7 +267,11 @@ const ActionButtons = styled.div`
 `;
 
 const ActionButton = styled.button`
-  background-color: ${props => props.variant === 'preview' ? props.theme.colors.secondary : props.theme.colors.primary};
+  background-color: ${props => {
+    if (props.variant === 'preview') return props.theme.colors.secondary;
+    if (props.variant === 'edit') return '#28a745';
+    return props.theme.colors.primary;
+  }};
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -820,6 +824,8 @@ const NewsletterGenerator = () => {
     pricePerSqft: [],
     daysOnMarket: []
   });
+  const [editableData, setEditableData] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
   const previewRef = useRef();
   const fileInputRef = useRef();
 
@@ -837,7 +843,7 @@ const NewsletterGenerator = () => {
   
   // Fetch initial market data
   useEffect(() => {
-    fetchMarketData(newsletterData.community);
+    fetchMarketData();
   }, []);
 
   const handleInputChange = (field, value) => {
@@ -845,26 +851,23 @@ const NewsletterGenerator = () => {
       ...prev,
       [field]: value
     }));
-    // Fetch market data when community changes
-    if (field === 'community') {
-      fetchMarketData(value);
-    }
   };
   
-  const fetchMarketData = async (community) => {
+  const fetchMarketData = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/all/${community}?limit=6`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
       
       if (response.ok) {
-        const data = await response.json();
+        const result = await response.json();
         setMarketData({
-          pricePerSqft: data.pricePerSqft || [],
-          daysOnMarket: data.daysOnMarket || []
+          pricePerSqft: result.data.pricePerSqft || [],
+          daysOnMarket: result.data.daysOnMarket || []
         });
       }
     } catch (error) {
@@ -1953,7 +1956,157 @@ const NewsletterGenerator = () => {
           </>
         )}
 
+        {/* Editable Data Section */}
+        {isEditing && (
+          <div style={{
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            border: '1px solid #28a745',
+            borderRadius: '8px',
+            padding: '1.5rem',
+            marginTop: '2rem'
+          }}>
+            <h3 style={{ color: '#28a745', marginBottom: '1rem' }}>Edit Newsletter Data</h3>
+            
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>
+                  Quick Analysis
+                </label>
+                <textarea
+                  value={newsletterData.quickAnalysis}
+                  onChange={(e) => handleInputChange('quickAnalysis', e.target.value)}
+                  style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    padding: '0.75rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem'
+                  }}
+                  placeholder="Enter market analysis..."
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#333' }}>
+                  Summary
+                </label>
+                <textarea
+                  value={newsletterData.summary}
+                  onChange={(e) => handleInputChange('summary', e.target.value)}
+                  style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    padding: '0.75rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '0.9rem'
+                  }}
+                  placeholder="Enter summary..."
+                />
+              </div>
+            </div>
+            
+            {/* Market Data Editing */}
+            {marketData.pricePerSqft.length > 0 && (
+              <div>
+                <h4 style={{ color: '#28a745', marginBottom: '1rem' }}>Edit Market Data</h4>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    fontSize: '0.85rem'
+                  }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8f9fa' }}>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Month</th>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Location</th>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Price/Sq Ft</th>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Avg Price</th>
+                        <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Total Sales</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {marketData.pricePerSqft.map((item, index) => (
+                        <tr key={`edit-${item.location}-${item.month}-${item.year}`}>
+                          <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                            {months[item.month - 1]} {item.year}
+                          </td>
+                          <td style={{ border: '1px solid #ddd', padding: '8px', textTransform: 'capitalize' }}>
+                            {item.location.replace('_', ' ')}
+                          </td>
+                          <td style={{ border: '1px solid #ddd', padding: '4px' }}>
+                            <input
+                              type="number"
+                              value={editableData[`price_${index}`] || item.price_per_sqft}
+                              onChange={(e) => setEditableData(prev => ({
+                                ...prev,
+                                [`price_${index}`]: e.target.value
+                              }))}
+                              style={{
+                                width: '80px',
+                                padding: '4px',
+                                border: '1px solid #ccc',
+                                borderRadius: '3px',
+                                textAlign: 'right'
+                              }}
+                            />
+                          </td>
+                          <td style={{ border: '1px solid #ddd', padding: '4px' }}>
+                            <input
+                              type="number"
+                              value={editableData[`avgprice_${index}`] || item.average_price || ''}
+                              onChange={(e) => setEditableData(prev => ({
+                                ...prev,
+                                [`avgprice_${index}`]: e.target.value
+                              }))}
+                              style={{
+                                width: '100px',
+                                padding: '4px',
+                                border: '1px solid #ccc',
+                                borderRadius: '3px',
+                                textAlign: 'right'
+                              }}
+                            />
+                          </td>
+                          <td style={{ border: '1px solid #ddd', padding: '4px' }}>
+                            <input
+                              type="number"
+                              value={editableData[`sales_${index}`] || item.total_sales || ''}
+                              onChange={(e) => setEditableData(prev => ({
+                                ...prev,
+                                [`sales_${index}`]: e.target.value
+                              }))}
+                              style={{
+                                width: '60px',
+                                padding: '4px',
+                                border: '1px solid #ccc',
+                                borderRadius: '3px',
+                                textAlign: 'right'
+                              }}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <ActionButtons>
+          <ActionButton variant="edit" onClick={() => setIsEditing(!isEditing)}>
+            <FaFileAlt />
+            {isEditing ? 'Save Edits' : 'Edit Data'}
+          </ActionButton>
+          
           <ActionButton variant="preview" onClick={generatePreview}>
             <FaEye />
             Preview Newsletter
@@ -2123,6 +2276,67 @@ const NewsletterGenerator = () => {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Market Data Table */}
+                  {marketData.pricePerSqft.length > 0 && (
+                    <div className="market-data-table-section page-break-avoid" style={{ marginTop: '2rem' }}>
+                      <h3>Market Data - Last 6 Months</h3>
+                      <table className="market-data-table" style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        marginTop: '1rem',
+                        fontSize: '0.85rem'
+                      }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#f8f9fa' }}>
+                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Month</th>
+                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Location</th>
+                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Price/Sq Ft</th>
+                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Avg Price</th>
+                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Total Sales</th>
+                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Avg Days on Market</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {marketData.pricePerSqft.map((priceItem, index) => {
+                            const daysItem = marketData.daysOnMarket.find(d => 
+                              d.location === priceItem.location && 
+                              d.month === priceItem.month && 
+                              d.year === priceItem.year
+                            );
+                            
+                            // Use edited values if available, otherwise use original values
+                            const pricePerSqft = editableData[`price_${index}`] || priceItem.price_per_sqft;
+                            const avgPrice = editableData[`avgprice_${index}`] || priceItem.average_price;
+                            const totalSales = editableData[`sales_${index}`] || priceItem.total_sales;
+                            
+                            return (
+                              <tr key={`${priceItem.location}-${priceItem.month}-${priceItem.year}`}>
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                  {months[priceItem.month - 1]} {priceItem.year}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px', textTransform: 'capitalize' }}>
+                                  {priceItem.location.replace('_', ' ')}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                  ${pricePerSqft}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                  {avgPrice ? `$${parseInt(avgPrice).toLocaleString()}` : 'N/A'}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                  {totalSales || 'N/A'}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                  {daysItem?.average_days_on_market || 'N/A'}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
                 
                 {extractedData?.listings && (
