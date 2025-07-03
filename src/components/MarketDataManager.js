@@ -280,7 +280,7 @@ const MarketDataManager = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data`,
+        `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/all/${selectedLocation}?limit=20`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -289,15 +289,15 @@ const MarketDataManager = () => {
       );
       
       if (response.ok) {
-        const result = await response.json();
+        const data = await response.json();
         setAllLocationData({
-          pricePerSqft: result.data.pricePerSqft || [],
-          daysOnMarket: result.data.daysOnMarket || []
+          pricePerSqft: data.pricePerSqft || [],
+          daysOnMarket: data.daysOnMarket || []
         });
       }
     } catch (error) {
-      console.error('Error fetching all location data:', error);
-      setMessage({ type: 'error', text: 'Failed to fetch all location data' });
+      console.error('Error fetching location data:', error);
+      setMessage({ type: 'error', text: 'Failed to fetch location data' });
     } finally {
       setLoading(false);
     }
@@ -744,10 +744,10 @@ const MarketDataManager = () => {
               marginBottom: '2rem'
             }}>
               <h3 style={{ color: '#8b4513', marginBottom: '1rem' }}>
-                Current Market Data - All Locations
+                Current Market Data - {locations[selectedLocation]}
               </h3>
               <p style={{ color: '#666', marginBottom: '1.5rem' }}>
-                Showing the most recent 6 months of data across all locations
+                Showing all available data for {locations[selectedLocation]}
               </p>
               
               {loading ? (
@@ -761,7 +761,6 @@ const MarketDataManager = () => {
                       <DataTable>
                         <thead>
                           <tr>
-                            <th>Location</th>
                             <th>Month/Year</th>
                             <th>Price/Sq Ft</th>
                             <th>Average Price</th>
@@ -770,19 +769,11 @@ const MarketDataManager = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {allLocationData.pricePerSqft
-                            .sort((a, b) => {
-                              // Sort by year, then month, then location
-                              if (a.year !== b.year) return b.year - a.year;
-                              if (a.month !== b.month) return b.month - a.month;
-                              return a.location.localeCompare(b.location);
-                            })
-                            .map((item, index) => (
+                          {allLocationData.pricePerSqft.map((item, index) => (
                             <tr key={`${item.location}-${item.month}-${item.year}`}>
-                              <td style={{ textTransform: 'capitalize', fontWeight: '600' }}>
-                                {item.location.replace('_', ' ')}
+                              <td style={{ fontWeight: '600' }}>
+                                {months[item.month - 1]} {item.year}
                               </td>
-                              <td>{months[item.month - 1]} {item.year}</td>
                               <td>${item.price_per_sqft}</td>
                               <td>{item.average_price ? `$${parseInt(item.average_price).toLocaleString()}` : 'N/A'}</td>
                               <td>{item.total_sales || 'N/A'}</td>
@@ -801,7 +792,6 @@ const MarketDataManager = () => {
                       <DataTable>
                         <thead>
                           <tr>
-                            <th>Location</th>
                             <th>Month/Year</th>
                             <th>Avg Days</th>
                             <th>Median Days</th>
@@ -811,19 +801,11 @@ const MarketDataManager = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {allLocationData.daysOnMarket
-                            .sort((a, b) => {
-                              // Sort by year, then month, then location
-                              if (a.year !== b.year) return b.year - a.year;
-                              if (a.month !== b.month) return b.month - a.month;
-                              return a.location.localeCompare(b.location);
-                            })
-                            .map((item, index) => (
+                          {allLocationData.daysOnMarket.map((item, index) => (
                             <tr key={`days-${item.location}-${item.month}-${item.year}`}>
-                              <td style={{ textTransform: 'capitalize', fontWeight: '600' }}>
-                                {item.location.replace('_', ' ')}
+                              <td style={{ fontWeight: '600' }}>
+                                {months[item.month - 1]} {item.year}
                               </td>
-                              <td>{months[item.month - 1]} {item.year}</td>
                               <td>{item.average_days_on_market}</td>
                               <td>{item.median_days_on_market || 'N/A'}</td>
                               <td>{item.min_days_on_market || 'N/A'}</td>
