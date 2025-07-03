@@ -453,7 +453,7 @@ const MarketDataManager = () => {
             onClick={() => setActiveTab('image-upload')}
           >
             <FaImage style={{ marginRight: '0.5rem' }} />
-            Upload Images
+            Upload PDF
           </Tab>
         </TabContainer>
         

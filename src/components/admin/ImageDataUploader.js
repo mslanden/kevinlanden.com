@@ -461,7 +461,7 @@ const ImageDataUploader = ({ onDataExtracted }) => {
 
   return (
     <AdminCard
-      title="Upload Market Data Images"
+      title="Upload Market Data PDF"
       icon={FaImage}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
@@ -479,15 +479,15 @@ const ImageDataUploader = ({ onDataExtracted }) => {
             <FaUpload />
           </UploadIcon>
           <UploadText>
-            <h3>Upload Market Statistics Files</h3>
-            <p>Drag and drop images{pdfSupported ? ' or PDFs' : ''} here, or click to select files</p>
-            <p>Supports: PNG, JPG, JPEG{pdfSupported ? ', PDF' : ''} (Max 10MB each)</p>
+            <h3>Upload Market Data PDF</h3>
+            <p>Drag and drop PDF files here, or click to select files</p>
+            <p>Supports: PDF files (Max 10MB each)</p>
           </UploadText>
           <HiddenInput
             id="imageInput"
             type="file"
             multiple
-            accept={pdfSupported ? "image/*,application/pdf" : "image/*"}
+            accept="application/pdf"
             onChange={handleFileInput}
           />
         </UploadZone>
