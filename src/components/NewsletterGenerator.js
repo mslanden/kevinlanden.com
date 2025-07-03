@@ -2247,31 +2247,22 @@ const NewsletterGenerator = () => {
                     </div>
                     
                     <div className="chart-item page-break-avoid">
-                      <div className="chart-title">Price Per Sq Ft by Bedroom Count</div>
+                      <div className="chart-title">Average Days on Market - 6 Month Trend</div>
                       <div className="chart-container">
-                        {createChartData()?.pricePerSqFtChart && (
-                          <Bar {...createChartData().pricePerSqFtChart} />
+                        {createChartData()?.daysOnMarketChart && (
+                          <Bar {...createChartData().daysOnMarketChart} />
                         )}
                       </div>
                     </div>
                   </div>
                   
-                  {/* New row for market trend charts */}
+                  {/* Additional market trend chart */}
                   <div className="chart-grid" style={{ marginTop: '2rem' }}>
                     {createChartData()?.pricePerSqftTrendChart && (
                       <div className="chart-item page-break-avoid">
                         <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
                         <div className="chart-container">
                           <Line {...createChartData().pricePerSqftTrendChart} />
-                        </div>
-                      </div>
-                    )}
-                    
-                    {createChartData()?.daysOnMarketChart && (
-                      <div className="chart-item page-break-avoid">
-                        <div className="chart-title">Average Days on Market - 6 Month Trend</div>
-                        <div className="chart-container">
-                          <Bar {...createChartData().daysOnMarketChart} />
                         </div>
                       </div>
                     )}
