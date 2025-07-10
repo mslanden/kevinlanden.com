@@ -10,8 +10,20 @@ const getAuthHeaders = () => {
   };
 };
 
+// Helper function to handle token expiration
+const handleTokenExpiration = () => {
+  localStorage.removeItem('adminToken');
+  alert('Your session has expired. Please log in again.');
+  window.location.href = '/admin';
+};
+
 // Helper function to handle API responses
 const handleResponse = async (response) => {
+  if (response.status === 401) {
+    handleTokenExpiration();
+    return;
+  }
+  
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Network error' }));
     throw new Error(error.message || 'API request failed');

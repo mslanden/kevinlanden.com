@@ -846,10 +846,10 @@ const NewsletterGenerator = () => {
     fetchMarketData();
   }, []);
   
-  // Re-fetch data when community changes
+  // Re-fetch data when community, month, or year changes
   useEffect(() => {
     fetchMarketData();
-  }, [newsletterData.community]);
+  }, [newsletterData.community, newsletterData.month, newsletterData.year]);
 
   const handleInputChange = (field, value) => {
     setNewsletterData(prev => ({
@@ -858,6 +858,13 @@ const NewsletterGenerator = () => {
     }));
   };
   
+  const handleTokenExpiration = () => {
+    // Clear token and redirect to login
+    localStorage.removeItem('adminToken');
+    alert('Your session has expired. Please log in again.');
+    window.location.href = '/admin'; // Redirect to admin login
+  };
+
   const fetchMarketData = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data?community=${newsletterData.community}`, {
@@ -867,6 +874,11 @@ const NewsletterGenerator = () => {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
+      
+      if (response.status === 401) {
+        handleTokenExpiration();
+        return;
+      }
       
       if (response.ok) {
         const result = await response.json();
@@ -914,6 +926,11 @@ const NewsletterGenerator = () => {
       });
       
       console.log('Received response from backend:', response.status);
+      
+      if (response.status === 401) {
+        handleTokenExpiration();
+        return;
+      }
       
       if (response.ok) {
         console.log('Parsing JSON response...');
