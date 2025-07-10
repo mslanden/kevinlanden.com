@@ -845,6 +845,11 @@ const NewsletterGenerator = () => {
   useEffect(() => {
     fetchMarketData();
   }, []);
+  
+  // Re-fetch data when community changes
+  useEffect(() => {
+    fetchMarketData();
+  }, [newsletterData.community]);
 
   const handleInputChange = (field, value) => {
     setNewsletterData(prev => ({
@@ -855,7 +860,7 @@ const NewsletterGenerator = () => {
   
   const fetchMarketData = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data?community=${newsletterData.community}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -869,6 +874,9 @@ const NewsletterGenerator = () => {
           pricePerSqft: result.data.pricePerSqft || [],
           daysOnMarket: result.data.daysOnMarket || []
         });
+        console.log('Market data fetched for community:', newsletterData.community, result.data);
+      } else {
+        console.error('Failed to fetch market data:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching market data:', error);
@@ -1687,14 +1695,18 @@ const NewsletterGenerator = () => {
       },
       
       // New: Price per Sq Ft 6-Month Trend Chart
-      pricePerSqftTrendChart: marketData.pricePerSqft.length > 0 ? {
+      pricePerSqftTrendChart: marketData.pricePerSqft.filter(item => item.location === newsletterData.community).length > 0 ? {
         data: {
-          labels: marketData.pricePerSqft.slice(0, 6).reverse().map(item => 
+          labels: marketData.pricePerSqft
+            .filter(item => item.location === newsletterData.community)
+            .slice(0, 6).reverse().map(item => 
             `${months[item.month - 1].substring(0, 3)} ${item.year}`
           ),
           datasets: [{
             label: 'Price per Sq Ft',
-            data: marketData.pricePerSqft.slice(0, 6).reverse().map(item => item.price_per_sqft),
+            data: marketData.pricePerSqft
+              .filter(item => item.location === newsletterData.community)
+              .slice(0, 6).reverse().map(item => item.price_per_sqft),
             borderColor: '#8b4513',
             backgroundColor: 'rgba(139, 69, 19, 0.1)',
             borderWidth: 2,
@@ -1736,14 +1748,18 @@ const NewsletterGenerator = () => {
       } : null,
       
       // New: Median Sold Price Chart
-      medianSoldPriceChart: marketData.pricePerSqft.length > 0 ? {
+      medianSoldPriceChart: marketData.pricePerSqft.filter(item => item.location === newsletterData.community).length > 0 ? {
         data: {
-          labels: marketData.pricePerSqft.slice(0, 6).reverse().map(item => 
+          labels: marketData.pricePerSqft
+            .filter(item => item.location === newsletterData.community)
+            .slice(0, 6).reverse().map(item => 
             `${months[item.month - 1].substring(0, 3)} ${item.year}`
           ),
           datasets: [{
             label: 'Median Sold Price',
-            data: marketData.pricePerSqft.slice(0, 6).reverse().map(item => item.average_price || 0),
+            data: marketData.pricePerSqft
+              .filter(item => item.location === newsletterData.community)
+              .slice(0, 6).reverse().map(item => item.average_price || 0),
             borderColor: '#8b4513',
             backgroundColor: 'rgba(139, 69, 19, 0.1)',
             borderWidth: 2,
@@ -1785,14 +1801,18 @@ const NewsletterGenerator = () => {
       } : null,
       
       // New: Average Days on Market Chart
-      daysOnMarketTrendChart: marketData.daysOnMarket.length > 0 ? {
+      daysOnMarketTrendChart: marketData.daysOnMarket.filter(item => item.location === newsletterData.community).length > 0 ? {
         data: {
-          labels: marketData.daysOnMarket.slice(0, 6).reverse().map(item => 
+          labels: marketData.daysOnMarket
+            .filter(item => item.location === newsletterData.community)
+            .slice(0, 6).reverse().map(item => 
             `${months[item.month - 1].substring(0, 3)} ${item.year}`
           ),
           datasets: [{
             label: 'Average Days on Market',
-            data: marketData.daysOnMarket.slice(0, 6).reverse().map(item => item.average_days_on_market),
+            data: marketData.daysOnMarket
+              .filter(item => item.location === newsletterData.community)
+              .slice(0, 6).reverse().map(item => item.average_days_on_market),
             borderColor: '#8b4513',
             backgroundColor: 'rgba(139, 69, 19, 0.1)',
             borderWidth: 2,
@@ -2085,7 +2105,9 @@ const NewsletterGenerator = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {marketData.pricePerSqft.map((item, index) => (
+                      {marketData.pricePerSqft
+                        .filter(item => item.location === newsletterData.community)
+                        .map((item, index) => (
                         <tr key={`edit-${item.location}-${item.month}-${item.year}`}>
                           <td style={{ border: '1px solid #ddd', padding: '8px' }}>
                             {months[item.month - 1]} {item.year}
@@ -2290,38 +2312,40 @@ const NewsletterGenerator = () => {
                 
                 <div className="charts-section page-break-before">
                   {/* Full width chart for Average Days on Market */}
-                  <div className="chart-item page-break-avoid" style={{ width: '100%', marginBottom: '2rem' }}>
-                    <div className="chart-title">Average Days on Market - 6 Month Trend</div>
-                    <div className="chart-container">
-                      {createChartData()?.daysOnMarketTrendChart && (
+                  {createChartData()?.daysOnMarketTrendChart && (
+                    <div className="chart-item page-break-avoid" style={{ width: '100%', marginBottom: '2rem' }}>
+                      <div className="chart-title">Average Days on Market - 6 Month Trend</div>
+                      <div className="chart-container">
                         <Line {...createChartData().daysOnMarketTrendChart} />
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   
                   {/* Two charts in grid layout */}
-                  <div className="chart-grid">
-                    <div className="chart-item page-break-avoid">
-                      <div className="chart-title">Median Sold Price - 6 Month Trend</div>
-                      <div className="chart-container">
-                        {createChartData()?.medianSoldPriceChart && (
-                          <Line {...createChartData().medianSoldPriceChart} />
-                        )}
-                      </div>
+                  {(createChartData()?.medianSoldPriceChart || createChartData()?.pricePerSqftTrendChart) && (
+                    <div className="chart-grid">
+                      {createChartData()?.medianSoldPriceChart && (
+                        <div className="chart-item page-break-avoid">
+                          <div className="chart-title">Median Sold Price - 6 Month Trend</div>
+                          <div className="chart-container">
+                            <Line {...createChartData().medianSoldPriceChart} />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {createChartData()?.pricePerSqftTrendChart && (
+                        <div className="chart-item page-break-avoid">
+                          <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
+                          <div className="chart-container">
+                            <Line {...createChartData().pricePerSqftTrendChart} />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    
-                    <div className="chart-item page-break-avoid">
-                      <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
-                      <div className="chart-container">
-                        {createChartData()?.pricePerSqftTrendChart && (
-                          <Line {...createChartData().pricePerSqftTrendChart} />
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                   
                   {/* Market Data Table */}
-                  {marketData.pricePerSqft.length > 0 && (
+                  {marketData.pricePerSqft.filter(item => item.location === newsletterData.community).length > 0 ? (
                     <div className="market-data-table-section page-break-avoid" style={{ marginTop: '2rem' }}>
                       <h3>Market Data - Last 6 Months</h3>
                       <table className="market-data-table" style={{
@@ -2341,7 +2365,9 @@ const NewsletterGenerator = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {marketData.pricePerSqft.map((priceItem, index) => {
+                          {marketData.pricePerSqft
+                            .filter(item => item.location === newsletterData.community)
+                            .map((priceItem, index) => {
                             const daysItem = marketData.daysOnMarket.find(d => 
                               d.location === priceItem.location && 
                               d.month === priceItem.month && 
@@ -2378,6 +2404,12 @@ const NewsletterGenerator = () => {
                           })}
                         </tbody>
                       </table>
+                    </div>
+                  ) : (
+                    <div className="market-data-table-section page-break-avoid" style={{ marginTop: '2rem', textAlign: 'center', padding: '2rem' }}>
+                      <p style={{ color: '#a0522d', fontSize: '1.1rem' }}>
+                        No market data available for {communities[newsletterData.community]} in the last 6 months.
+                      </p>
                     </div>
                   )}
                 </div>
