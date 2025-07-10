@@ -224,10 +224,7 @@ const MarketDataManager = () => {
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
     average_days_on_market: '',
-    median_days_on_market: '',
-    min_days_on_market: '',
-    max_days_on_market: '',
-    total_properties_sold: ''
+    median_days_on_market: ''
   });
   
   const locations = {
@@ -669,35 +666,6 @@ const MarketDataManager = () => {
                 />
               </InputGroup>
               
-              <InputGroup>
-                <label>Min Days on Market</label>
-                <input
-                  type="number"
-                  value={daysFormData.min_days_on_market}
-                  onChange={(e) => setDaysFormData(prev => ({ ...prev, min_days_on_market: e.target.value }))}
-                  placeholder="e.g., 5"
-                />
-              </InputGroup>
-              
-              <InputGroup>
-                <label>Max Days on Market</label>
-                <input
-                  type="number"
-                  value={daysFormData.max_days_on_market}
-                  onChange={(e) => setDaysFormData(prev => ({ ...prev, max_days_on_market: e.target.value }))}
-                  placeholder="e.g., 180"
-                />
-              </InputGroup>
-              
-              <InputGroup>
-                <label>Total Properties Sold</label>
-                <input
-                  type="number"
-                  value={daysFormData.total_properties_sold}
-                  onChange={(e) => setDaysFormData(prev => ({ ...prev, total_properties_sold: e.target.value }))}
-                  placeholder="e.g., 25"
-                />
-              </InputGroup>
             </FormGrid>
             
             <ActionButton onClick={handleDaysSubmit} disabled={!daysFormData.average_days_on_market}>
@@ -721,9 +689,6 @@ const MarketDataManager = () => {
                     <th>Month/Year</th>
                     <th>Average Days</th>
                     <th>Median Days</th>
-                    <th>Min Days</th>
-                    <th>Max Days</th>
-                    <th>Properties Sold</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -732,9 +697,6 @@ const MarketDataManager = () => {
                       <td>{months[item.month - 1]} {item.year}</td>
                       <td>{item.average_days_on_market}</td>
                       <td>{item.median_days_on_market || 'N/A'}</td>
-                      <td>{item.min_days_on_market || 'N/A'}</td>
-                      <td>{item.max_days_on_market || 'N/A'}</td>
-                      <td>{item.total_properties_sold || 'N/A'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -803,9 +765,6 @@ const MarketDataManager = () => {
                             <th>Month/Year</th>
                             <th>Avg Days</th>
                             <th>Median Days</th>
-                            <th>Min Days</th>
-                            <th>Max Days</th>
-                            <th>Properties Sold</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -816,9 +775,6 @@ const MarketDataManager = () => {
                               </td>
                               <td>{item.average_days_on_market}</td>
                               <td>{item.median_days_on_market || 'N/A'}</td>
-                              <td>{item.min_days_on_market || 'N/A'}</td>
-                              <td>{item.max_days_on_market || 'N/A'}</td>
-                              <td>{item.total_properties_sold || 'N/A'}</td>
                             </tr>
                           ))}
                         </tbody>

@@ -1735,18 +1735,21 @@ const NewsletterGenerator = () => {
         }
       } : null,
       
-      // New: Days on Market Average Chart
-      daysOnMarketChart: marketData.daysOnMarket.length > 0 ? {
+      // New: Median Sold Price Chart
+      medianSoldPriceChart: marketData.pricePerSqft.length > 0 ? {
         data: {
-          labels: marketData.daysOnMarket.slice(0, 6).reverse().map(item => 
+          labels: marketData.pricePerSqft.slice(0, 6).reverse().map(item => 
             `${months[item.month - 1].substring(0, 3)} ${item.year}`
           ),
           datasets: [{
-            label: 'Average Days on Market',
-            data: marketData.daysOnMarket.slice(0, 6).reverse().map(item => item.average_days_on_market),
-            backgroundColor: '#d2b48c',
+            label: 'Median Sold Price',
+            data: marketData.pricePerSqft.slice(0, 6).reverse().map(item => item.average_price || 0),
             borderColor: '#8b4513',
-            borderWidth: 1
+            backgroundColor: 'rgba(139, 69, 19, 0.1)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#8b4513',
+            tension: 0.1
           }]
         },
         options: {
@@ -1759,12 +1762,62 @@ const NewsletterGenerator = () => {
               ticks: { font: { size: 10 }, color: '#333' }
             },
             y: {
-              beginAtZero: true,
               grid: { color: '#e0e0e0' },
               ticks: { 
                 font: { size: 10 }, 
                 color: '#333',
-                stepSize: 10
+                callback: function(value) {
+                  return '$' + (value / 1000).toFixed(0) + 'k';
+                }
+              }
+            }
+          },
+          plugins: {
+            ...baseOptions.plugins,
+            title: {
+              display: true,
+              text: 'Median Sold Price - 6 Month Trend',
+              font: { size: 12 },
+              color: '#333'
+            }
+          }
+        }
+      } : null,
+      
+      // New: Average Days on Market Chart
+      daysOnMarketTrendChart: marketData.daysOnMarket.length > 0 ? {
+        data: {
+          labels: marketData.daysOnMarket.slice(0, 6).reverse().map(item => 
+            `${months[item.month - 1].substring(0, 3)} ${item.year}`
+          ),
+          datasets: [{
+            label: 'Average Days on Market',
+            data: marketData.daysOnMarket.slice(0, 6).reverse().map(item => item.average_days_on_market),
+            borderColor: '#8b4513',
+            backgroundColor: 'rgba(139, 69, 19, 0.1)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#8b4513',
+            tension: 0.1
+          }]
+        },
+        options: {
+          ...baseOptions,
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10 }, color: '#333' }
+            },
+            y: {
+              grid: { color: '#e0e0e0' },
+              ticks: { 
+                font: { size: 10 }, 
+                color: '#333',
+                callback: function(value) {
+                  return value + ' days';
+                }
               }
             }
           },
@@ -1930,7 +1983,7 @@ const NewsletterGenerator = () => {
                         <th>Beds</th>
                         <th>Baths</th>
                         <th>Sq Ft</th>
-                        <th>$/Sq Ft</th>
+                        <th>DIM</th>
                         <th>Year Built</th>
                       </tr>
                     </thead>
@@ -1944,7 +1997,7 @@ const NewsletterGenerator = () => {
                           <td>{listing.beds}</td>
                           <td>{listing.baths}</td>
                           <td>{listing.sqft}</td>
-                          <td>{listing.pricePerSqft ? `$${listing.pricePerSqft}` : 'N/A'}</td>
+                          <td>{listing.daysInMarket || listing.dim || 'N/A'}</td>
                           <td>{listing.yearBuilt}</td>
                         </tr>
                       ))}
@@ -2238,34 +2291,34 @@ const NewsletterGenerator = () => {
                 <div className="charts-section page-break-before">
                   <div className="chart-grid">
                     <div className="chart-item page-break-avoid">
-                      <div className="chart-title">Price Range Distribution</div>
+                      <div className="chart-title">Average Days on Market - 6 Month Trend</div>
                       <div className="chart-container">
-                        {createChartData()?.inventoryChart && (
-                          <Bar {...createChartData().inventoryChart} />
+                        {createChartData()?.daysOnMarketTrendChart && (
+                          <Line {...createChartData().daysOnMarketTrendChart} />
                         )}
                       </div>
                     </div>
                     
                     <div className="chart-item page-break-avoid">
-                      <div className="chart-title">Average Days on Market - 6 Month Trend</div>
+                      <div className="chart-title">Median Sold Price - 6 Month Trend</div>
                       <div className="chart-container">
-                        {createChartData()?.daysOnMarketChart && (
-                          <Bar {...createChartData().daysOnMarketChart} />
+                        {createChartData()?.medianSoldPriceChart && (
+                          <Line {...createChartData().medianSoldPriceChart} />
                         )}
                       </div>
                     </div>
                   </div>
                   
-                  {/* Additional market trend chart */}
+                  {/* Additional market trend charts */}
                   <div className="chart-grid" style={{ marginTop: '2rem' }}>
-                    {createChartData()?.pricePerSqftTrendChart && (
-                      <div className="chart-item page-break-avoid">
-                        <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
-                        <div className="chart-container">
+                    <div className="chart-item page-break-avoid">
+                      <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
+                      <div className="chart-container">
+                        {createChartData()?.pricePerSqftTrendChart && (
                           <Line {...createChartData().pricePerSqftTrendChart} />
-                        </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
                   
                   {/* Market Data Table */}
@@ -2343,7 +2396,7 @@ const NewsletterGenerator = () => {
                           <th className="beds-col">Beds</th>
                           <th className="baths-col">Baths</th>
                           <th className="sqft-col">Sq Ft</th>
-                          <th className="price-per-sqft-col">$/Sq Ft</th>
+                          <th className="dim-col">DIM</th>
                           <th className="year-col">Year</th>
                         </tr>
                       </thead>
@@ -2357,7 +2410,7 @@ const NewsletterGenerator = () => {
                             <td>{listing.beds}</td>
                             <td>{listing.baths}</td>
                             <td>{listing.sqft?.toLocaleString()}</td>
-                            <td>{listing.pricePerSqft ? `$${listing.pricePerSqft}` : 'N/A'}</td>
+                            <td>{listing.daysInMarket || listing.dim || 'N/A'}</td>
                             <td>{listing.yearBuilt}</td>
                           </tr>
                         ))}
