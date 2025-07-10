@@ -2289,16 +2289,18 @@ const NewsletterGenerator = () => {
                 </div>
                 
                 <div className="charts-section page-break-before">
-                  <div className="chart-grid">
-                    <div className="chart-item page-break-avoid">
-                      <div className="chart-title">Average Days on Market - 6 Month Trend</div>
-                      <div className="chart-container">
-                        {createChartData()?.daysOnMarketTrendChart && (
-                          <Line {...createChartData().daysOnMarketTrendChart} />
-                        )}
-                      </div>
+                  {/* Full width chart for Average Days on Market */}
+                  <div className="chart-item page-break-avoid" style={{ width: '100%', marginBottom: '2rem' }}>
+                    <div className="chart-title">Average Days on Market - 6 Month Trend</div>
+                    <div className="chart-container">
+                      {createChartData()?.daysOnMarketTrendChart && (
+                        <Line {...createChartData().daysOnMarketTrendChart} />
+                      )}
                     </div>
-                    
+                  </div>
+                  
+                  {/* Two charts in grid layout */}
+                  <div className="chart-grid">
                     <div className="chart-item page-break-avoid">
                       <div className="chart-title">Median Sold Price - 6 Month Trend</div>
                       <div className="chart-container">
@@ -2307,10 +2309,7 @@ const NewsletterGenerator = () => {
                         )}
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Additional market trend charts */}
-                  <div className="chart-grid" style={{ marginTop: '2rem' }}>
+                    
                     <div className="chart-item page-break-avoid">
                       <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
                       <div className="chart-container">
