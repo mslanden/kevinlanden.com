@@ -867,7 +867,7 @@ const NewsletterGenerator = () => {
 
   const fetchMarketData = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data?community=${newsletterData.community}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data?community=${newsletterData.community}&month=${newsletterData.month}&year=${newsletterData.year}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1712,18 +1712,14 @@ const NewsletterGenerator = () => {
       },
       
       // New: Price per Sq Ft 6-Month Trend Chart
-      pricePerSqftTrendChart: marketData.pricePerSqft.filter(item => item.location === newsletterData.community).length > 0 ? {
+      pricePerSqftTrendChart: marketData.pricePerSqft.length > 0 ? {
         data: {
-          labels: marketData.pricePerSqft
-            .filter(item => item.location === newsletterData.community)
-            .slice(0, 6).reverse().map(item => 
+          labels: marketData.pricePerSqft.map(item => 
             `${months[item.month - 1].substring(0, 3)} ${item.year}`
           ),
           datasets: [{
             label: 'Price per Sq Ft',
-            data: marketData.pricePerSqft
-              .filter(item => item.location === newsletterData.community)
-              .slice(0, 6).reverse().map(item => item.price_per_sqft),
+            data: marketData.pricePerSqft.map(item => item.price_per_sqft),
             borderColor: '#8b4513',
             backgroundColor: 'rgba(139, 69, 19, 0.1)',
             borderWidth: 2,
@@ -1765,18 +1761,14 @@ const NewsletterGenerator = () => {
       } : null,
       
       // New: Median Sold Price Chart
-      medianSoldPriceChart: marketData.pricePerSqft.filter(item => item.location === newsletterData.community).length > 0 ? {
+      medianSoldPriceChart: marketData.pricePerSqft.length > 0 ? {
         data: {
-          labels: marketData.pricePerSqft
-            .filter(item => item.location === newsletterData.community)
-            .slice(0, 6).reverse().map(item => 
+          labels: marketData.pricePerSqft.map(item => 
             `${months[item.month - 1].substring(0, 3)} ${item.year}`
           ),
           datasets: [{
             label: 'Median Sold Price',
-            data: marketData.pricePerSqft
-              .filter(item => item.location === newsletterData.community)
-              .slice(0, 6).reverse().map(item => item.average_price || 0),
+            data: marketData.pricePerSqft.map(item => item.average_price || 0),
             borderColor: '#8b4513',
             backgroundColor: 'rgba(139, 69, 19, 0.1)',
             borderWidth: 2,
@@ -1818,18 +1810,14 @@ const NewsletterGenerator = () => {
       } : null,
       
       // New: Average Days on Market Chart
-      daysOnMarketTrendChart: marketData.daysOnMarket.filter(item => item.location === newsletterData.community).length > 0 ? {
+      daysOnMarketTrendChart: marketData.daysOnMarket.length > 0 ? {
         data: {
-          labels: marketData.daysOnMarket
-            .filter(item => item.location === newsletterData.community)
-            .slice(0, 6).reverse().map(item => 
+          labels: marketData.daysOnMarket.map(item => 
             `${months[item.month - 1].substring(0, 3)} ${item.year}`
           ),
           datasets: [{
             label: 'Average Days on Market',
-            data: marketData.daysOnMarket
-              .filter(item => item.location === newsletterData.community)
-              .slice(0, 6).reverse().map(item => item.average_days_on_market),
+            data: marketData.daysOnMarket.map(item => item.average_days_on_market),
             borderColor: '#8b4513',
             backgroundColor: 'rgba(139, 69, 19, 0.1)',
             borderWidth: 2,
