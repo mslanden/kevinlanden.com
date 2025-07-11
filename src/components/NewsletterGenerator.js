@@ -846,6 +846,9 @@ const NewsletterGenerator = () => {
         }
         
         console.log('Market data fetched for community:', newsletterData.community, result.data);
+        console.log('MarketData state:', marketData);
+        console.log('Price per sqft data length:', marketData.pricePerSqft.length);
+        console.log('Days on market data length:', marketData.daysOnMarket.length);
       } else {
         console.error('Failed to fetch market data:', response.status, response.statusText);
       }
@@ -1590,7 +1593,7 @@ const NewsletterGenerator = () => {
       },
       
       // New: Price per Sq Ft 6-Month Trend Chart
-      pricePerSqftTrendChart: marketData.pricePerSqft.length > 0 ? {
+      pricePerSqftTrendChart: marketData.pricePerSqft && marketData.pricePerSqft.length > 0 ? {
         data: {
           labels: marketData.pricePerSqft.map(item => 
             `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
@@ -1630,7 +1633,7 @@ const NewsletterGenerator = () => {
             ...baseOptions.plugins,
             title: {
               display: true,
-              text: 'Price per Sq Ft - 6 Month Trend',
+              text: 'Price per Sq Ft',
               font: { size: 12 },
               color: '#333'
             }
@@ -1639,7 +1642,7 @@ const NewsletterGenerator = () => {
       } : null,
       
       // New: Median Sold Price Chart
-      medianSoldPriceChart: marketData.pricePerSqft.length > 0 ? {
+      medianSoldPriceChart: marketData.pricePerSqft && marketData.pricePerSqft.length > 0 ? {
         data: {
           labels: marketData.pricePerSqft.map(item => 
             `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
@@ -1679,7 +1682,7 @@ const NewsletterGenerator = () => {
             ...baseOptions.plugins,
             title: {
               display: true,
-              text: 'Median Sold Price - 6 Month Trend',
+              text: 'Median Sold Price',
               font: { size: 12 },
               color: '#333'
             }
@@ -1688,7 +1691,7 @@ const NewsletterGenerator = () => {
       } : null,
       
       // New: Average Days on Market Chart
-      daysOnMarketTrendChart: marketData.daysOnMarket.length > 0 ? {
+      daysOnMarketTrendChart: marketData.daysOnMarket && marketData.daysOnMarket.length > 0 ? {
         data: {
           labels: marketData.daysOnMarket.map(item => 
             `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
@@ -1728,7 +1731,7 @@ const NewsletterGenerator = () => {
             ...baseOptions.plugins,
             title: {
               display: true,
-              text: 'Average Days on Market - 6 Month Trend',
+              text: 'Average Days on Market',
               font: { size: 12 },
               color: '#333'
             }
