@@ -1614,48 +1614,49 @@ const NewsletterGenerator = () => {
         const hasData = marketData.pricePerSqft && marketData.pricePerSqft.length > 0;
         console.log('Price per sqft chart creation:', { hasData, dataLength: marketData.pricePerSqft?.length });
         return hasData ? {
-        data: {
-          labels: marketData.pricePerSqft.map(item => 
-            `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
-          ),
-          datasets: [{
-            label: 'Price per Sq Ft',
-            data: marketData.pricePerSqft.map(item => item.price_per_sqft),
-            borderColor: '#8b4513',
-            backgroundColor: 'rgba(139, 69, 19, 0.1)',
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: '#8b4513',
-            tension: 0.1
-          }]
-        },
-        options: {
-          ...baseOptions,
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 10 }, color: '#333' }
-            },
-            y: {
-              grid: { color: '#e0e0e0' },
-              ticks: { 
-                font: { size: 10 }, 
-                color: '#333',
-                callback: function(value) {
-                  return '$' + value;
+          data: {
+            labels: marketData.pricePerSqft.map(item => 
+              `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
+            ),
+            datasets: [{
+              label: 'Price per Sq Ft',
+              data: marketData.pricePerSqft.map(item => item.price_per_sqft),
+              borderColor: '#8b4513',
+              backgroundColor: 'rgba(139, 69, 19, 0.1)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#8b4513',
+              tension: 0.1
+            }]
+          },
+          options: {
+            ...baseOptions,
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 }, color: '#333' }
+              },
+              y: {
+                grid: { color: '#e0e0e0' },
+                ticks: { 
+                  font: { size: 10 }, 
+                  color: '#333',
+                  callback: function(value) {
+                    return '$' + value;
+                  }
                 }
               }
-            }
-          },
-          plugins: {
-            ...baseOptions.plugins,
-            title: {
-              display: true,
-              text: 'Price per Sq Ft',
-              font: { size: 12 },
-              color: '#333'
+            },
+            plugins: {
+              ...baseOptions.plugins,
+              title: {
+                display: true,
+                text: 'Price per Sq Ft',
+                font: { size: 12 },
+                color: '#333'
+              }
             }
           }
         } : null;
@@ -1666,48 +1667,49 @@ const NewsletterGenerator = () => {
         const hasData = marketData.pricePerSqft && marketData.pricePerSqft.length > 0;
         console.log('Median sold price chart creation:', { hasData, dataLength: marketData.pricePerSqft?.length });
         return hasData ? {
-        data: {
-          labels: marketData.pricePerSqft.map(item => 
-            `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
-          ),
-          datasets: [{
-            label: 'Median Sold Price',
-            data: marketData.pricePerSqft.map(item => item.average_price || 0),
-            borderColor: '#8b4513',
-            backgroundColor: 'rgba(139, 69, 19, 0.1)',
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: '#8b4513',
-            tension: 0.1
-          }]
-        },
-        options: {
-          ...baseOptions,
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 10 }, color: '#333' }
-            },
-            y: {
-              grid: { color: '#e0e0e0' },
-              ticks: { 
-                font: { size: 10 }, 
-                color: '#333',
-                callback: function(value) {
-                  return '$' + (value / 1000).toFixed(0) + 'k';
+          data: {
+            labels: marketData.pricePerSqft.map(item => 
+              `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
+            ),
+            datasets: [{
+              label: 'Median Sold Price',
+              data: marketData.pricePerSqft.map(item => item.average_price || 0),
+              borderColor: '#8b4513',
+              backgroundColor: 'rgba(139, 69, 19, 0.1)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#8b4513',
+              tension: 0.1
+            }]
+          },
+          options: {
+            ...baseOptions,
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 }, color: '#333' }
+              },
+              y: {
+                grid: { color: '#e0e0e0' },
+                ticks: { 
+                  font: { size: 10 }, 
+                  color: '#333',
+                  callback: function(value) {
+                    return '$' + (value / 1000).toFixed(0) + 'k';
+                  }
                 }
               }
-            }
-          },
-          plugins: {
-            ...baseOptions.plugins,
-            title: {
-              display: true,
-              text: 'Median Sold Price',
-              font: { size: 12 },
-              color: '#333'
+            },
+            plugins: {
+              ...baseOptions.plugins,
+              title: {
+                display: true,
+                text: 'Median Sold Price',
+                font: { size: 12 },
+                color: '#333'
+              }
             }
           }
         } : null;
@@ -1718,48 +1720,49 @@ const NewsletterGenerator = () => {
         const hasData = marketData.daysOnMarket && marketData.daysOnMarket.length > 0;
         console.log('Days on market chart creation:', { hasData, dataLength: marketData.daysOnMarket?.length });
         return hasData ? {
-        data: {
-          labels: marketData.daysOnMarket.map(item => 
-            `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
-          ),
-          datasets: [{
-            label: 'Average Days on Market',
-            data: marketData.daysOnMarket.map(item => item.average_days_on_market),
-            borderColor: '#8b4513',
-            backgroundColor: 'rgba(139, 69, 19, 0.1)',
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: '#8b4513',
-            tension: 0.1
-          }]
-        },
-        options: {
-          ...baseOptions,
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 10 }, color: '#333' }
-            },
-            y: {
-              grid: { color: '#e0e0e0' },
-              ticks: { 
-                font: { size: 10 }, 
-                color: '#333',
-                callback: function(value) {
-                  return value + ' days';
+          data: {
+            labels: marketData.daysOnMarket.map(item => 
+              `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
+            ),
+            datasets: [{
+              label: 'Average Days on Market',
+              data: marketData.daysOnMarket.map(item => item.average_days_on_market),
+              borderColor: '#8b4513',
+              backgroundColor: 'rgba(139, 69, 19, 0.1)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#8b4513',
+              tension: 0.1
+            }]
+          },
+          options: {
+            ...baseOptions,
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 }, color: '#333' }
+              },
+              y: {
+                grid: { color: '#e0e0e0' },
+                ticks: { 
+                  font: { size: 10 }, 
+                  color: '#333',
+                  callback: function(value) {
+                    return value + ' days';
+                  }
                 }
               }
-            }
-          },
-          plugins: {
-            ...baseOptions.plugins,
-            title: {
-              display: true,
-              text: 'Average Days on Market',
-              font: { size: 12 },
-              color: '#333'
+            },
+            plugins: {
+              ...baseOptions.plugins,
+              title: {
+                display: true,
+                text: 'Average Days on Market',
+                font: { size: 12 },
+                color: '#333'
+              }
             }
           }
         } : null;
