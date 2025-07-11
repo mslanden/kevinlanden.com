@@ -1604,7 +1604,10 @@ const NewsletterGenerator = () => {
       },
       
       // New: Price per Sq Ft 6-Month Trend Chart
-      pricePerSqftTrendChart: marketData.pricePerSqft && marketData.pricePerSqft.length > 0 ? {
+      pricePerSqftTrendChart: (() => {
+        const hasData = marketData.pricePerSqft && marketData.pricePerSqft.length > 0;
+        console.log('Price per sqft chart creation:', { hasData, dataLength: marketData.pricePerSqft?.length });
+        return hasData ? {
         data: {
           labels: marketData.pricePerSqft.map(item => 
             `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
@@ -1649,11 +1652,14 @@ const NewsletterGenerator = () => {
               color: '#333'
             }
           }
-        }
-      } : null,
+        } : null;
+      })(),
       
       // New: Median Sold Price Chart
-      medianSoldPriceChart: marketData.pricePerSqft && marketData.pricePerSqft.length > 0 ? {
+      medianSoldPriceChart: (() => {
+        const hasData = marketData.pricePerSqft && marketData.pricePerSqft.length > 0;
+        console.log('Median sold price chart creation:', { hasData, dataLength: marketData.pricePerSqft?.length });
+        return hasData ? {
         data: {
           labels: marketData.pricePerSqft.map(item => 
             `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
@@ -1698,11 +1704,14 @@ const NewsletterGenerator = () => {
               color: '#333'
             }
           }
-        }
-      } : null,
+        } : null;
+      })(),
       
       // New: Average Days on Market Chart
-      daysOnMarketTrendChart: marketData.daysOnMarket && marketData.daysOnMarket.length > 0 ? {
+      daysOnMarketTrendChart: (() => {
+        const hasData = marketData.daysOnMarket && marketData.daysOnMarket.length > 0;
+        console.log('Days on market chart creation:', { hasData, dataLength: marketData.daysOnMarket?.length });
+        return hasData ? {
         data: {
           labels: marketData.daysOnMarket.map(item => 
             `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
@@ -1747,8 +1756,8 @@ const NewsletterGenerator = () => {
               color: '#333'
             }
           }
-        }
-      } : null
+        } : null;
+      })()
     };
   };
 
@@ -2176,7 +2185,12 @@ const NewsletterGenerator = () => {
                 
                 <div className="charts-section page-break-before">
                   {/* Full width chart for Average Days on Market */}
-                  {createChartData()?.daysOnMarketTrendChart && (
+                  {(() => {
+                    const chartData = createChartData();
+                    const hasChart = !!chartData?.daysOnMarketTrendChart;
+                    console.log('Rendering days on market chart:', { hasChart, chartData: !!chartData });
+                    return hasChart;
+                  })() && (
                     <div className="chart-item page-break-avoid" style={{ width: '100%', marginBottom: '2rem' }}>
                       <div className="chart-title">Average Days on Market - 6 Month Trend</div>
                       <div className="chart-container">
