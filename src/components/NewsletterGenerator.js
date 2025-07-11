@@ -779,6 +779,15 @@ const NewsletterGenerator = () => {
   useEffect(() => {
     fetchMarketData();
   }, [newsletterData.community, newsletterData.month, newsletterData.year]);
+  
+  // Debug when marketData changes
+  useEffect(() => {
+    console.log('MarketData state updated:', marketData);
+    console.log('Charts should render if data > 0:', {
+      priceLength: marketData.pricePerSqft?.length || 0,
+      daysLength: marketData.daysOnMarket?.length || 0
+    });
+  }, [marketData]);
 
   const handleInputChange = (field, value) => {
     setNewsletterData(prev => ({
@@ -811,10 +820,15 @@ const NewsletterGenerator = () => {
       
       if (response.ok) {
         const result = await response.json();
-        setMarketData({
+        const newMarketData = {
           pricePerSqft: result.data.pricePerSqft || [],
           daysOnMarket: result.data.daysOnMarket || []
-        });
+        };
+        setMarketData(newMarketData);
+        
+        console.log('Setting new market data:', newMarketData);
+        console.log('New price per sqft length:', newMarketData.pricePerSqft.length);
+        console.log('New days on market length:', newMarketData.daysOnMarket.length);
         
         // Set extracted data with MLS listings for newsletter preview
         if (result.data.mlsListings && result.data.mlsListings.length > 0) {
@@ -846,9 +860,6 @@ const NewsletterGenerator = () => {
         }
         
         console.log('Market data fetched for community:', newsletterData.community, result.data);
-        console.log('MarketData state:', marketData);
-        console.log('Price per sqft data length:', marketData.pricePerSqft.length);
-        console.log('Days on market data length:', marketData.daysOnMarket.length);
       } else {
         console.error('Failed to fetch market data:', response.status, response.statusText);
       }
