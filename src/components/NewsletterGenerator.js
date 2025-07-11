@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaFileAlt } from 'react-icons/fa';
@@ -789,318 +789,8 @@ const NewsletterGenerator = () => {
     });
   }, [marketData]);
   
-  // Memoize chart data to prevent excessive re-calculations
-  const chartData = useMemo(() => {
-    console.log('Creating chart data - memoized');
-    return createChartData();
-  }, [marketData, extractedData]);
-
-  const handleInputChange = (field, value) => {
-    setNewsletterData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-  
-  const handleTokenExpiration = () => {
-    // Clear token and redirect to login
-    localStorage.removeItem('adminToken');
-    alert('Your session has expired. Please log in again.');
-    window.location.href = '/admin'; // Redirect to admin login
-  };
-
-  const fetchMarketData = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data?community=${newsletterData.community}&month=${newsletterData.month}&year=${newsletterData.year}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
-      });
-      
-      if (response.status === 401) {
-        handleTokenExpiration();
-        return;
-      }
-      
-      if (response.ok) {
-        const result = await response.json();
-        const newMarketData = {
-          pricePerSqft: result.data.pricePerSqft || [],
-          daysOnMarket: result.data.daysOnMarket || []
-        };
-        setMarketData(newMarketData);
-        
-        console.log('Setting new market data:', newMarketData);
-        console.log('New price per sqft length:', newMarketData.pricePerSqft.length);
-        console.log('New days on market length:', newMarketData.daysOnMarket.length);
-        
-        // Set extracted data with MLS listings for newsletter preview
-        if (result.data.mlsListings && result.data.mlsListings.length > 0) {
-          setExtractedData({
-            listings: result.data.mlsListings.map(listing => ({
-              mls: listing.mls_number || listing.mls,
-              status: listing.status,
-              price: listing.price ? `$${listing.price.toLocaleString()}` : 'N/A',
-              address: listing.address,
-              beds: listing.beds,
-              baths: listing.baths,
-              sqft: listing.sqft,
-              daysInMarket: listing.days_in_market,
-              yearBuilt: listing.year_built
-            })),
-            summary: {
-              quickAnalysis: `Market data for ${result.data.community} showing ${result.data.mlsListings.length} property listings for ${newsletterData.month}/${newsletterData.year}.`
-            },
-            statusSummary: {
-              active: result.data.mlsListings.filter(l => l.status === 'active').length,
-              pending: result.data.mlsListings.filter(l => l.status === 'pending').length,
-              closed: result.data.mlsListings.filter(l => ['closed', 'sold'].includes(l.status)).length,
-              other: result.data.mlsListings.filter(l => !['active', 'pending', 'closed', 'sold'].includes(l.status)).length
-            }
-          });
-        } else {
-          console.log('No MLS listings found for the selected period');
-          setExtractedData(null);
-        }
-        
-        console.log('Market data fetched for community:', newsletterData.community, result.data);
-      } else {
-        console.error('Failed to fetch market data:', response.status, response.statusText);
-      }
-    } catch (error) {
-      console.error('Error fetching market data:', error);
-    }
-  };
-
-
-  const generatePreview = () => {
-    setShowPreview(true);
-  };
-
-  const generatePDF = async () => {
-    if (!showPreview) {
-      alert('Please generate a preview first before creating PDF');
-      return;
-    }
-
-    setIsGenerating(true);
-    
-    try {
-      const element = previewRef.current;
-      if (!element) {
-        throw new Error('Preview element not found');
-      }
-
-      console.log('Starting PDF generation...');
-
-      // Create PDF with compression
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 5; // Smaller margins for better page usage
-      const contentWidth = pdfWidth - (2 * margin);
-      const contentHeight = pdfHeight - (2 * margin);
-
-      // Wait for all images to load
-      const images = element.querySelectorAll('img');
-      console.log(`Found ${images.length} images, waiting for them to load...`);
-      
-      await Promise.all(Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-          img.onload = resolve;
-          img.onerror = resolve; // Don't fail on image errors
-          setTimeout(resolve, 2000); // 2 second timeout
-        });
-      }));
-
-      console.log('All images loaded, capturing canvas...');
-
-      // Try different capture approaches if the first fails
-      let canvas;
-      let captureAttempt = 1;
-      const maxAttempts = 3;
-
-      while (captureAttempt <= maxAttempts) {
-        try {
-          console.log(`Canvas capture attempt ${captureAttempt}...`);
-          
-          const options = {
-            scale: 1.3, // Higher scale for better text quality in PDF
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: true,
-            imageTimeout: 8000,
-            onclone: function(clonedDoc) {
-              console.log('Cloning document for canvas capture...');
-              
-              // Ensure all fonts are loaded in cloned document
-              const fontLink = clonedDoc.createElement('link');
-              fontLink.href = 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap';
-              fontLink.rel = 'stylesheet';
-              clonedDoc.head.appendChild(fontLink);
-              
-              // Copy all styled-components and other styles
-              const styles = document.querySelectorAll('style');
-              styles.forEach(style => {
-                const clonedStyle = clonedDoc.createElement('style');
-                clonedStyle.textContent = style.textContent;
-                clonedDoc.head.appendChild(clonedStyle);
-              });
-              
-              // Force consistent styling on preview element for full-width PDF capture
-              const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
-              if (previewElement) {
-                previewElement.style.backgroundColor = '#ffffff';
-                previewElement.style.color = '#333333';
-                previewElement.style.width = '1000px'; // Wider for better PDF readability
-                previewElement.style.maxWidth = 'none';
-                previewElement.style.margin = '0';
-                previewElement.style.padding = '30px';
-                previewElement.style.border = 'none';
-                previewElement.style.boxShadow = 'none';
-                previewElement.style.transform = 'none';
-                previewElement.style.fontSize = '16px'; // Ensure readable font size
-              }
-              
-              // Ensure container doesn't interfere and adjust content for better PDF layout
-              const container = clonedDoc.querySelector('[class*="PreviewContainer"]');
-              if (container) {
-                container.style.background = 'transparent';
-                container.style.padding = '0';
-                container.style.margin = '0';
-                container.style.width = '100%';
-                container.style.display = 'block';
-                container.style.justifyContent = 'flex-start';
-              }
-              
-              // Enhance text readability in PDF
-              const contentElements = clonedDoc.querySelectorAll('h1, h2, h3, p, td, th');
-              contentElements.forEach(el => {
-                const computedStyle = window.getComputedStyle(el);
-                const currentSize = parseFloat(computedStyle.fontSize);
-                if (currentSize < 12) {
-                  el.style.fontSize = '12px'; // Minimum readable size
-                }
-              });
-              
-              // Ensure tables have proper width
-              const tables = clonedDoc.querySelectorAll('table');
-              tables.forEach(table => {
-                table.style.width = '100%';
-                table.style.tableLayout = 'fixed';
-              });
-              
-              // Add simple page break after buyers/sellers market component
-              const buyersSellerSection = clonedDoc.querySelector('.buyers-sellers');
-              if (buyersSellerSection) {
-                buyersSellerSection.style.pageBreakAfter = 'always';
-                buyersSellerSection.style.marginBottom = '50px';
-              }
-            }
-          };
-
-          canvas = await html2canvas(element, options);
-          
-          if (canvas && canvas.width > 0 && canvas.height > 0) {
-            console.log(`Canvas captured successfully: ${canvas.width}x${canvas.height}`);
-            break;
-          } else {
-            throw new Error('Canvas is empty or invalid');
-          }
-          
-        } catch (captureError) {
-          console.warn(`Canvas capture attempt ${captureAttempt} failed:`, captureError);
-          captureAttempt++;
-          
-          if (captureAttempt > maxAttempts) {
-            throw new Error(`Failed to capture canvas after ${maxAttempts} attempts: ${captureError.message}`);
-          }
-          
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-
-      // Verify canvas has content
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
-      if (!imgData || imgData === 'data:,') {
-        throw new Error('Canvas generated empty image data');
-      }
-
-      console.log('Canvas data generated, creating PDF pages...');
-
-      // Always use full width for better readability - newsletter should fill the page
-      const finalWidth = contentWidth;
-      const finalHeight = (canvas.height * contentWidth) / canvas.width;
-      
-      // Center horizontally (should be minimal since we're using full width)
-      const xOffset = margin;
-      const yOffset = margin;
-      
-      // Simple page breaking - just fit content to pages naturally
-      const canvasScale = canvas.width / finalWidth;
-      const maxCanvasHeightPerPage = contentHeight * canvasScale;
-      
-      let currentY = 0;
-      let pageIndex = 0;
-      
-      while (currentY < canvas.height) {
-        if (pageIndex > 0) {
-          pdf.addPage();
-        }
-
-        const sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
-        const actualPageHeight = sourceHeight / canvasScale;
-
-        // Create canvas for this page
-        const pageCanvas = document.createElement('canvas');
-        const pageCtx = pageCanvas.getContext('2d');
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sourceHeight;
-
-        pageCtx.drawImage(
-          canvas,
-          0, currentY,
-          canvas.width, sourceHeight,
-          0, 0,
-          canvas.width, sourceHeight
-        );
-
-        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
-        pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
-        
-        console.log(`Added page ${pageIndex + 1} - canvas ${currentY.toFixed(0)}-${(currentY + sourceHeight).toFixed(0)}`);
-        
-        currentY += sourceHeight;
-        pageIndex++;
-      }
-
-      // Download the PDF
-      const fileName = `${communities[newsletterData.community]}-Newsletter-${months[newsletterData.month - 1]}-${newsletterData.year}.pdf`;
-      pdf.save(fileName);
-      
-      console.log('PDF generated and downloaded successfully');
-
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert(`Error generating PDF: ${error.message}. Please check the console for details and try again.`);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   // Create chart data matching MLS format
-  const createChartData = () => {
+  const createChartData = useCallback(() => {
     const baseOptions = {
       responsive: true,
       maintainAspectRatio: false,
@@ -1768,6 +1458,316 @@ const NewsletterGenerator = () => {
         } : null;
       })()
     };
+  }, [marketData, extractedData, newsletterData.unitSales, newsletterData.inventory]);
+  
+  // Memoize chart data to prevent excessive re-calculations
+  const chartData = useMemo(() => {
+    console.log('Creating chart data - memoized');
+    return createChartData();
+  }, [createChartData]);
+
+  const handleInputChange = (field, value) => {
+    setNewsletterData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  
+  const handleTokenExpiration = () => {
+    // Clear token and redirect to login
+    localStorage.removeItem('adminToken');
+    alert('Your session has expired. Please log in again.');
+    window.location.href = '/admin'; // Redirect to admin login
+  };
+
+  const fetchMarketData = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data?community=${newsletterData.community}&month=${newsletterData.month}&year=${newsletterData.year}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        }
+      });
+      
+      if (response.status === 401) {
+        handleTokenExpiration();
+        return;
+      }
+      
+      if (response.ok) {
+        const result = await response.json();
+        const newMarketData = {
+          pricePerSqft: result.data.pricePerSqft || [],
+          daysOnMarket: result.data.daysOnMarket || []
+        };
+        setMarketData(newMarketData);
+        
+        console.log('Setting new market data:', newMarketData);
+        console.log('New price per sqft length:', newMarketData.pricePerSqft.length);
+        console.log('New days on market length:', newMarketData.daysOnMarket.length);
+        
+        // Set extracted data with MLS listings for newsletter preview
+        if (result.data.mlsListings && result.data.mlsListings.length > 0) {
+          setExtractedData({
+            listings: result.data.mlsListings.map(listing => ({
+              mls: listing.mls_number || listing.mls,
+              status: listing.status,
+              price: listing.price ? `$${listing.price.toLocaleString()}` : 'N/A',
+              address: listing.address,
+              beds: listing.beds,
+              baths: listing.baths,
+              sqft: listing.sqft,
+              daysInMarket: listing.days_in_market,
+              yearBuilt: listing.year_built
+            })),
+            summary: {
+              quickAnalysis: `Market data for ${result.data.community} showing ${result.data.mlsListings.length} property listings for ${newsletterData.month}/${newsletterData.year}.`
+            },
+            statusSummary: {
+              active: result.data.mlsListings.filter(l => l.status === 'active').length,
+              pending: result.data.mlsListings.filter(l => l.status === 'pending').length,
+              closed: result.data.mlsListings.filter(l => ['closed', 'sold'].includes(l.status)).length,
+              other: result.data.mlsListings.filter(l => !['active', 'pending', 'closed', 'sold'].includes(l.status)).length
+            }
+          });
+        } else {
+          console.log('No MLS listings found for the selected period');
+          setExtractedData(null);
+        }
+        
+        console.log('Market data fetched for community:', newsletterData.community, result.data);
+      } else {
+        console.error('Failed to fetch market data:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+    }
+  };
+
+
+  const generatePreview = () => {
+    setShowPreview(true);
+  };
+
+  const generatePDF = async () => {
+    if (!showPreview) {
+      alert('Please generate a preview first before creating PDF');
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const element = previewRef.current;
+      if (!element) {
+        throw new Error('Preview element not found');
+      }
+
+      console.log('Starting PDF generation...');
+
+      // Create PDF with compression
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 5; // Smaller margins for better page usage
+      const contentWidth = pdfWidth - (2 * margin);
+      const contentHeight = pdfHeight - (2 * margin);
+
+      // Wait for all images to load
+      const images = element.querySelectorAll('img');
+      console.log(`Found ${images.length} images, waiting for them to load...`);
+      
+      await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve; // Don't fail on image errors
+          setTimeout(resolve, 2000); // 2 second timeout
+        });
+      }));
+
+      console.log('All images loaded, capturing canvas...');
+
+      // Try different capture approaches if the first fails
+      let canvas;
+      let captureAttempt = 1;
+      const maxAttempts = 3;
+
+      while (captureAttempt <= maxAttempts) {
+        try {
+          console.log(`Canvas capture attempt ${captureAttempt}...`);
+          
+          const options = {
+            scale: 1.3, // Higher scale for better text quality in PDF
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: true,
+            imageTimeout: 8000,
+            onclone: function(clonedDoc) {
+              console.log('Cloning document for canvas capture...');
+              
+              // Ensure all fonts are loaded in cloned document
+              const fontLink = clonedDoc.createElement('link');
+              fontLink.href = 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap';
+              fontLink.rel = 'stylesheet';
+              clonedDoc.head.appendChild(fontLink);
+              
+              // Copy all styled-components and other styles
+              const styles = document.querySelectorAll('style');
+              styles.forEach(style => {
+                const clonedStyle = clonedDoc.createElement('style');
+                clonedStyle.textContent = style.textContent;
+                clonedDoc.head.appendChild(clonedStyle);
+              });
+              
+              // Force consistent styling on preview element for full-width PDF capture
+              const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
+              if (previewElement) {
+                previewElement.style.backgroundColor = '#ffffff';
+                previewElement.style.color = '#333333';
+                previewElement.style.width = '1000px'; // Wider for better PDF readability
+                previewElement.style.maxWidth = 'none';
+                previewElement.style.margin = '0';
+                previewElement.style.padding = '30px';
+                previewElement.style.border = 'none';
+                previewElement.style.boxShadow = 'none';
+                previewElement.style.transform = 'none';
+                previewElement.style.fontSize = '16px'; // Ensure readable font size
+              }
+              
+              // Ensure container doesn't interfere and adjust content for better PDF layout
+              const container = clonedDoc.querySelector('[class*="PreviewContainer"]');
+              if (container) {
+                container.style.background = 'transparent';
+                container.style.padding = '0';
+                container.style.margin = '0';
+                container.style.width = '100%';
+                container.style.display = 'block';
+                container.style.justifyContent = 'flex-start';
+              }
+              
+              // Enhance text readability in PDF
+              const contentElements = clonedDoc.querySelectorAll('h1, h2, h3, p, td, th');
+              contentElements.forEach(el => {
+                const computedStyle = window.getComputedStyle(el);
+                const currentSize = parseFloat(computedStyle.fontSize);
+                if (currentSize < 12) {
+                  el.style.fontSize = '12px'; // Minimum readable size
+                }
+              });
+              
+              // Ensure tables have proper width
+              const tables = clonedDoc.querySelectorAll('table');
+              tables.forEach(table => {
+                table.style.width = '100%';
+                table.style.tableLayout = 'fixed';
+              });
+              
+              // Add simple page break after buyers/sellers market component
+              const buyersSellerSection = clonedDoc.querySelector('.buyers-sellers');
+              if (buyersSellerSection) {
+                buyersSellerSection.style.pageBreakAfter = 'always';
+                buyersSellerSection.style.marginBottom = '50px';
+              }
+            }
+          };
+
+          canvas = await html2canvas(element, options);
+          
+          if (canvas && canvas.width > 0 && canvas.height > 0) {
+            console.log(`Canvas captured successfully: ${canvas.width}x${canvas.height}`);
+            break;
+          } else {
+            throw new Error('Canvas is empty or invalid');
+          }
+          
+        } catch (captureError) {
+          console.warn(`Canvas capture attempt ${captureAttempt} failed:`, captureError);
+          captureAttempt++;
+          
+          if (captureAttempt > maxAttempts) {
+            throw new Error(`Failed to capture canvas after ${maxAttempts} attempts: ${captureError.message}`);
+          }
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Verify canvas has content
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
+      if (!imgData || imgData === 'data:,') {
+        throw new Error('Canvas generated empty image data');
+      }
+
+      console.log('Canvas data generated, creating PDF pages...');
+
+      // Always use full width for better readability - newsletter should fill the page
+      const finalWidth = contentWidth;
+      const finalHeight = (canvas.height * contentWidth) / canvas.width;
+      
+      // Center horizontally (should be minimal since we're using full width)
+      const xOffset = margin;
+      const yOffset = margin;
+      
+      // Simple page breaking - just fit content to pages naturally
+      const canvasScale = canvas.width / finalWidth;
+      const maxCanvasHeightPerPage = contentHeight * canvasScale;
+      
+      let currentY = 0;
+      let pageIndex = 0;
+      
+      while (currentY < canvas.height) {
+        if (pageIndex > 0) {
+          pdf.addPage();
+        }
+
+        const sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
+        const actualPageHeight = sourceHeight / canvasScale;
+
+        // Create canvas for this page
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sourceHeight;
+
+        pageCtx.drawImage(
+          canvas,
+          0, currentY,
+          canvas.width, sourceHeight,
+          0, 0,
+          canvas.width, sourceHeight
+        );
+
+        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
+        pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
+        
+        console.log(`Added page ${pageIndex + 1} - canvas ${currentY.toFixed(0)}-${(currentY + sourceHeight).toFixed(0)}`);
+        
+        currentY += sourceHeight;
+        pageIndex++;
+      }
+
+      // Download the PDF
+      const fileName = `${communities[newsletterData.community]}-Newsletter-${months[newsletterData.month - 1]}-${newsletterData.year}.pdf`;
+      pdf.save(fileName);
+      
+      console.log('PDF generated and downloaded successfully');
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert(`Error generating PDF: ${error.message}. Please check the console for details and try again.`);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
