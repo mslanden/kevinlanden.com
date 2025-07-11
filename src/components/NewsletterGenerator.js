@@ -2282,7 +2282,7 @@ const NewsletterGenerator = () => {
               </div>
               
               <div className="content">
-                <div className="main-grid page-break-avoid">
+                <div className="main-grid">
                   <div className="left-column">
                     <div className="quick-analysis page-break-avoid">
                       <h3>Quick Analysis</h3>
@@ -2350,11 +2350,6 @@ const NewsletterGenerator = () => {
                     </div>
                   </div>
                 </div>
-                
-                {(() => {
-                  console.log('About to render charts section');
-                  return null;
-                })()}
                 
                 <div className="page-break-after" style={{ height: '1px' }}></div>
                 
