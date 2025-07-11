@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaFileAlt } from 'react-icons/fa';
@@ -788,6 +788,12 @@ const NewsletterGenerator = () => {
       daysLength: marketData.daysOnMarket?.length || 0
     });
   }, [marketData]);
+  
+  // Memoize chart data to prevent excessive re-calculations
+  const chartData = useMemo(() => {
+    console.log('Creating chart data - memoized');
+    return createChartData();
+  }, [marketData, extractedData]);
 
   const handleInputChange = (field, value) => {
     setNewsletterData(prev => ({
@@ -2175,18 +2181,22 @@ const NewsletterGenerator = () => {
                     <div className="buyers-sellers page-break-avoid">
                       <h3>Buyers/Sellers Market</h3>
                       <div className="gauge-container">
-                        {createChartData()?.marketGauge && (
-                          <Doughnut {...createChartData().marketGauge} />
+                        {chartData?.marketGauge && (
+                          <Doughnut {...chartData.marketGauge} />
                         )}
                       </div>
                     </div>
                   </div>
                 </div>
                 
+                {(() => {
+                  console.log('About to render charts section');
+                  return null;
+                })()}
+                
                 <div className="charts-section page-break-before">
                   {/* Full width chart for Average Days on Market */}
                   {(() => {
-                    const chartData = createChartData();
                     const hasChart = !!chartData?.daysOnMarketTrendChart;
                     console.log('Rendering days on market chart:', { hasChart, chartData: !!chartData });
                     return hasChart;
@@ -2194,28 +2204,28 @@ const NewsletterGenerator = () => {
                     <div className="chart-item page-break-avoid" style={{ width: '100%', marginBottom: '2rem' }}>
                       <div className="chart-title">Average Days on Market - 6 Month Trend</div>
                       <div className="chart-container">
-                        <Line {...createChartData().daysOnMarketTrendChart} />
+                        <Line {...chartData.daysOnMarketTrendChart} />
                       </div>
                     </div>
                   )}
                   
                   {/* Two charts in grid layout */}
-                  {(createChartData()?.medianSoldPriceChart || createChartData()?.pricePerSqftTrendChart) && (
+                  {(chartData?.medianSoldPriceChart || chartData?.pricePerSqftTrendChart) && (
                     <div className="chart-grid">
-                      {createChartData()?.medianSoldPriceChart && (
+                      {chartData?.medianSoldPriceChart && (
                         <div className="chart-item page-break-avoid">
                           <div className="chart-title">Median Sold Price - 6 Month Trend</div>
                           <div className="chart-container">
-                            <Line {...createChartData().medianSoldPriceChart} />
+                            <Line {...chartData.medianSoldPriceChart} />
                           </div>
                         </div>
                       )}
                       
-                      {createChartData()?.pricePerSqftTrendChart && (
+                      {chartData?.pricePerSqftTrendChart && (
                         <div className="chart-item page-break-avoid">
                           <div className="chart-title">Price per Sq Ft - 6 Month Trend</div>
                           <div className="chart-container">
-                            <Line {...createChartData().pricePerSqftTrendChart} />
+                            <Line {...chartData.pricePerSqftTrendChart} />
                           </div>
                         </div>
                       )}
