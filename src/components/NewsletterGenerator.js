@@ -2351,9 +2351,10 @@ const NewsletterGenerator = () => {
                   </div>
                 </div>
                 
-                <div className="page-break-after" style={{ height: '1px' }}></div>
+                {/* Force page break before charts */}
+                <div style={{ pageBreakAfter: 'always', breakAfter: 'page', height: '1px' }}></div>
                 
-                <div className="charts-section page-break-before">
+                <div className="charts-section" style={{ pageBreakBefore: 'always', breakBefore: 'page' }}>
                   {/* Full width chart for Average Days on Market */}
                   {(() => {
                     const hasChart = !!chartData?.daysOnMarketTrendChart;
@@ -2462,7 +2463,10 @@ const NewsletterGenerator = () => {
                 </div>
                 
                 {extractedData?.listings && (
-                  <div className="properties-section page-break-before">
+                  <>
+                    {/* Force page break before property listings */}
+                    <div style={{ pageBreakAfter: 'always', breakAfter: 'page', height: '1px' }}></div>
+                    <div className="properties-section" style={{ pageBreakBefore: 'always', breakBefore: 'page' }}>
                     <h3>Property Listings ({extractedData.listings.length} Properties)</h3>
                     <table className="properties-table">
                       <thead>
@@ -2494,7 +2498,8 @@ const NewsletterGenerator = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
             </NewsletterPreview>
