@@ -5,8 +5,7 @@ import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaFileAlt }
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import html2pdf from 'html2pdf.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement, ChartDataLabels);
 
@@ -285,15 +284,15 @@ const NewsletterPreview = styled.div`
     break-inside: avoid !important;
   }
   
-  /* Force visual separation for page breaks */
+  /* Proper page breaks for html2pdf.js */
   .charts-section {
-    margin-top: 200px !important;
-    padding-top: 50px;
+    page-break-before: always !important;
+    break-before: page !important;
   }
   
   .properties-section {
-    margin-top: 200px !important;
-    padding-top: 50px;
+    page-break-before: always !important;
+    break-before: page !important;
   }
   
   .page-break-after {
@@ -1734,21 +1733,7 @@ const NewsletterGenerator = () => {
         throw new Error('Preview element not found');
       }
 
-      console.log('Starting PDF generation...');
-
-      // Create PDF with compression
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 5; // Smaller margins for better page usage
-      const contentWidth = pdfWidth - (2 * margin);
-      const contentHeight = pdfHeight - (2 * margin);
+      console.log('Starting PDF generation with html2pdf.js...');
 
       // Wait for all images to load
       const images = element.querySelectorAll('img');
@@ -1763,174 +1748,74 @@ const NewsletterGenerator = () => {
         });
       }));
 
-      console.log('All images loaded, capturing canvas...');
+      console.log('All images loaded, generating PDF...');
 
-      // Try different capture approaches if the first fails
-      let canvas;
-      let captureAttempt = 1;
-      const maxAttempts = 3;
+      // Generate filename
+      const community = communities[newsletterData.community] || 'Unknown';
+      const month = months[newsletterData.month - 1] || 'Unknown';
+      const year = newsletterData.year;
+      const filename = `${community}-Newsletter-${month}-${year}-${Date.now()}.pdf`;
 
-      while (captureAttempt <= maxAttempts) {
-        try {
-          console.log(`Canvas capture attempt ${captureAttempt}...`);
-          
-          const options = {
-            scale: 1.3, // Higher scale for better text quality in PDF
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: true,
-            imageTimeout: 8000,
-            onclone: function(clonedDoc) {
-              console.log('Cloning document for canvas capture...');
-              
-              // Ensure all fonts are loaded in cloned document
-              const fontLink = clonedDoc.createElement('link');
-              fontLink.href = 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap';
-              fontLink.rel = 'stylesheet';
-              clonedDoc.head.appendChild(fontLink);
-              
-              // Copy all styled-components and other styles
-              const styles = document.querySelectorAll('style');
-              styles.forEach(style => {
+      // Configure html2pdf options
+      const options = {
+        margin: [10, 10, 10, 10], // top, right, bottom, left in mm
+        filename: filename,
+        image: { 
+          type: 'jpeg', 
+          quality: 0.8 
+        },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          letterRendering: true,
+          logging: false,
+          width: element.scrollWidth,
+          height: element.scrollHeight,
+          windowWidth: 1200,
+          windowHeight: 800,
+          onclone: (clonedDoc) => {
+            // Ensure all styles are copied
+            const originalStyles = document.head.querySelectorAll('style, link[rel="stylesheet"]');
+            originalStyles.forEach(style => {
+              if (style.tagName === 'STYLE') {
                 const clonedStyle = clonedDoc.createElement('style');
                 clonedStyle.textContent = style.textContent;
                 clonedDoc.head.appendChild(clonedStyle);
-              });
-              
-              // Force consistent styling on preview element for full-width PDF capture
-              const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
-              if (previewElement) {
-                previewElement.style.backgroundColor = '#ffffff';
-                previewElement.style.color = '#333333';
-                previewElement.style.width = '1000px'; // Wider for better PDF readability
-                previewElement.style.maxWidth = 'none';
-                previewElement.style.margin = '0';
-                previewElement.style.padding = '30px';
-                previewElement.style.border = 'none';
-                previewElement.style.boxShadow = 'none';
-                previewElement.style.transform = 'none';
-                previewElement.style.fontSize = '16px'; // Ensure readable font size
+              } else if (style.tagName === 'LINK') {
+                const clonedLink = clonedDoc.createElement('link');
+                clonedLink.rel = 'stylesheet';
+                clonedLink.href = style.href;
+                clonedDoc.head.appendChild(clonedLink);
               }
-              
-              // Ensure container doesn't interfere and adjust content for better PDF layout
-              const container = clonedDoc.querySelector('[class*="PreviewContainer"]');
-              if (container) {
-                container.style.background = 'transparent';
-                container.style.padding = '0';
-                container.style.margin = '0';
-                container.style.width = '100%';
-                container.style.display = 'block';
-                container.style.justifyContent = 'flex-start';
-              }
-              
-              // Enhance text readability in PDF
-              const contentElements = clonedDoc.querySelectorAll('h1, h2, h3, p, td, th');
-              contentElements.forEach(el => {
-                const computedStyle = window.getComputedStyle(el);
-                const currentSize = parseFloat(computedStyle.fontSize);
-                if (currentSize < 12) {
-                  el.style.fontSize = '12px'; // Minimum readable size
-                }
-              });
-              
-              // Ensure tables have proper width
-              const tables = clonedDoc.querySelectorAll('table');
-              tables.forEach(table => {
-                table.style.width = '100%';
-                table.style.tableLayout = 'fixed';
-              });
-              
-              // Add simple page break after buyers/sellers market component
-              const buyersSellerSection = clonedDoc.querySelector('.buyers-sellers');
-              if (buyersSellerSection) {
-                buyersSellerSection.style.pageBreakAfter = 'always';
-                buyersSellerSection.style.marginBottom = '50px';
-              }
-            }
-          };
+            });
 
-          canvas = await html2canvas(element, options);
-          
-          if (canvas && canvas.width > 0 && canvas.height > 0) {
-            console.log(`Canvas captured successfully: ${canvas.width}x${canvas.height}`);
-            break;
-          } else {
-            throw new Error('Canvas is empty or invalid');
+            // Ensure charts are visible
+            const charts = clonedDoc.querySelectorAll('canvas');
+            charts.forEach(chart => {
+              chart.style.maxWidth = '100%';
+              chart.style.height = 'auto';
+            });
           }
-          
-        } catch (captureError) {
-          console.warn(`Canvas capture attempt ${captureAttempt} failed:`, captureError);
-          captureAttempt++;
-          
-          if (captureAttempt > maxAttempts) {
-            throw new Error(`Failed to capture canvas after ${maxAttempts} attempts: ${captureError.message}`);
-          }
-          
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: {
+          mode: ['css', 'legacy'],
+          before: '.charts-section, .properties-section',
+          avoid: '.page-break-avoid'
         }
-      }
+      };
 
-      // Verify canvas has content
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
-      if (!imgData || imgData === 'data:,') {
-        throw new Error('Canvas generated empty image data');
-      }
-
-      console.log('Canvas data generated, creating PDF pages...');
-
-      // Always use full width for better readability - newsletter should fill the page
-      const finalWidth = contentWidth;
-      const finalHeight = (canvas.height * contentWidth) / canvas.width;
+      // Generate PDF with page breaks
+      await html2pdf().set(options).from(element).save();
       
-      // Center horizontally (should be minimal since we're using full width)
-      const xOffset = margin;
-      const yOffset = margin;
       
-      // Simple page breaking - just fit content to pages naturally
-      const canvasScale = canvas.width / finalWidth;
-      const maxCanvasHeightPerPage = contentHeight * canvasScale;
-      
-      let currentY = 0;
-      let pageIndex = 0;
-      
-      while (currentY < canvas.height) {
-        if (pageIndex > 0) {
-          pdf.addPage();
-        }
-
-        const sourceHeight = Math.min(maxCanvasHeightPerPage, canvas.height - currentY);
-        const actualPageHeight = sourceHeight / canvasScale;
-
-        // Create canvas for this page
-        const pageCanvas = document.createElement('canvas');
-        const pageCtx = pageCanvas.getContext('2d');
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sourceHeight;
-
-        pageCtx.drawImage(
-          canvas,
-          0, currentY,
-          canvas.width, sourceHeight,
-          0, 0,
-          canvas.width, sourceHeight
-        );
-
-        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
-        pdf.addImage(pageImgData, 'JPEG', xOffset, yOffset, finalWidth, actualPageHeight);
-        
-        console.log(`Added page ${pageIndex + 1} - canvas ${currentY.toFixed(0)}-${(currentY + sourceHeight).toFixed(0)}`);
-        
-        currentY += sourceHeight;
-        pageIndex++;
-      }
-
-      // Download the PDF
-      const fileName = `${communities[newsletterData.community]}-Newsletter-${months[newsletterData.month - 1]}-${newsletterData.year}.pdf`;
-      pdf.save(fileName);
-      
-      console.log('PDF generated and downloaded successfully');
+      console.log('PDF generated and downloaded successfully!');
 
     } catch (error) {
       console.error('Error generating PDF:', error);
