@@ -279,8 +279,10 @@ const NewsletterPreview = styled.div`
   }
   
   .page-break-before {
-    page-break-before: always;
-    break-before: page;
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   
   .page-break-after {
@@ -2338,7 +2340,7 @@ const NewsletterGenerator = () => {
                       </table>
                     </div>
                     
-                    <div className="buyers-sellers page-break-avoid">
+                    <div className="buyers-sellers">
                       <h3>Buyers/Sellers Market</h3>
                       <div className="gauge-container">
                         {chartData?.marketGauge && (
@@ -2353,6 +2355,8 @@ const NewsletterGenerator = () => {
                   console.log('About to render charts section');
                   return null;
                 })()}
+                
+                <div className="page-break-after" style={{ height: '1px' }}></div>
                 
                 <div className="charts-section page-break-before">
                   {/* Full width chart for Average Days on Market */}
