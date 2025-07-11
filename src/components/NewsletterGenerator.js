@@ -1790,11 +1790,60 @@ const NewsletterGenerator = () => {
               }
             });
 
-            // Ensure charts are visible
+            // Find the newsletter preview element and optimize for PDF
+            const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
+            if (previewElement) {
+              previewElement.style.width = '750px'; // Optimal width for A4 PDF
+              previewElement.style.maxWidth = 'none';
+              previewElement.style.margin = '0 auto'; // Center the content
+              previewElement.style.padding = '20px';
+              previewElement.style.backgroundColor = '#ffffff';
+              previewElement.style.color = '#333333';
+              previewElement.style.fontSize = '14px';
+              previewElement.style.lineHeight = '1.5';
+            }
+
+            // Ensure charts are visible and properly sized
             const charts = clonedDoc.querySelectorAll('canvas');
             charts.forEach(chart => {
               chart.style.maxWidth = '100%';
               chart.style.height = 'auto';
+              chart.style.display = 'block';
+              chart.style.margin = '0 auto';
+            });
+
+            // Optimize property listings table for PDF
+            const tables = clonedDoc.querySelectorAll('table');
+            tables.forEach(table => {
+              table.style.width = '100%';
+              table.style.margin = '0 auto';
+              table.style.fontSize = '12px';
+              table.style.borderCollapse = 'collapse';
+              
+              // Ensure table cells are properly sized
+              const cells = table.querySelectorAll('td, th');
+              cells.forEach(cell => {
+                cell.style.padding = '8px';
+                cell.style.textAlign = 'left';
+                cell.style.borderBottom = '1px solid #ddd';
+              });
+            });
+
+            // Optimize chart containers
+            const chartContainers = clonedDoc.querySelectorAll('[class*="ChartContainer"]');
+            chartContainers.forEach(container => {
+              container.style.width = '100%';
+              container.style.maxWidth = 'none';
+              container.style.margin = '20px auto';
+              container.style.display = 'flex';
+              container.style.justifyContent = 'center';
+            });
+
+            // Ensure proper spacing for sections
+            const sections = clonedDoc.querySelectorAll('.charts-section, .properties-section');
+            sections.forEach(section => {
+              section.style.width = '100%';
+              section.style.padding = '20px 0';
             });
           }
         },
