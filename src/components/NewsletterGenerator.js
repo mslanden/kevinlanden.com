@@ -1064,6 +1064,12 @@ const NewsletterGenerator = () => {
       }
     };
 
+    // Define months array for chart labels
+    const chartMonths = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
     // If we have extracted data, use it for charts
     if (extractedData && extractedData.statusSummary) {
       console.log('Using extracted data for charts:', extractedData);
@@ -1557,7 +1563,7 @@ const NewsletterGenerator = () => {
       pricePerSqftTrendChart: marketData.pricePerSqft.length > 0 ? {
         data: {
           labels: marketData.pricePerSqft.map(item => 
-            `${months[item.month - 1].substring(0, 3)} ${item.year}`
+            `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
           ),
           datasets: [{
             label: 'Price per Sq Ft',
@@ -1606,7 +1612,7 @@ const NewsletterGenerator = () => {
       medianSoldPriceChart: marketData.pricePerSqft.length > 0 ? {
         data: {
           labels: marketData.pricePerSqft.map(item => 
-            `${months[item.month - 1].substring(0, 3)} ${item.year}`
+            `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
           ),
           datasets: [{
             label: 'Median Sold Price',
@@ -1655,7 +1661,7 @@ const NewsletterGenerator = () => {
       daysOnMarketTrendChart: marketData.daysOnMarket.length > 0 ? {
         data: {
           labels: marketData.daysOnMarket.map(item => 
-            `${months[item.month - 1].substring(0, 3)} ${item.year}`
+            `${chartMonths[item.month - 1] ? chartMonths[item.month - 1].substring(0, 3) : 'Unknown'} ${item.year}`
           ),
           datasets: [{
             label: 'Average Days on Market',

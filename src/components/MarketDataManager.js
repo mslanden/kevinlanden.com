@@ -953,20 +953,48 @@ const MarketDataManager = () => {
                 <FaUpload style={{ marginRight: '0.5rem' }} />
                 Upload MLS Reports (PDF)
               </h3>
-              <input
-                type="file"
-                multiple
-                accept=".pdf"
-                onChange={handleMlsFileUpload}
+              <div
                 style={{
-                  padding: '0.75rem',
                   border: '2px dashed #8B4513',
                   borderRadius: '8px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  color: '#D2B48C',
-                  width: '100%'
+                  padding: '3rem',
+                  textAlign: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  position: 'relative'
                 }}
-              />
+                onClick={() => document.getElementById('mls-file-input').click()}
+              >
+                <input
+                  id="mls-file-input"
+                  type="file"
+                  multiple
+                  accept=".pdf"
+                  onChange={handleMlsFileUpload}
+                  style={{ display: 'none' }}
+                />
+                <div style={{
+                  fontSize: '3rem',
+                  color: '#8B4513',
+                  marginBottom: '1rem'
+                }}>
+                  <FaUpload />
+                </div>
+                <div style={{
+                  color: '#D2B48C',
+                  fontSize: '1.1rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  Drop MLS PDF files here or click to browse
+                </div>
+                <div style={{
+                  color: '#999',
+                  fontSize: '0.9rem'
+                }}>
+                  Supports PDF files up to 10MB
+                </div>
+              </div>
               
               {mlsUploadFiles.length > 0 && (
                 <div style={{ marginTop: '1rem' }}>
