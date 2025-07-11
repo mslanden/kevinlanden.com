@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaUpload, FaFileAlt, FaSpinner } from 'react-icons/fa';
+import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaFileAlt } from 'react-icons/fa';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -106,74 +106,6 @@ const InputGroup = styled.div`
   }
 `;
 
-const FileUploadArea = styled.div`
-  border: 2px dashed ${props => props.theme.colors.border};
-  border-radius: ${props => props.theme.borderRadius.default};
-  padding: 2rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: rgba(255, 255, 255, 0.05);
-  
-  &:hover {
-    border-color: ${props => props.theme.colors.primary};
-    background-color: rgba(139, 69, 19, 0.1);
-  }
-  
-  &.dragover {
-    border-color: ${props => props.theme.colors.primary};
-    background-color: rgba(139, 69, 19, 0.2);
-  }
-  
-  input {
-    display: none;
-  }
-  
-  .upload-icon {
-    font-size: 3rem;
-    color: ${props => props.theme.colors.primary};
-    margin-bottom: 1rem;
-  }
-  
-  .upload-text {
-    color: ${props => props.theme.colors.text.secondary};
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .upload-hint {
-    color: ${props => props.theme.colors.text.muted};
-    font-size: 0.9rem;
-  }
-`;
-
-const UploadedFiles = styled.div`
-  margin-top: 1rem;
-  
-  .file-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background-color: rgba(139, 69, 19, 0.1);
-    border-radius: ${props => props.theme.borderRadius.small};
-    margin-bottom: 0.5rem;
-    
-    .file-icon {
-      color: ${props => props.theme.colors.primary};
-    }
-    
-    .file-name {
-      color: ${props => props.theme.colors.text.primary};
-      flex: 1;
-    }
-    
-    .processing-status {
-      color: ${props => props.theme.colors.accent};
-      font-size: 0.9rem;
-    }
-  }
-`;
 
 const DataVisualization = styled.div`
   margin-top: 2rem;
@@ -816,9 +748,7 @@ const NewsletterGenerator = () => {
   
   const [showPreview, setShowPreview] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [extractedData, setExtractedData] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [marketData, setMarketData] = useState({
     pricePerSqft: [],
@@ -827,7 +757,6 @@ const NewsletterGenerator = () => {
   const [editableData, setEditableData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const previewRef = useRef();
-  const fileInputRef = useRef();
 
   const communities = {
     'anza': 'Anza',
@@ -895,93 +824,6 @@ const NewsletterGenerator = () => {
     }
   };
 
-  const handleFileUpload = async (files) => {
-    setIsProcessing(true);
-    
-    const newFiles = Array.from(files).map(file => ({
-      id: Date.now() + Math.random(),
-      file,
-      name: file.name,
-      status: 'processing'
-    }));
-    
-    setUploadedFiles(prev => [...prev, ...newFiles]);
-    
-    try {
-      // Process files with LlamaParse
-      const formData = new FormData();
-      newFiles.forEach(fileItem => {
-        formData.append('files', fileItem.file);
-      });
-      formData.append('community', newsletterData.community);
-      
-      // Send to backend for processing
-      console.log('Sending files to backend for processing...');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/newsletter/process-mls`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
-        body: formData
-      });
-      
-      console.log('Received response from backend:', response.status);
-      
-      if (response.status === 401) {
-        handleTokenExpiration();
-        return;
-      }
-      
-      if (response.ok) {
-        console.log('Parsing JSON response...');
-        const data = await response.json();
-        console.log('Received data from backend:', data);
-        setExtractedData(data);
-        
-        // Auto-populate form with extracted data
-        setNewsletterData(prev => ({
-          ...prev,
-          quickAnalysis: data.summary?.quickAnalysis || ''
-        }));
-        
-        // Update file status
-        console.log('Updating file status to completed');
-        setUploadedFiles(prev => 
-          prev.map(f => newFiles.find(nf => nf.id === f.id) 
-            ? { ...f, status: 'completed' } 
-            : f
-          )
-        );
-      } else {
-        throw new Error('Failed to process files');
-      }
-    } catch (error) {
-      console.error('Error processing files:', error);
-      // Update file status to error
-      setUploadedFiles(prev => 
-        prev.map(f => newFiles.find(nf => nf.id === f.id) 
-          ? { ...f, status: 'error' } 
-          : f
-        )
-      );
-      alert('Error processing MLS files. Please try again.');
-    } finally {
-      console.log('Processing finished, setting isProcessing to false');
-      setIsProcessing(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFileUpload(files);
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
 
   const generatePreview = () => {
     setShowPreview(true);
@@ -1921,50 +1763,17 @@ const NewsletterGenerator = () => {
           </InputGroup>
         </FormSection>
 
-
-        <FormSection>
-          <h3>
-            <FaUpload />
-            Upload MLS Data (PDF Files)
+        {/* MLS Data Information */}
+        <FormSection style={{ backgroundColor: 'rgba(72, 133, 237, 0.1)', border: '1px solid #4885ed' }}>
+          <h3 style={{ color: '#4885ed' }}>
+            <FaFileAlt />
+            MLS Data Information
           </h3>
-          <FileUploadArea
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept=".pdf,.jpg,.jpeg,.png,.webp,image/*"
-              onChange={(e) => handleFileUpload(e.target.files)}
-            />
-            <div className="upload-icon">
-              {isProcessing ? <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> : <FaUpload />}
-            </div>
-            <div className="upload-text">
-              {isProcessing ? 'Processing files...' : 'Drop MLS files here or click to browse'}
-            </div>
-            <div className="upload-hint">
-              Supports PDF, JPEG, PNG, and WebP files
-            </div>
-          </FileUploadArea>
-          
-          {uploadedFiles.length > 0 && (
-            <UploadedFiles>
-              {uploadedFiles.map(file => (
-                <div key={file.id} className="file-item">
-                  <FaFileAlt className="file-icon" />
-                  <span className="file-name">{file.name}</span>
-                  <span className="processing-status">
-                    {file.status === 'processing' && <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />}
-                    {file.status === 'completed' && '✓ Processed'}
-                    {file.status === 'error' && '✗ Error'}
-                  </span>
-                </div>
-              ))}
-            </UploadedFiles>
-          )}
+          <p style={{ color: '#a0a0a0', margin: 0, lineHeight: '1.6' }}>
+            📋 <strong>MLS data is now managed separately!</strong> To upload and process MLS reports, 
+            please go to the <strong>Market Data Manager</strong> section above. Once uploaded there, 
+            the data will automatically be available for newsletter generation and charts will populate based on your selected community, month, and year.
+          </p>
         </FormSection>
 
         {extractedData && (
