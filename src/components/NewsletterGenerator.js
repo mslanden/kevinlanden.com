@@ -285,6 +285,17 @@ const NewsletterPreview = styled.div`
     break-inside: avoid !important;
   }
   
+  /* Force visual separation for page breaks */
+  .charts-section {
+    margin-top: 200px !important;
+    padding-top: 50px;
+  }
+  
+  .properties-section {
+    margin-top: 200px !important;
+    padding-top: 50px;
+  }
+  
   .page-break-after {
     page-break-after: always;
     break-after: page;
@@ -2351,10 +2362,7 @@ const NewsletterGenerator = () => {
                   </div>
                 </div>
                 
-                {/* Force page break before charts */}
-                <div style={{ pageBreakAfter: 'always', breakAfter: 'page', height: '1px' }}></div>
-                
-                <div className="charts-section" style={{ pageBreakBefore: 'always', breakBefore: 'page' }}>
+                <div className="charts-section">
                   {/* Full width chart for Average Days on Market */}
                   {(() => {
                     const hasChart = !!chartData?.daysOnMarketTrendChart;
@@ -2463,10 +2471,7 @@ const NewsletterGenerator = () => {
                 </div>
                 
                 {extractedData?.listings && (
-                  <>
-                    {/* Force page break before property listings */}
-                    <div style={{ pageBreakAfter: 'always', breakAfter: 'page', height: '1px' }}></div>
-                    <div className="properties-section" style={{ pageBreakBefore: 'always', breakBefore: 'page' }}>
+                  <div className="properties-section">
                     <h3>Property Listings ({extractedData.listings.length} Properties)</h3>
                     <table className="properties-table">
                       <thead>
@@ -2498,8 +2503,7 @@ const NewsletterGenerator = () => {
                         ))}
                       </tbody>
                     </table>
-                    </div>
-                  </>
+                  </div>
                 )}
               </div>
             </NewsletterPreview>
