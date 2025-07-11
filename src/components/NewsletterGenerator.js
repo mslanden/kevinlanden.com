@@ -815,6 +815,36 @@ const NewsletterGenerator = () => {
           pricePerSqft: result.data.pricePerSqft || [],
           daysOnMarket: result.data.daysOnMarket || []
         });
+        
+        // Set extracted data with MLS listings for newsletter preview
+        if (result.data.mlsListings && result.data.mlsListings.length > 0) {
+          setExtractedData({
+            listings: result.data.mlsListings.map(listing => ({
+              mls: listing.mls_number || listing.mls,
+              status: listing.status,
+              price: listing.price ? `$${listing.price.toLocaleString()}` : 'N/A',
+              address: listing.address,
+              beds: listing.beds,
+              baths: listing.baths,
+              sqft: listing.sqft,
+              daysInMarket: listing.days_in_market,
+              yearBuilt: listing.year_built
+            })),
+            summary: {
+              quickAnalysis: `Market data for ${result.data.community} showing ${result.data.mlsListings.length} property listings for ${newsletterData.month}/${newsletterData.year}.`
+            },
+            statusSummary: {
+              active: result.data.mlsListings.filter(l => l.status === 'active').length,
+              pending: result.data.mlsListings.filter(l => l.status === 'pending').length,
+              closed: result.data.mlsListings.filter(l => ['closed', 'sold'].includes(l.status)).length,
+              other: result.data.mlsListings.filter(l => !['active', 'pending', 'closed', 'sold'].includes(l.status)).length
+            }
+          });
+        } else {
+          console.log('No MLS listings found for the selected period');
+          setExtractedData(null);
+        }
+        
         console.log('Market data fetched for community:', newsletterData.community, result.data);
       } else {
         console.error('Failed to fetch market data:', response.status, response.statusText);
