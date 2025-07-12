@@ -1734,18 +1734,8 @@ const NewsletterGenerator = () => {
 
       console.log('Starting PDF generation with html2canvas...');
 
-      // Create PDF
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
-      const contentWidth = pdfWidth - (2 * margin);
+      const standardPdfWidth = 210; // A4 width in mm
 
       // Wait for all images to load
       const images = element.querySelectorAll('img');
@@ -1818,22 +1808,20 @@ const NewsletterGenerator = () => {
 
       // Convert canvas to image and add to PDF as single long page
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const contentWidth = standardPdfWidth - (2 * margin);
       const imgWidth = contentWidth;
       const imgHeight = (canvas.height * contentWidth) / canvas.width;
       
       // Create a custom page size to fit all content on one page
-      const customPdf = new jsPDF({
-        orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
+      const pdf = new jsPDF({
+        orientation: 'portrait',
         unit: 'mm',
-        format: [pdfWidth, imgHeight + (2 * margin)], // Custom height to fit all content
+        format: [standardPdfWidth, imgHeight + (2 * margin)], // Custom height to fit all content
         compress: true
       });
       
       // Add the entire image to the single custom-sized page
-      customPdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
-      
-      // Use the custom PDF instead of the original
-      pdf = customPdf;
+      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
 
       // Generate filename and save
       const community = communities[newsletterData.community] || 'Unknown';
