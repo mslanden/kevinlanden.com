@@ -5,7 +5,8 @@ import { FaNewspaper, FaDownload, FaEye, FaChartBar, FaMapMarkedAlt, FaFileAlt }
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { Doughnut, Bar, Line } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement, ChartDataLabels);
 
@@ -1731,7 +1732,20 @@ const NewsletterGenerator = () => {
         throw new Error('Preview element not found');
       }
 
-      console.log('Starting PDF generation with html2pdf.js...');
+      console.log('Starting PDF generation with html2canvas...');
+
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pdfWidth - (2 * margin);
 
       // Wait for all images to load
       const images = element.querySelectorAll('img');
@@ -1741,137 +1755,91 @@ const NewsletterGenerator = () => {
         if (img.complete) return Promise.resolve();
         return new Promise((resolve) => {
           img.onload = resolve;
-          img.onerror = resolve; // Don't fail on image errors
-          setTimeout(resolve, 2000); // 2 second timeout
+          img.onerror = resolve;
+          setTimeout(resolve, 2000);
         });
       }));
 
-      console.log('All images loaded, generating PDF...');
+      console.log('All images loaded, capturing canvas...');
 
-      // Generate filename
+      // Capture the element as canvas
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: 1200,
+        windowHeight: element.scrollHeight,
+        onclone: (clonedDoc) => {
+          // Ensure all styles are copied
+          const originalStyles = document.head.querySelectorAll('style, link[rel="stylesheet"]');
+          originalStyles.forEach(style => {
+            if (style.tagName === 'STYLE') {
+              const clonedStyle = clonedDoc.createElement('style');
+              clonedStyle.textContent = style.textContent;
+              clonedDoc.head.appendChild(clonedStyle);
+            } else if (style.tagName === 'LINK') {
+              const clonedLink = clonedDoc.createElement('link');
+              clonedLink.rel = 'stylesheet';
+              clonedLink.href = style.href;
+              clonedDoc.head.appendChild(clonedLink);
+            }
+          });
+
+          // Find the newsletter preview element and optimize for PDF
+          const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
+          if (previewElement) {
+            previewElement.style.width = '750px';
+            previewElement.style.maxWidth = 'none';
+            previewElement.style.margin = '0 auto';
+            previewElement.style.padding = '20px';
+            previewElement.style.backgroundColor = '#ffffff';
+            previewElement.style.color = '#333333';
+            previewElement.style.fontSize = '14px';
+            previewElement.style.lineHeight = '1.5';
+          }
+
+          // Ensure charts are visible
+          const charts = clonedDoc.querySelectorAll('canvas');
+          charts.forEach(chart => {
+            chart.style.maxWidth = '100%';
+            chart.style.height = 'auto';
+          });
+
+          // Optimize tables
+          const tables = clonedDoc.querySelectorAll('table');
+          tables.forEach(table => {
+            table.style.width = '100%';
+            table.style.fontSize = '12px';
+          });
+        }
+      });
+
+      // Convert canvas to image and add to PDF
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * contentWidth) / canvas.width;
+      
+      // Check if we need multiple pages
+      const totalPages = Math.ceil(imgHeight / (pdfHeight - 2 * margin));
+      
+      for (let i = 0; i < totalPages; i++) {
+        if (i > 0) {
+          pdf.addPage();
+        }
+        
+        const yOffset = -(i * (pdfHeight - 2 * margin));
+        pdf.addImage(imgData, 'JPEG', margin, margin + yOffset, imgWidth, imgHeight);
+      }
+
+      // Generate filename and save
       const community = communities[newsletterData.community] || 'Unknown';
       const month = months[newsletterData.month - 1] || 'Unknown';
       const year = newsletterData.year;
-      const filename = `${community}-Newsletter-${month}-${year}-${Date.now()}.pdf`;
-
-      // Configure html2pdf options
-      const options = {
-        margin: [10, 10, 10, 10], // top, right, bottom, left in mm
-        filename: filename,
-        image: { 
-          type: 'jpeg', 
-          quality: 0.8 
-        },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          letterRendering: true,
-          logging: false,
-          width: element.scrollWidth,
-          height: element.scrollHeight,
-          windowWidth: 1200,
-          windowHeight: 800,
-          onclone: (clonedDoc) => {
-            // Ensure all styles are copied
-            const originalStyles = document.head.querySelectorAll('style, link[rel="stylesheet"]');
-            originalStyles.forEach(style => {
-              if (style.tagName === 'STYLE') {
-                const clonedStyle = clonedDoc.createElement('style');
-                clonedStyle.textContent = style.textContent;
-                clonedDoc.head.appendChild(clonedStyle);
-              } else if (style.tagName === 'LINK') {
-                const clonedLink = clonedDoc.createElement('link');
-                clonedLink.rel = 'stylesheet';
-                clonedLink.href = style.href;
-                clonedDoc.head.appendChild(clonedLink);
-              }
-            });
-
-            // Find the newsletter preview element and optimize for PDF
-            const previewElement = clonedDoc.querySelector('[class*="NewsletterPreview"]');
-            if (previewElement) {
-              previewElement.style.width = '750px'; // Optimal width for A4 PDF
-              previewElement.style.maxWidth = 'none';
-              previewElement.style.margin = '0 auto'; // Center the content
-              previewElement.style.padding = '20px';
-              previewElement.style.backgroundColor = '#ffffff';
-              previewElement.style.color = '#333333';
-              previewElement.style.fontSize = '14px';
-              previewElement.style.lineHeight = '1.5';
-            }
-
-            // Ensure charts are visible and properly sized
-            const charts = clonedDoc.querySelectorAll('canvas');
-            charts.forEach(chart => {
-              chart.style.maxWidth = '100%';
-              chart.style.height = 'auto';
-              chart.style.display = 'block';
-              chart.style.margin = '0 auto';
-            });
-
-            // Optimize property listings table for PDF
-            const tables = clonedDoc.querySelectorAll('table');
-            tables.forEach(table => {
-              table.style.width = '100%';
-              table.style.margin = '0 auto';
-              table.style.fontSize = '12px';
-              table.style.borderCollapse = 'collapse';
-              
-              // Ensure table cells are properly sized
-              const cells = table.querySelectorAll('td, th');
-              cells.forEach(cell => {
-                cell.style.padding = '8px';
-                cell.style.textAlign = 'left';
-                cell.style.borderBottom = '1px solid #ddd';
-              });
-            });
-
-            // Optimize chart containers
-            const chartContainers = clonedDoc.querySelectorAll('[class*="ChartContainer"]');
-            chartContainers.forEach(container => {
-              container.style.width = '100%';
-              container.style.maxWidth = 'none';
-              container.style.margin = '20px auto';
-              container.style.display = 'flex';
-              container.style.justifyContent = 'center';
-            });
-
-            // Ensure proper spacing for sections
-            const sections = clonedDoc.querySelectorAll('.charts-section, .properties-section');
-            sections.forEach(section => {
-              section.style.width = '100%';
-              section.style.padding = '20px 0';
-            });
-
-            // Ensure summary section appears properly after quick analysis
-            const quickAnalysis = clonedDoc.querySelector('.quick-analysis');
-            const summarySection = clonedDoc.querySelector('.summary-section');
-            if (quickAnalysis) {
-              quickAnalysis.style.marginBottom = '1.5rem';
-              quickAnalysis.style.display = 'block';
-            }
-            if (summarySection) {
-              summarySection.style.marginTop = '1.5rem';
-              summarySection.style.display = 'block';
-            }
-          }
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: {
-          mode: 'avoid-all'  // Disable page breaks for continuous document
-        }
-      };
-
-      // Generate PDF as continuous document
-      await html2pdf().set(options).from(element).save();
+      const filename = `${community}-Newsletter-${month}-${year}.pdf`;
       
-      
+      pdf.save(filename);
       console.log('PDF generated and downloaded successfully!');
 
     } catch (error) {
@@ -2274,8 +2242,12 @@ const NewsletterGenerator = () => {
                             <td>{extractedData?.statusSummary?.active || 'N/A'}</td>
                           </tr>
                           <tr>
-                            <td className="year-col">Pending Sales</td>
-                            <td>{extractedData?.statusSummary?.pending || 'N/A'}</td>
+                            <td className="year-col">Price per Sq Ft</td>
+                            <td>${marketData.pricePerSqft.find(item => 
+                              item.location === newsletterData.community && 
+                              item.month === newsletterData.month && 
+                              item.year === newsletterData.year
+                            )?.price_per_sqft || 'N/A'}</td>
                           </tr>
                           <tr>
                             <td className="year-col">Closed Sales</td>
@@ -2287,7 +2259,15 @@ const NewsletterGenerator = () => {
                           </tr>
                           <tr>
                             <td className="year-col">Median List Price</td>
-                            <td>{extractedData?.summary?.medianPrice || newsletterData.medianPrice || 'N/A'}</td>
+                            <td>${marketData.pricePerSqft.find(item => 
+                              item.location === newsletterData.community && 
+                              item.month === newsletterData.month && 
+                              item.year === newsletterData.year
+                            )?.average_price ? Math.round(marketData.pricePerSqft.find(item => 
+                              item.location === newsletterData.community && 
+                              item.month === newsletterData.month && 
+                              item.year === newsletterData.year
+                            ).average_price).toLocaleString() : (extractedData?.summary?.medianPrice || newsletterData.medianPrice || 'N/A')}</td>
                           </tr>
                         </tbody>
                       </table>
