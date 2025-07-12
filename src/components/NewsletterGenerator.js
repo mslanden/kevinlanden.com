@@ -1845,6 +1845,18 @@ const NewsletterGenerator = () => {
               section.style.width = '100%';
               section.style.padding = '20px 0';
             });
+
+            // Ensure summary section appears properly after quick analysis
+            const quickAnalysis = clonedDoc.querySelector('.quick-analysis');
+            const summarySection = clonedDoc.querySelector('.summary-section');
+            if (quickAnalysis) {
+              quickAnalysis.style.marginBottom = '1.5rem';
+              quickAnalysis.style.display = 'block';
+            }
+            if (summarySection) {
+              summarySection.style.marginTop = '1.5rem';
+              summarySection.style.display = 'block';
+            }
           }
         },
         jsPDF: { 
@@ -2333,76 +2345,76 @@ const NewsletterGenerator = () => {
                       )}
                     </div>
                   )}
-                  
-                  {/* Market Data Table */}
-                  {marketData.pricePerSqft.filter(item => item.location === newsletterData.community).length > 0 ? (
-                    <div className="market-data-table-section page-break-avoid" style={{ marginTop: '2rem' }}>
-                      <h3>Market Data - Last 6 Months</h3>
-                      <table className="market-data-table" style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        marginTop: '1rem',
-                        fontSize: '0.85rem'
-                      }}>
-                        <thead>
-                          <tr style={{ backgroundColor: '#f8f9fa' }}>
-                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Month</th>
-                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Location</th>
-                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Price/Sq Ft</th>
-                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Avg Price</th>
-                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Total Sales</th>
-                            <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Avg Days on Market</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {marketData.pricePerSqft
-                            .filter(item => item.location === newsletterData.community)
-                            .map((priceItem, index) => {
-                            const daysItem = marketData.daysOnMarket.find(d => 
-                              d.location === priceItem.location && 
-                              d.month === priceItem.month && 
-                              d.year === priceItem.year
-                            );
-                            
-                            // Use edited values if available, otherwise use original values
-                            const pricePerSqft = editableData[`price_${index}`] || priceItem.price_per_sqft;
-                            const avgPrice = editableData[`avgprice_${index}`] || priceItem.average_price;
-                            const totalSales = editableData[`sales_${index}`] || priceItem.total_sales;
-                            
-                            return (
-                              <tr key={`${priceItem.location}-${priceItem.month}-${priceItem.year}`}>
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                                  {months[priceItem.month - 1]} {priceItem.year}
-                                </td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px', textTransform: 'capitalize' }}>
-                                  {priceItem.location.replace('_', ' ')}
-                                </td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
-                                  ${pricePerSqft}
-                                </td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
-                                  {avgPrice ? `$${parseInt(avgPrice).toLocaleString()}` : 'N/A'}
-                                </td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
-                                  {totalSales || 'N/A'}
-                                </td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
-                                  {daysItem?.average_days_on_market || 'N/A'}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="market-data-table-section page-break-avoid" style={{ marginTop: '2rem', textAlign: 'center', padding: '2rem' }}>
-                      <p style={{ color: '#a0522d', fontSize: '1.1rem' }}>
-                        No market data available for {communities[newsletterData.community]} in the last 6 months.
-                      </p>
-                    </div>
-                  )}
                 </div>
+                
+                {/* Market Data Table - Outside charts section to appear on same page as charts */}
+                {marketData.pricePerSqft.filter(item => item.location === newsletterData.community).length > 0 ? (
+                  <div className="market-data-table-section page-break-avoid" style={{ marginTop: '2rem' }}>
+                    <h3>Market Data - Last 6 Months</h3>
+                    <table className="market-data-table" style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      marginTop: '1rem',
+                      fontSize: '0.85rem'
+                    }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#f8f9fa' }}>
+                          <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Month</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Location</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Price/Sq Ft</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Avg Price</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Total Sales</th>
+                          <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>Avg Days on Market</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {marketData.pricePerSqft
+                          .filter(item => item.location === newsletterData.community)
+                          .map((priceItem, index) => {
+                          const daysItem = marketData.daysOnMarket.find(d => 
+                            d.location === priceItem.location && 
+                            d.month === priceItem.month && 
+                            d.year === priceItem.year
+                          );
+                          
+                          // Use edited values if available, otherwise use original values
+                          const pricePerSqft = editableData[`price_${index}`] || priceItem.price_per_sqft;
+                          const avgPrice = editableData[`avgprice_${index}`] || priceItem.average_price;
+                          const totalSales = editableData[`sales_${index}`] || priceItem.total_sales;
+                          
+                          return (
+                            <tr key={`${priceItem.location}-${priceItem.month}-${priceItem.year}`}>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                {months[priceItem.month - 1]} {priceItem.year}
+                              </td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px', textTransform: 'capitalize' }}>
+                                {priceItem.location.replace('_', ' ')}
+                              </td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                ${pricePerSqft}
+                              </td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                {avgPrice ? `$${parseInt(avgPrice).toLocaleString()}` : 'N/A'}
+                              </td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                {totalSales || 'N/A'}
+                              </td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>
+                                {daysItem?.average_days_on_market || 'N/A'}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="market-data-table-section page-break-avoid" style={{ marginTop: '2rem', textAlign: 'center', padding: '2rem' }}>
+                    <p style={{ color: '#a0522d', fontSize: '1.1rem' }}>
+                      No market data available for {communities[newsletterData.community]} in the last 6 months.
+                    </p>
+                  </div>
+                )}
                 
                 {extractedData?.listings && (
                   <div className="properties-section">
