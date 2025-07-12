@@ -1816,22 +1816,24 @@ const NewsletterGenerator = () => {
         }
       });
 
-      // Convert canvas to image and add to PDF
+      // Convert canvas to image and add to PDF as single long page
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const imgWidth = contentWidth;
       const imgHeight = (canvas.height * contentWidth) / canvas.width;
       
-      // Check if we need multiple pages
-      const totalPages = Math.ceil(imgHeight / (pdfHeight - 2 * margin));
+      // Create a custom page size to fit all content on one page
+      const customPdf = new jsPDF({
+        orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
+        unit: 'mm',
+        format: [pdfWidth, imgHeight + (2 * margin)], // Custom height to fit all content
+        compress: true
+      });
       
-      for (let i = 0; i < totalPages; i++) {
-        if (i > 0) {
-          pdf.addPage();
-        }
-        
-        const yOffset = -(i * (pdfHeight - 2 * margin));
-        pdf.addImage(imgData, 'JPEG', margin, margin + yOffset, imgWidth, imgHeight);
-      }
+      // Add the entire image to the single custom-sized page
+      customPdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+      
+      // Use the custom PDF instead of the original
+      pdf = customPdf;
 
       // Generate filename and save
       const community = communities[newsletterData.community] || 'Unknown';
