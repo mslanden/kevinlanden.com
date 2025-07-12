@@ -284,15 +284,13 @@ const NewsletterPreview = styled.div`
     break-inside: avoid !important;
   }
   
-  /* Proper page breaks for html2pdf.js */
+  /* No page breaks - continuous document */
   .charts-section {
-    page-break-before: always !important;
-    break-before: page !important;
+    margin-top: 2rem;
   }
   
   .properties-section {
-    page-break-before: always !important;
-    break-before: page !important;
+    margin-top: 2rem;
   }
   
   .page-break-after {
@@ -1866,13 +1864,11 @@ const NewsletterGenerator = () => {
           compress: true
         },
         pagebreak: {
-          mode: ['css', 'legacy'],
-          before: '.charts-section, .properties-section',
-          avoid: '.page-break-avoid'
+          mode: 'avoid-all'  // Disable page breaks for continuous document
         }
       };
 
-      // Generate PDF with page breaks
+      // Generate PDF as continuous document
       await html2pdf().set(options).from(element).save();
       
       
