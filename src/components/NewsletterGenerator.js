@@ -675,7 +675,7 @@ const NewsletterPreview = styled.div`
         .mls-col th { text-align: center; }
         .status-col { width: 8%; text-align: center; }
         .status-col th { text-align: left; }
-        .price-col { width: 12%; font-weight: 600; color: #8b4513; text-align: right; }
+        .price-col { width: 12%; font-weight: 600; color: #333; text-align: left; }
         .price-col th { text-align: center; }
         .address-col { width: 35%; }
         .address-col th { text-align: left; }
@@ -683,7 +683,7 @@ const NewsletterPreview = styled.div`
         .beds-col th { text-align: center; }
         .baths-col { width: 6%; text-align: center; }
         .baths-col th { text-align: center; }
-        .sqft-col { width: 10%; text-align: right; }
+        .sqft-col { width: 10%; text-align: left; }
         .sqft-col th { text-align: center; }
         .dim-col { width: 7%; text-align: center; }
         .dim-col th { text-align: center; }
@@ -974,7 +974,7 @@ const NewsletterGenerator = () => {
               labels: ['Sellers', 'Balanced', 'Buyers'],
               datasets: [{
                 data: [sellersMarket, balanced, buyersMarket],
-                backgroundColor: ['#28a745', '#007bff', '#ffc107'], // Green (Sellers), Blue (Balanced), Yellow (Buyers)
+                backgroundColor: ['#6b7c32', '#4a6741', '#b8860b'], // Earthy green (Sellers), Forest green (Balanced), Dark goldenrod (Buyers)
                 borderWidth: 2,
                 borderColor: '#fff',
                 cutout: '70%',
@@ -1315,7 +1315,7 @@ const NewsletterGenerator = () => {
           labels: ['Sellers', 'Balanced', 'Buyers'],
           datasets: [{
             data: [40, 20, 40],
-            backgroundColor: ['#28a745', '#007bff', '#ffc107'], // Green (Sellers), Blue (Balanced), Yellow (Buyers)
+            backgroundColor: ['#6b7c32', '#4a6741', '#b8860b'], // Earthy green (Sellers), Forest green (Balanced), Dark goldenrod (Buyers)
             borderWidth: 0,
             cutout: '70%',
             circumference: 180,
