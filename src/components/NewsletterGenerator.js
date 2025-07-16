@@ -672,13 +672,23 @@ const NewsletterPreview = styled.div`
         }
         
         .mls-col { width: 8%; text-align: center; }
+        .mls-col th { text-align: center; }
         .status-col { width: 8%; text-align: center; }
+        .status-col th { text-align: left; }
         .price-col { width: 12%; font-weight: 600; color: #8b4513; text-align: right; }
+        .price-col th { text-align: center; }
         .address-col { width: 35%; }
+        .address-col th { text-align: left; }
         .beds-col { width: 6%; text-align: center; }
+        .beds-col th { text-align: center; }
         .baths-col { width: 6%; text-align: center; }
+        .baths-col th { text-align: center; }
         .sqft-col { width: 10%; text-align: right; }
+        .sqft-col th { text-align: center; }
+        .dim-col { width: 7%; text-align: center; }
+        .dim-col th { text-align: center; }
         .year-col { width: 8%; text-align: center; }
+        .year-col th { text-align: center; }
         
         @media (max-width: 768px) {
           .mls-col { width: 10%; }
@@ -688,6 +698,7 @@ const NewsletterPreview = styled.div`
           .beds-col { width: 8%; }
           .baths-col { width: 8%; }
           .sqft-col { width: 12%; }
+          .dim-col { width: 8%; }
           .year-col { width: 10%; }
         }
       }
@@ -963,7 +974,7 @@ const NewsletterGenerator = () => {
               labels: ['Sellers', 'Balanced', 'Buyers'],
               datasets: [{
                 data: [sellersMarket, balanced, buyersMarket],
-                backgroundColor: ['#b8860b', '#daa520', '#8b4513'], // Better contrast: dark goldenrod, goldenrod, saddle brown
+                backgroundColor: ['#28a745', '#007bff', '#ffc107'], // Green (Sellers), Blue (Balanced), Yellow (Buyers)
                 borderWidth: 2,
                 borderColor: '#fff',
                 cutout: '70%',
@@ -1304,7 +1315,7 @@ const NewsletterGenerator = () => {
           labels: ['Sellers', 'Balanced', 'Buyers'],
           datasets: [{
             data: [40, 20, 40],
-            backgroundColor: ['#8b4513', '#d2b48c', '#a0522d'],
+            backgroundColor: ['#28a745', '#007bff', '#ffc107'], // Green (Sellers), Blue (Balanced), Yellow (Buyers)
             borderWidth: 0,
             cutout: '70%',
             circumference: 180,
