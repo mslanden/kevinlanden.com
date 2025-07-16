@@ -974,7 +974,7 @@ const NewsletterGenerator = () => {
               labels: ['Sellers', 'Balanced', 'Buyers'],
               datasets: [{
                 data: [sellersMarket, balanced, buyersMarket],
-                backgroundColor: ['#8B4513', '#D2B48C', '#5F4A37'], // Earth Brown (Sellers), Sandy Tan (Balanced), Dark Earth (Buyers)
+                backgroundColor: ['#6B8E23', '#B8860B', '#4682B4'], // Olive Green (Sellers), Dark Goldenrod (Balanced), Steel Blue (Buyers)
                 borderWidth: 2,
                 borderColor: '#fff',
                 cutout: '70%',
