@@ -974,7 +974,7 @@ const NewsletterGenerator = () => {
               labels: ['Sellers', 'Balanced', 'Buyers'],
               datasets: [{
                 data: [sellersMarket, balanced, buyersMarket],
-                backgroundColor: ['#4a6b7c', '#4a6741', '#b8860b'], // Earthy blue (Sellers), Forest green (Balanced), Dark goldenrod (Buyers)
+                backgroundColor: ['#28a745', '#ffc107', '#007bff'], // Green (Sellers), Yellow (Balanced), Blue (Buyers)
                 borderWidth: 2,
                 borderColor: '#fff',
                 cutout: '70%',
@@ -1315,7 +1315,7 @@ const NewsletterGenerator = () => {
           labels: ['Sellers', 'Balanced', 'Buyers'],
           datasets: [{
             data: [40, 20, 40],
-            backgroundColor: ['#4a6b7c', '#4a6741', '#b8860b'], // Earthy blue (Sellers), Forest green (Balanced), Dark goldenrod (Buyers)
+            backgroundColor: ['#28a745', '#ffc107', '#007bff'], // Green (Sellers), Yellow (Balanced), Blue (Buyers)
             borderWidth: 0,
             cutout: '70%',
             circumference: 180,
