@@ -227,7 +227,7 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 1.1 }}
           >
-            No binding contracts • 1% to list or buy <span style={{fontSize: '0.9rem', opacity: 0.8}}>(7k minimum)</span>
+            No binding contracts • 2% to list or buy <span style={{fontSize: '0.9rem', opacity: 0.8}}>(7k minimum)</span>
           </ServiceFeatures>
         </HeroMiddle>
 

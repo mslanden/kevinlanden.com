@@ -261,7 +261,7 @@ const Discover = () => {
         >
           <PricingTitle>Competitive Listing Fee</PricingTitle>
           <PricingItems>
-            <p><strong>Just 1% to list your property</strong> ($7k minimum)</p>
+            <p><strong>Just 2% to list your property</strong> ($7k minimum)</p>
             <p>Full-service representation without the premium price</p>
           </PricingItems>
         </PricingSection>

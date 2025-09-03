@@ -866,7 +866,7 @@ const SellersGuide = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             style={{ color: '#f5f5f5', maxWidth: '800px', margin: '0 auto', lineHeight: '1.7' }}
           >
-            We believe in providing exceptional service at a fair price. Our listing fee is just 1% of the sale price 
+            We believe in providing exceptional service at a fair price. Our listing fee is just 2% of the sale price 
             (with a $7,000 minimum), significantly lower than the industry standard while providing comprehensive marketing and support.
           </motion.p>
           
@@ -881,7 +881,7 @@ const SellersGuide = () => {
             </PricingHeader>
             
             <PricingPrice>
-              1% <span>of sale price ($7k minimum)</span>
+              2% <span>of sale price ($7k minimum)</span>
             </PricingPrice>
             
             <PricingFeatures>
