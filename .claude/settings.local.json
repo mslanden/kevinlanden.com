@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(rm:*)",
+      "Bash(npm install)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__list_projects",
+      "Bash(curl:*)",
+      "Bash(git commit:*)",
+      "Bash(git reset:*)",
+      "Bash(git rm:*)",
+      "Bash(node:*)",
+      "Bash(mv:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm start)",
+      "Bash(git init:*)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}
