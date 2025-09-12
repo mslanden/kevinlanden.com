@@ -101,7 +101,7 @@ export class LoftyCRMService {
         leadData,
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            'Authorization': `token ${this.apiKey}`,
             'Content-Type': 'application/json'
           },
           timeout: 10000 // 10 second timeout
@@ -147,7 +147,7 @@ export class LoftyCRMService {
         `${this.apiUrl}/users/me`, // Assuming there's a user endpoint
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`
+            'Authorization': `token ${this.apiKey}`
           },
           timeout: 5000
         }
