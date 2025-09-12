@@ -44,17 +44,25 @@ router.post('/',
       subject,
       message,
       leadType
-    }).then(result => {
+    }).then(async (result) => {
       if (result.success) {
         console.log(`Contact form lead sent to Lofty CRM: ${result.leadId}`);
         // Optionally update the database record with the CRM lead ID
         if (result.leadId && data[0].id) {
-          supabase
-            .from('contact_submissions')
-            .update({ crm_lead_id: result.leadId })
-            .eq('id', data[0].id)
-            .then(() => console.log('Updated contact submission with CRM lead ID'))
-            .catch((err: any) => console.error('Failed to update CRM lead ID:', err));
+          try {
+            const { error: updateError } = await supabase
+              .from('contact_submissions')
+              .update({ crm_lead_id: result.leadId })
+              .eq('id', data[0].id);
+            
+            if (updateError) {
+              console.error('Failed to update CRM lead ID:', updateError);
+            } else {
+              console.log('Updated contact submission with CRM lead ID');
+            }
+          } catch (err) {
+            console.error('Failed to update CRM lead ID:', err);
+          }
         }
       } else {
         console.warn('Failed to send lead to Lofty CRM:', result.error);
