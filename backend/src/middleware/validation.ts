@@ -35,7 +35,10 @@ export const schemas = {
     email: emailPattern,
     phone: phonePattern.allow(''),
     subject: Joi.string().min(1).max(200).required(),
-    message: textPattern
+    message: textPattern,
+    leadType: Joi.string()
+      .valid('buyer', 'seller', 'renter', 'investor', 'general')
+      .default('buyer')
   }),
 
   // Newsletter subscription validation
