@@ -54,12 +54,12 @@ router.post('/',
             .update({ crm_lead_id: result.leadId })
             .eq('id', data[0].id)
             .then(() => console.log('Updated contact submission with CRM lead ID'))
-            .catch(err => console.error('Failed to update CRM lead ID:', err));
+            .catch((err: any) => console.error('Failed to update CRM lead ID:', err));
         }
       } else {
         console.warn('Failed to send lead to Lofty CRM:', result.error);
       }
-    }).catch(err => {
+    }).catch((err: any) => {
       console.error('Error sending to Lofty CRM:', err);
     });
 
