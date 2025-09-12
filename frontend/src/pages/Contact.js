@@ -234,6 +234,29 @@ const FormInput = styled.input`
   }
 `;
 
+const FormSelect = styled.select`
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.small};
+  background-color: rgba(255, 255, 255, 0.08);
+  color: ${props => props.theme.colors.text.primary};
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+  }
+  
+  option {
+    background-color: #1a1a1a;
+    color: ${props => props.theme.colors.text.primary};
+  }
+`;
+
 const FormTextarea = styled.textarea`
   width: 100%;
   padding: 0.8rem 1rem;
@@ -308,7 +331,8 @@ const Contact = () => {
     email: '',
     phone: '',
     subject: '',
-    message: ''
+    message: '',
+    leadType: 'buyer'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -362,7 +386,8 @@ const Contact = () => {
           email: '',
           phone: '',
           subject: '',
-          message: ''
+          message: '',
+          leadType: 'buyer'
         });
         alert('Thank you for your message. We will get back to you soon!');
       } else {
@@ -511,6 +536,22 @@ const Contact = () => {
                 placeholder="What's this about?" 
                 required 
               />
+            </FormGroup>
+            <FormGroup>
+              <FormLabel htmlFor="leadType">I'm interested in...</FormLabel>
+              <FormSelect 
+                id="leadType" 
+                name="leadType"
+                value={formData.leadType}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="buyer">Buying a property</option>
+                <option value="seller">Selling a property</option>
+                <option value="renter">Renting a property</option>
+                <option value="investor">Investment opportunities</option>
+                <option value="general">General real estate questions</option>
+              </FormSelect>
             </FormGroup>
             <FormGroup>
               <FormLabel htmlFor="message">Message</FormLabel>

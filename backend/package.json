@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^0.55.0",
     "@supabase/supabase-js": "^2.50.0",
     "@types/multer": "^1.4.13",
+    "axios": "^1.12.1",
     "bcryptjs": "^3.0.2",
     "chartjs-plugin-datalabels": "^2.2.0",
     "cors": "^2.8.5",
