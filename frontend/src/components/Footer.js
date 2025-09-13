@@ -59,17 +59,17 @@ const LogoContainer = styled.div`
   }
   
   .outrider-logo {
-    height: 40px;
+    height: 40px; /* Partner logo should not exceed eXp symbol height */
     width: auto;
-    margin-right: calc(40px * 0.25); /* 0.25x of eXp logo width per guidelines */
+    margin-right: 40px; /* Full 'x' spacing (width of eXp symbol) per partner logo guidelines */
   }
   
   .logo-divider {
     width: 1px;
-    height: 40px; /* Full height per eXp guidelines */
+    height: 40px; /* 1px vertical divide at full height per eXp guidelines */
     background-color: ${props => props.theme.colors.text.muted};
     opacity: 0.7;
-    margin-right: calc(40px * 0.25); /* 0.25x spacing after divider */
+    margin-right: 40px; /* Full 'x' spacing after divider per partner logo guidelines */
   }
 `;
 
