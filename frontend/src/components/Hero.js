@@ -227,10 +227,11 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 1.0 }}
             style={{ 
-              fontSize: '0.9rem', 
+              fontSize: '1.1rem', 
               color: '#d2b48c',
               marginTop: '0.5rem',
-              opacity: 0.9
+              opacity: 1,
+              fontWeight: '500'
             }}
           >
             Kevin Landen | CA DRE #02140923
