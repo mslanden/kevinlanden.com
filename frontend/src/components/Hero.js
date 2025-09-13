@@ -222,21 +222,6 @@ const Hero = () => {
             Professional real estate services, serving the mountain communities of Anza, Aguanga, Idyllwild, and Mountain Center.
           </HeroSubtitle>
           
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.0 }}
-            style={{ 
-              fontSize: '1.1rem', 
-              color: '#d2b48c',
-              marginTop: '0.5rem',
-              opacity: 1,
-              fontWeight: '500'
-            }}
-          >
-            Kevin Landen | CA DRE #02140923
-          </motion.div>
-          
           <ServiceFeatures
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

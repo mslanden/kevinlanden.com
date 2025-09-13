@@ -224,8 +224,8 @@ const Footer = () => {
               </LogoContainer>
               <FooterTagline>Professionally navigating the market conditions</FooterTagline>
               <FooterTagline style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-                eXp Realty of Southern California, Inc. | CA DRE# 02187306<br />
-                Kevin Landen | CA DRE #02140923
+                Kevin Landen | CA DRE #02140923<br />
+                eXp Realty of Southern California, Inc. | CA DRE# 02187306
               </FooterTagline>
             </FooterLogo>
             <ContactItem>
