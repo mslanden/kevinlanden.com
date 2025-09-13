@@ -51,19 +51,25 @@ const FooterLogo = styled.div`
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
   margin-bottom: 1rem;
   
-  img {
+  .exp-logo {
     height: 40px;
     width: auto;
   }
   
+  .outrider-logo {
+    height: 40px;
+    width: auto;
+    margin-right: calc(40px * 0.25); /* 0.25x of eXp logo width per guidelines */
+  }
+  
   .logo-divider {
     width: 1px;
-    height: 40px;
+    height: 40px; /* Full height per eXp guidelines */
     background-color: ${props => props.theme.colors.text.muted};
-    opacity: 0.5;
+    opacity: 0.7;
+    margin-right: calc(40px * 0.25); /* 0.25x spacing after divider */
   }
 `;
 
@@ -204,12 +210,14 @@ const Footer = () => {
               <LogoContainer>
                 <img 
                   src="/logo/hero.svg" 
-                  alt="Outrider Real Estate" 
+                  alt="Outrider Real Estate"
+                  className="outrider-logo"
                 />
                 <div className="logo-divider"></div>
                 <img 
                   src="/logo/exp logos/eXp Realty - White-01.svg" 
-                  alt="eXp Realty" 
+                  alt="eXp Realty"
+                  className="exp-logo"
                 />
               </LogoContainer>
               <FooterTagline>Professionally navigating the market conditions</FooterTagline>
