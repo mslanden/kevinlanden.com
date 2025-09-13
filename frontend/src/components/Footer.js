@@ -66,10 +66,12 @@ const LogoContainer = styled.div`
   
   .logo-divider {
     width: 1px;
-    height: 40px; /* 1px vertical divide at full height per eXp guidelines */
+    height: 100%; /* Match the height of the tallest logo */
+    min-height: 40px; /* Ensure minimum height matches logo height */
     background-color: ${props => props.theme.colors.text.muted};
     opacity: 0.7;
     margin-right: 40px; /* Full 'x' spacing after divider per partner logo guidelines */
+    align-self: stretch; /* Stretch to container height */
   }
 `;
 
