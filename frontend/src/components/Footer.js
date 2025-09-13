@@ -48,6 +48,25 @@ const FooterLogo = styled.div`
   }
 `;
 
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  
+  img {
+    height: 40px;
+    width: auto;
+  }
+  
+  .logo-divider {
+    width: 1px;
+    height: 40px;
+    background-color: ${props => props.theme.colors.text.muted};
+    opacity: 0.5;
+  }
+`;
+
 const LogoText = styled.h3`
   font-family: ${props => props.theme.fonts.heading};
   font-size: 1.5rem;
@@ -182,7 +201,17 @@ const Footer = () => {
         <FooterTop>
           <FooterColumn>
             <FooterLogo>
-              <LogoText>OUTRIDER</LogoText>
+              <LogoContainer>
+                <img 
+                  src="/logo/hero.svg" 
+                  alt="Outrider Real Estate" 
+                />
+                <div className="logo-divider"></div>
+                <img 
+                  src="/logo/exp logos/eXp Realty - White-01.svg" 
+                  alt="eXp Realty" 
+                />
+              </LogoContainer>
               <FooterTagline>Professionally navigating the market conditions</FooterTagline>
               <FooterTagline style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
                 eXp Realty of Southern California, Inc. | CA DRE# 02187306<br />
