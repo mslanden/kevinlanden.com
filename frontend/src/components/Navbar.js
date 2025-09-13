@@ -43,18 +43,16 @@ const Logo = styled(Link)`
 
 
 
-const LogoText = styled.span`
-  font-family: ${props => props.theme.fonts.heading};
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: 1px;
+const LogoImage = styled.img`
+  height: 40px;
+  width: auto;
   
   @media (max-width: ${props => props.theme.breakpoints.md}) {
-    font-size: 1.2rem;
+    height: 35px;
   }
   
   @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 1rem;
+    height: 30px;
   }
 `;
 
@@ -227,7 +225,7 @@ const Navbar = () => {
     <Nav scrolled={scrolled || menuOpen}>
       <NavContainer>
         <Logo to="/" onClick={closeMenu} style={{position: 'relative'}}>
-          <LogoText>OUTRIDER</LogoText>
+          <LogoImage src="/logo/text-logo.svg" alt="Outrider Real Estate" />
         </Logo>
         
         <NavLinks>

@@ -209,7 +209,7 @@ const Footer = () => {
             <FooterLogo>
               <LogoContainer>
                 <img 
-                  src="/logo/hero.svg" 
+                  src="/logo/text-logo.svg" 
                   alt="Outrider Real Estate"
                   className="outrider-logo"
                 />
