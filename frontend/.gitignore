@@ -56,3 +56,13 @@ pids
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# PDF Generation Scripts and Output
+public/generate-pdfs.js
+public/generate-pdfs-chrome.js
+public/generate-continuous-pdf.js
+public/*-continuous.pdf
+
+# Allow specific PDFs for user download
+!public/buyers-guide.pdf
+!public/sellers-guide.pdf

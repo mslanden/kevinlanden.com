@@ -2192,7 +2192,7 @@ const NewsletterGenerator = () => {
                       </div>
                       <div className="contact-item">
                         <strong>Email</strong>
-                        kevin@outriderrealty.com
+                        kevin.landen@outriderrealty.com
                       </div>
                       <div className="contact-item">
                         <strong>Website</strong>

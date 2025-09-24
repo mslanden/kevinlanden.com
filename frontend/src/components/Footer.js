@@ -249,7 +249,7 @@ const Footer = () => {
             <FooterHeading>Contact Us</FooterHeading>
             <ContactItem>
               <FaEnvelope />
-              <a href="mailto:kevin@outriderrealty.com">kevin@outriderrealty.com</a>
+              <a href="mailto:kevin.landen@outriderrealty.com">kevin.landen@outriderrealty.com</a>
             </ContactItem>
             <ContactItem>
               <FaPhoneAlt />

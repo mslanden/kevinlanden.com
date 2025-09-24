@@ -447,7 +447,7 @@ const Contact = () => {
                 <FaEnvelope />
                 <div>
                   <h3>Email</h3>
-                  <p>kevin@outriderrealty.com</p>
+                  <p>kevin.landen@outriderrealty.com</p>
                 </div>
               </ContactInfoItem>
             </ContactInfoList>

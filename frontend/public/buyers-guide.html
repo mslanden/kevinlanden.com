@@ -23,7 +23,6 @@
             max-width: 800px;
             margin: 0 auto;
             background: white;
-            box-shadow: 0 0 30px rgba(0,0,0,0.1);
             min-height: 100vh;
         }
 
@@ -43,7 +42,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('/images/pdf_cow.png') center/cover;
+            background: url('./images/pdf_cow.png') center/cover;
             opacity: 0.2;
             z-index: 1;
         }
@@ -54,8 +53,8 @@
         }
 
         .logo {
-            width: 200px;
-            height: 120px;
+            width: 350px;
+            height: 200px;
             margin: 0 auto 1.5rem;
             display: flex;
             align-items: center;
@@ -72,13 +71,13 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .subtitle {
             font-size: 1.1rem;
             opacity: 0.9;
             margin-bottom: 1rem;
+            text-align: center;
         }
 
         .contact-info {
@@ -92,7 +91,6 @@
             font-size: 1.5rem;
             margin-bottom: 1rem;
             color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         .contact-details {
@@ -149,7 +147,7 @@
             border-left: 4px solid #8b4513;
             padding: 1.5rem;
             margin: 1.5rem 0;
-            border-radius: 0 8px 8px 0;
+            border-radius: 8px;
         }
 
         .step h3 {
@@ -158,16 +156,25 @@
         }
 
         .highlight-box {
-            background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
-            color: white;
+            background: #f8f5f0;
+            color: #333;
             padding: 1.5rem;
+            border: 2px solid #8b4513;
             border-radius: 8px;
             margin: 1.5rem 0;
         }
 
         .highlight-box h3 {
-            color: white;
+            color: #8b4513;
             margin-top: 0;
+        }
+
+        .highlight-box p {
+            color: #333;
+        }
+
+        .highlight-box ul li {
+            color: #333;
         }
 
         .glossary-term {
@@ -330,13 +337,12 @@
         <div class="header">
             <div class="header-content">
                 <div class="logo">
-                    <img src="/logo/logo_2.svg" alt="Outrider Real Estate Logo">
+                    <img src="./logo/logo.svg" alt="Outrider Real Estate Logo">
                 </div>
                 <h1>Home Buyer's Guide</h1>
                 <p class="subtitle">Your Complete Roadmap to Purchasing Property in Our Mountain Communities</p>
                 
                 <div class="contact-info">
-                    <h2>Outrider Real Estate</h2>
                     <div class="contact-details">
                         <div class="contact-item">
                             <strong>Phone</strong>
@@ -344,7 +350,7 @@
                         </div>
                         <div class="contact-item">
                             <strong>Email</strong>
-                            kevin@outriderrealty.com
+                            kevin.landen@outriderrealty.com
                         </div>
                         <div class="contact-item">
                             <strong>Website</strong>
@@ -541,8 +547,8 @@
                 <div class="service-area">Idyllwild</div>
                 <div class="service-area">Mountain Center</div>
             </div>
-            <p>Outrider Real Estate | (951) 491-4890 | kevin@outriderrealty.com</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+            <p style="text-align: center;">Outrider Real Estate | (951) 491-4890 | kevin.landen@outriderrealty.com</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8; text-align: center;">
                 © 2024 Outrider Real Estate. Your trusted partner in mountain real estate.
             </p>
         </div>
