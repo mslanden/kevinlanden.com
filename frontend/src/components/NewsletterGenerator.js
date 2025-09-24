@@ -2196,7 +2196,7 @@ const NewsletterGenerator = () => {
                       </div>
                       <div className="contact-item">
                         <strong>Website</strong>
-                        outriderrealestate.com
+                        outriderrealty.com
                       </div>
                     </div>
                   </div>
