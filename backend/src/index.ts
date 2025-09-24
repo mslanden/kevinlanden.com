@@ -90,8 +90,8 @@ const corsOptions = {
       ? [
           'https://kevinlandenrealestate.com',
           'https://www.kevinlandenrealestate.com',
-          'https://outriderrealestate.com',
-          'https://www.outriderrealestate.com',
+          'https://outriderrealty.com',
+          'https://www.outriderrealty.com',
           'https://kevinlanden-com.vercel.app'
         ]
       : [
