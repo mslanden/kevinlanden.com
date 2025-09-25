@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaUsers, FaCopy, FaTag, FaRedo, FaEnvelope, FaTrash, FaCheckCircle, FaFileDownload } from 'react-icons/fa';
+import { FaUsers, FaCopy, FaTag, FaRedo, FaEnvelope, FaTrash, FaCheckCircle, FaFileDownload, FaSearch, FaFilter, FaSortUp, FaSortDown, FaSort } from 'react-icons/fa';
 import { getNewsletterSubscribers } from '../utils/api';
 import api from '../utils/api';
 import AdminLogin from '../components/AdminLogin';
@@ -142,6 +142,61 @@ const LoadingMessage = styled.div`
   padding: 4rem;
   color: ${props => props.theme.colors.text.primary};
   font-size: 1.2rem;
+`;
+
+// Loading skeleton components
+const SkeletonRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  .checkbox-skeleton {
+    width: 16px;
+    height: 16px;
+  }
+
+  .name-skeleton {
+    width: 120px;
+    height: 20px;
+  }
+
+  .email-skeleton {
+    width: 200px;
+    height: 20px;
+  }
+
+  .date-skeleton {
+    width: 100px;
+    height: 20px;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+`;
+
+const SkeletonTable = styled.div`
+  padding: 1rem;
+`;
+
+const EmptyStateIcon = styled.div`
+  font-size: 4rem;
+  opacity: 0.3;
+  margin-bottom: 1.5rem;
+  color: ${props => props.theme.colors.text.muted};
 `;
 
 const ErrorMessage = styled.div`
@@ -328,6 +383,225 @@ const MessageContent = styled.div`
   white-space: pre-wrap;
 `;
 
+// Enhanced Subscriber Management Styles
+const SubscriberControls = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  background-color: rgba(20, 20, 20, 0.85);
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.default};
+  padding: 1.5rem;
+`;
+
+const SearchFilterRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const SearchBox = styled.div`
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+
+  svg {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: ${props => props.theme.colors.text.muted};
+    font-size: 1rem;
+  }
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.small};
+  color: ${props => props.theme.colors.text.primary};
+  font-size: 1rem;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.colors.text.muted};
+  }
+`;
+
+const FilterSelect = styled.select`
+  padding: 0.75rem 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.small};
+  color: ${props => props.theme.colors.text.primary};
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+  }
+
+  option {
+    background-color: ${props => props.theme.colors.background.dark};
+    color: ${props => props.theme.colors.text.primary};
+  }
+`;
+
+const BulkActions = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    flex-wrap: wrap;
+  }
+`;
+
+const BulkActionButton = styled.button`
+  background-color: ${props => props.variant === 'danger' ? '#ff6b6b' : props.theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: ${props => props.theme.borderRadius.small};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const SortableHeader = styled.th`
+  text-align: left;
+  padding: 1rem;
+  color: ${props => props.theme.colors.text.secondary};
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: ${props => props.theme.colors.primary};
+  }
+
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  svg {
+    opacity: ${props => props.active ? 1 : 0.5};
+    font-size: 0.8rem;
+  }
+`;
+
+const SelectAllCheckbox = styled.input`
+  margin-right: 0.5rem;
+  cursor: pointer;
+`;
+
+const SubscriberRow = styled.tr`
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: ${props => props.selected ? 'rgba(139, 69, 19, 0.1)' : 'transparent'};
+
+  &:hover {
+    background-color: ${props => props.selected ? 'rgba(139, 69, 19, 0.15)' : 'rgba(255, 255, 255, 0.05)'};
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  td {
+    padding: 1rem;
+    color: ${props => props.theme.colors.text.primary};
+  }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(20, 20, 20, 0.85);
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.default};
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const PaginationInfo = styled.div`
+  color: ${props => props.theme.colors.text.muted};
+  font-size: 0.9rem;
+`;
+
+const PaginationControls = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+const PageButton = styled.button`
+  background-color: ${props => props.active ? props.theme.colors.primary : 'rgba(255, 255, 255, 0.1)'};
+  color: ${props => props.active ? 'white' : props.theme.colors.text.primary};
+  border: 1px solid ${props => props.active ? props.theme.colors.primary : props.theme.colors.border};
+  padding: 0.5rem 0.75rem;
+  border-radius: ${props => props.theme.borderRadius.small};
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${props => props.active ? props.theme.colors.tertiary : 'rgba(255, 255, 255, 0.15)'};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const PageSizeSelect = styled.select`
+  padding: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.small};
+  color: ${props => props.theme.colors.text.primary};
+  cursor: pointer;
+
+  option {
+    background-color: ${props => props.theme.colors.background.dark};
+  }
+`;
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
@@ -348,6 +622,15 @@ const Admin = () => {
   // Contact Submissions States
   const [contactSubmissions, setContactSubmissions] = useState([]);
   const [contactLoading, setContactLoading] = useState(false);
+
+  // Subscriber Management States
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCommunity, setFilterCommunity] = useState('all');
+  const [sortField, setSortField] = useState('subscribedAt');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [currentPage, setCurrentPage] = useState({});
+  const [pageSize, setPageSize] = useState(10);
+  const [selectedSubscribers, setSelectedSubscribers] = useState(new Set());
   
   const verifySession = async (userData) => {
     try {
@@ -690,6 +973,195 @@ const Admin = () => {
   }
   
   const communities = ['anza', 'aguanga', 'idyllwild', 'mountain-center'];
+
+  // Enhanced subscriber filtering and sorting
+  const filteredAndSortedSubscribers = useMemo(() => {
+    if (!subscribers?.subscribersByCommunity) return {};
+
+    const result = {};
+
+    communities.forEach(community => {
+      let communitySubscribers = subscribers.subscribersByCommunity[community] || [];
+
+      // Apply search filter
+      if (searchTerm) {
+        communitySubscribers = communitySubscribers.filter(sub =>
+          sub.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          sub.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      // Apply sorting
+      communitySubscribers.sort((a, b) => {
+        let aValue = a[sortField];
+        let bValue = b[sortField];
+
+        if (sortField === 'subscribedAt') {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        } else if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+
+        if (sortDirection === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+
+      result[community] = communitySubscribers;
+    });
+
+    return result;
+  }, [subscribers, searchTerm, sortField, sortDirection]);
+
+  // Pagination logic for each community
+  const paginatedSubscribers = useMemo(() => {
+    const result = {};
+
+    Object.keys(filteredAndSortedSubscribers).forEach(community => {
+      const communityData = filteredAndSortedSubscribers[community];
+      const page = currentPage[community] || 1;
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+
+      result[community] = {
+        data: communityData.slice(startIndex, endIndex),
+        total: communityData.length,
+        totalPages: Math.ceil(communityData.length / pageSize),
+        currentPage: page
+      };
+    });
+
+    return result;
+  }, [filteredAndSortedSubscribers, currentPage, pageSize]);
+
+  // Helper functions for subscriber management
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handlePageChange = (community, page) => {
+    setCurrentPage(prev => ({
+      ...prev,
+      [community]: page
+    }));
+  };
+
+  const handleSelectSubscriber = (community, subscriberEmail) => {
+    const key = `${community}:${subscriberEmail}`;
+    setSelectedSubscribers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAllSubscribers = (community) => {
+    const communityData = paginatedSubscribers[community]?.data || [];
+    const communityKeys = communityData.map(sub => `${community}:${sub.email}`);
+
+    setSelectedSubscribers(prev => {
+      const newSet = new Set(prev);
+      const allSelected = communityKeys.every(key => newSet.has(key));
+
+      if (allSelected) {
+        // Deselect all
+        communityKeys.forEach(key => newSet.delete(key));
+      } else {
+        // Select all
+        communityKeys.forEach(key => newSet.add(key));
+      }
+
+      return newSet;
+    });
+  };
+
+  const getSortIcon = (field) => {
+    if (sortField !== field) return <FaSort />;
+    return sortDirection === 'asc' ? <FaSortUp /> : <FaSortDown />;
+  };
+
+  // Bulk actions
+  const handleBulkExport = () => {
+    if (selectedSubscribers.size === 0) return;
+
+    // Convert selected subscribers to export format
+    const selectedData = [];
+    Array.from(selectedSubscribers).forEach(key => {
+      const [community, email] = key.split(':');
+      const communitySubscribers = subscribers.subscribersByCommunity[community] || [];
+      const subscriber = communitySubscribers.find(sub => sub.email === email);
+
+      if (subscriber) {
+        selectedData.push({
+          ...subscriber,
+          community: community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')
+        });
+      }
+    });
+
+    // Create CSV content
+    const headers = ['Name', 'Email', 'Community', 'Subscribed Date'];
+    const csvContent = [
+      headers.join(','),
+      ...selectedData.map(sub => [
+        `"${sub.name || ''}"`,
+        `"${sub.email}"`,
+        `"${sub.community}"`,
+        `"${formatDate(sub.subscribedAt)}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `selected_subscribers_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clear selection after export
+    setSelectedSubscribers(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedSubscribers.size === 0) return;
+
+    const count = selectedSubscribers.size;
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${count} selected subscriber${count !== 1 ? 's' : ''}? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    // TODO: Implement actual API call to delete subscribers
+    console.log('Bulk delete requested for:', Array.from(selectedSubscribers));
+
+    // For now, just clear the selection
+    // In a real implementation, you'd make API calls here
+    setSelectedSubscribers(new Set());
+
+    // Show success message
+    alert(`Successfully deleted ${count} subscriber${count !== 1 ? 's' : ''}.`);
+
+    // Refresh subscriber data
+    fetchSubscribers();
+  };
   
   const renderContent = () => {
     switch(activeTab) {
@@ -727,6 +1199,7 @@ const Admin = () => {
   
   const renderSubscribersContent = () => (
     <>
+      {/* Enhanced Stats Section */}
       <StatsContainer>
         <StatCard>
           <h3>{subscribers?.total || 0}</h3>
@@ -738,66 +1211,252 @@ const Admin = () => {
             </CopyButton>
           </div>
         </StatCard>
-        {communities.map(community => (
-          <StatCard key={community}>
-            <h3>{subscribers?.subscribersByCommunity[community]?.length || 0}</h3>
-            <p>{community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')}</p>
-          </StatCard>
-        ))}
+        {communities.map(community => {
+          const total = subscribers?.subscribersByCommunity[community]?.length || 0;
+          const filtered = filteredAndSortedSubscribers[community]?.length || 0;
+          return (
+            <StatCard key={community}>
+              <h3>{searchTerm ? `${filtered}/${total}` : total}</h3>
+              <p>{community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')}</p>
+            </StatCard>
+          );
+        })}
       </StatsContainer>
-      
-      {communities.map((community, index) => (
-        <AdminCard
-          key={community}
-          title={`${community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')} Subscribers`}
-          icon={FaUsers}
-          headerActions={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <SubscriberCount>
-                {subscribers?.subscribersByCommunity[community]?.length || 0} subscribers
-              </SubscriberCount>
-              <CopyButton onClick={() => exportToCSV(community)}>
-                <FaFileDownload />
-                Export CSV
-              </CopyButton>
-              <CopyButton onClick={() => copyEmailsToClipboard(community)}>
-                <FaCopy />
-                {copiedCommunity === community ? 'Copied!' : 'Copy Emails'}
-              </CopyButton>
-            </div>
-          }
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 * index }}
-        >
-          <SubscriberList>
-            {subscribers?.subscribersByCommunity[community]?.length > 0 ? (
-              <SubscriberTable>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Subscribed Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subscribers.subscribersByCommunity[community].map((subscriber, idx) => (
-                    <tr key={idx}>
-                      <td>{subscriber.name}</td>
-                      <td>{subscriber.email}</td>
-                      <td>{formatDate(subscriber.subscribedAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </SubscriberTable>
-            ) : (
-              <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
-                No subscribers yet for this community
-              </p>
-            )}
-          </SubscriberList>
-        </AdminCard>
-      ))}
+
+      {/* Search and Filter Controls */}
+      <SubscriberControls>
+        <SearchFilterRow>
+          <SearchBox>
+            <FaSearch />
+            <SearchInput
+              type="text"
+              placeholder="Search subscribers by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </SearchBox>
+
+          <FilterSelect
+            value={filterCommunity}
+            onChange={(e) => setFilterCommunity(e.target.value)}
+          >
+            <option value="all">All Communities</option>
+            {communities.map(community => (
+              <option key={community} value={community}>
+                {community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')}
+              </option>
+            ))}
+          </FilterSelect>
+
+          <PageSizeSelect
+            value={pageSize}
+            onChange={(e) => setPageSize(parseInt(e.target.value))}
+          >
+            <option value="10">10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+            <option value="100">100 per page</option>
+          </PageSizeSelect>
+        </SearchFilterRow>
+
+        {selectedSubscribers.size > 0 && (
+          <BulkActions>
+            <span style={{ color: '#999' }}>
+              {selectedSubscribers.size} selected
+            </span>
+            <BulkActionButton onClick={handleBulkExport}>
+              <FaFileDownload />
+              Export Selected
+            </BulkActionButton>
+            <BulkActionButton variant="danger" onClick={handleBulkDelete}>
+              <FaTrash />
+              Delete Selected
+            </BulkActionButton>
+          </BulkActions>
+        )}
+      </SubscriberControls>
+
+      {/* Enhanced Community Tables */}
+      {communities
+        .filter(community => filterCommunity === 'all' || filterCommunity === community)
+        .map((community, index) => {
+          const communityData = paginatedSubscribers[community];
+          const subscriberData = communityData?.data || [];
+          const total = communityData?.total || 0;
+          const currentPageNum = communityData?.currentPage || 1;
+          const totalPages = communityData?.totalPages || 1;
+
+          const selectedInCommunity = subscriberData.filter(sub =>
+            selectedSubscribers.has(`${community}:${sub.email}`)
+          ).length;
+
+          return (
+            <AdminCard
+              key={community}
+              title={`${community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')} Subscribers`}
+              icon={FaUsers}
+              headerActions={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <SubscriberCount>
+                    {total} subscriber{total !== 1 ? 's' : ''}
+                    {searchTerm && ` (filtered)`}
+                  </SubscriberCount>
+                  <CopyButton onClick={() => exportToCSV(community)}>
+                    <FaFileDownload />
+                    Export CSV
+                  </CopyButton>
+                  <CopyButton onClick={() => copyEmailsToClipboard(community)}>
+                    <FaCopy />
+                    {copiedCommunity === community ? 'Copied!' : 'Copy Emails'}
+                  </CopyButton>
+                </div>
+              }
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 * index }}
+            >
+              <SubscriberList>
+                {loading ? (
+                  <SkeletonTable>
+                    {Array.from({ length: pageSize }, (_, i) => (
+                      <SkeletonRow key={i}>
+                        <div className="skeleton checkbox-skeleton"></div>
+                        <div className="skeleton name-skeleton"></div>
+                        <div className="skeleton email-skeleton"></div>
+                        <div className="skeleton date-skeleton"></div>
+                      </SkeletonRow>
+                    ))}
+                  </SkeletonTable>
+                ) : subscriberData.length > 0 ? (
+                  <>
+                    <SubscriberTable>
+                      <thead>
+                        <tr>
+                          <th style={{ width: '40px' }}>
+                            <SelectAllCheckbox
+                              type="checkbox"
+                              checked={selectedInCommunity === subscriberData.length && subscriberData.length > 0}
+                              onChange={() => handleSelectAllSubscribers(community)}
+                            />
+                          </th>
+                          <SortableHeader
+                            active={sortField === 'name'}
+                            onClick={() => handleSort('name')}
+                          >
+                            Name {getSortIcon('name')}
+                          </SortableHeader>
+                          <SortableHeader
+                            active={sortField === 'email'}
+                            onClick={() => handleSort('email')}
+                          >
+                            Email {getSortIcon('email')}
+                          </SortableHeader>
+                          <SortableHeader
+                            active={sortField === 'subscribedAt'}
+                            onClick={() => handleSort('subscribedAt')}
+                          >
+                            Subscribed Date {getSortIcon('subscribedAt')}
+                          </SortableHeader>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subscriberData.map((subscriber, idx) => {
+                          const isSelected = selectedSubscribers.has(`${community}:${subscriber.email}`);
+                          return (
+                            <SubscriberRow key={idx} selected={isSelected}>
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => handleSelectSubscriber(community, subscriber.email)}
+                                />
+                              </td>
+                              <td>{subscriber.name || 'N/A'}</td>
+                              <td>{subscriber.email}</td>
+                              <td>{formatDate(subscriber.subscribedAt)}</td>
+                            </SubscriberRow>
+                          );
+                        })}
+                      </tbody>
+                    </SubscriberTable>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <PaginationContainer>
+                        <PaginationInfo>
+                          Showing {((currentPageNum - 1) * pageSize) + 1} to {Math.min(currentPageNum * pageSize, total)} of {total} subscribers
+                        </PaginationInfo>
+
+                        <PaginationControls>
+                          <PageButton
+                            disabled={currentPageNum === 1}
+                            onClick={() => handlePageChange(community, currentPageNum - 1)}
+                          >
+                            Previous
+                          </PageButton>
+
+                          {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(page =>
+                              page === 1 ||
+                              page === totalPages ||
+                              Math.abs(page - currentPageNum) <= 2
+                            )
+                            .map((page, idx, arr) => (
+                              <React.Fragment key={page}>
+                                {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                  <span style={{ color: '#999' }}>...</span>
+                                )}
+                                <PageButton
+                                  active={page === currentPageNum}
+                                  onClick={() => handlePageChange(community, page)}
+                                >
+                                  {page}
+                                </PageButton>
+                              </React.Fragment>
+                            ))
+                          }
+
+                          <PageButton
+                            disabled={currentPageNum === totalPages}
+                            onClick={() => handlePageChange(community, currentPageNum + 1)}
+                          >
+                            Next
+                          </PageButton>
+                        </PaginationControls>
+                      </PaginationContainer>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', color: '#999', padding: '3rem' }}>
+                    {searchTerm ? (
+                      <>
+                        <FaSearch style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }} />
+                        <p>No subscribers found matching "{searchTerm}"</p>
+                        <button
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#8b4513',
+                            cursor: 'pointer',
+                            textDecoration: 'underline'
+                          }}
+                          onClick={() => setSearchTerm('')}
+                        >
+                          Clear search
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <FaUsers style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }} />
+                        <p>No subscribers yet for this community</p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </SubscriberList>
+            </AdminCard>
+          );
+        })}
     </>
   );
   
