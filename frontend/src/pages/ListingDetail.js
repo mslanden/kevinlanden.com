@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
@@ -394,6 +394,42 @@ const ComingSoon = styled.div`
   }
 `;
 
+const ContactButton = styled(Link)`
+  display: inline-block;
+  background: ${props => props.theme.colors.primary};
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: ${props => props.theme.borderRadius.default};
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+
+  &:hover {
+    background: ${props => props.theme.colors.secondary};
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+
+  &:focus {
+    outline: 2px solid ${props => props.theme.colors.secondary};
+    outline-offset: 2px;
+  }
+`;
+
+const ContactInfo = styled.div`
+  text-align: center;
+
+  p {
+    color: ${props => props.theme.colors.text.primary};
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+`;
+
 const Lightbox = styled(motion.div)`
   position: fixed;
   top: 0;
@@ -726,10 +762,12 @@ const ListingDetail = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <CardTitle>Contact Agent</CardTitle>
-              <ComingSoon>
-                <h3>Coming Soon</h3>
-                <p>Contact form will be available here</p>
-              </ComingSoon>
+              <ContactInfo>
+                <p>Interested in this property? Get in touch with Kevin Landen for more information, to schedule a viewing, or to make an offer.</p>
+                <ContactButton to="/contact">
+                  Contact Kevin
+                </ContactButton>
+              </ContactInfo>
             </ContentCard>
           </Sidebar>
         </ContentContainer>
