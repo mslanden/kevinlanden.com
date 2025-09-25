@@ -27,7 +27,9 @@
       "Bash(git branch:*)",
       "Bash(sed:*)",
       "Bash(npm run generate-pdfs:*)",
-      "Bash(npm run generate-pdfs-continuous:*)"
+      "Bash(npm run generate-pdfs-continuous:*)",
+      "Read(//Users/marcelinolanden/Documents/myProjects/personalWebsite/**)",
+      "Read(//Users/marcelinolanden/Documents/myProjects/**)"
     ],
     "deny": []
   },

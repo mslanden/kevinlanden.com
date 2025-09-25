@@ -379,8 +379,10 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(500).json({ error: 'Failed to update listing' });
     }
 
-    // Update images if provided
-    if (images !== undefined) {
+    // Update images if provided (only update if images array is explicitly provided and not empty)
+    if (images !== undefined && Array.isArray(images) && images.length > 0) {
+      console.log('Updating images for listing:', id, 'with', images.length, 'images');
+
       // Delete existing images
       await supabaseAdmin
         .from('listing_images')
@@ -388,17 +390,19 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
         .eq('listing_id', id);
 
       // Insert new images
-      if (images.length > 0) {
-        const imageInserts = images.map((img: any, index: number) => ({
-          listing_id: id,
-          image_url: img.url,
-          caption: img.caption,
-          display_order: img.display_order || index,
-          is_main: img.is_main || false
-        }));
+      const imageInserts = images.map((img: any, index: number) => ({
+        listing_id: id,
+        image_url: img.url,
+        caption: img.caption,
+        display_order: img.display_order || index,
+        is_main: img.is_main || false
+      }));
 
-        await supabaseAdmin.from('listing_images').insert(imageInserts);
-      }
+      await supabaseAdmin.from('listing_images').insert(imageInserts);
+      console.log('Successfully updated', imageInserts.length, 'images');
+    } else if (images !== undefined && Array.isArray(images) && images.length === 0) {
+      console.log('Empty images array provided - this would delete all images. Skipping update to preserve existing images.');
+      // Skip update to preserve existing images when empty array is sent
     }
 
     // Update Kuula spheres if provided

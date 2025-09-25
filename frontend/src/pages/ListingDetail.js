@@ -427,6 +427,7 @@ const ContactInfo = styled.div`
     color: ${props => props.theme.colors.text.primary};
     margin-bottom: 1rem;
     line-height: 1.6;
+    text-align: center;
   }
 `;
 
