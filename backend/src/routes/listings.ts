@@ -141,6 +141,8 @@ router.get('/:slug', async (req, res) => {
 // POST create new listing (admin only)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    console.log('POST /listings - Request body:', JSON.stringify(req.body, null, 2));
+
     const {
       title,
       description,
@@ -166,47 +168,63 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       features
     } = req.body;
 
+    // Validate required fields
+    if (!title) {
+      console.error('Missing required field: title');
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    console.log('Generating unique slug for title:', title);
     // Generate unique slug
     const slug = await generateUniqueSlug(title);
+    console.log('Generated slug:', slug);
 
+    console.log('Generating QR code...');
     // Generate QR code
     const baseUrl = process.env.FRONTEND_URL || 'https://kevinlandenrealestate.com';
     const listingUrl = `${baseUrl}/listing/${slug}`;
+    console.log('Listing URL for QR code:', listingUrl);
     const qrCodeDataUrl = await generateQRCode(listingUrl);
+    console.log('QR code generated successfully');
+
+    console.log('Inserting main listing into database...');
+    const listingData = {
+      slug,
+      title,
+      description,
+      location,
+      address,
+      city,
+      state: state || 'CA',
+      zip_code,
+      price,
+      bedrooms,
+      bathrooms,
+      square_feet,
+      lot_size,
+      year_built,
+      property_type,
+      main_image_url,
+      zillow_tour_url,
+      floor_plan_url,
+      qr_code_url: qrCodeDataUrl,
+      status: status || 'active',
+      featured: featured || false
+    };
+    console.log('Listing data to insert:', JSON.stringify(listingData, null, 2));
 
     // Insert main listing
     const { data: listing, error: listingError } = await supabaseAdmin
       .from('listings')
-      .insert({
-        slug,
-        title,
-        description,
-        location,
-        address,
-        city,
-        state: state || 'CA',
-        zip_code,
-        price,
-        bedrooms,
-        bathrooms,
-        square_feet,
-        lot_size,
-        year_built,
-        property_type,
-        main_image_url,
-        zillow_tour_url,
-        floor_plan_url,
-        qr_code_url: qrCodeDataUrl,
-        status: status || 'active',
-        featured: featured || false
-      })
+      .insert(listingData)
       .select()
       .single();
 
     if (listingError) {
       console.error('Error creating listing:', listingError);
-      return res.status(500).json({ error: 'Failed to create listing' });
+      return res.status(500).json({ error: `Failed to create listing: ${listingError.message}` });
     }
+    console.log('Listing inserted successfully:', listing.id);
 
     // Insert images if provided
     if (images && images.length > 0) {
