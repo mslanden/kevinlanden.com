@@ -29,8 +29,7 @@
     "multer": "^2.0.2",
     "pdf2pic": "^2.1.4",
     "qrcode": "^1.5.4",
-    "slugify": "^1.6.6",
-    "supabase": "^1.100.1"
+    "slugify": "^1.6.6"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
