@@ -11,8 +11,10 @@ import {
   FaSave,
   FaHome,
   FaMapMarkerAlt,
-  FaDollarSign
+  FaDollarSign,
+  FaUpload
 } from 'react-icons/fa';
+import ImageUpload from './ImageUpload';
 
 const FormContainer = styled.div`
   max-width: 1200px;
@@ -178,53 +180,6 @@ const Select = styled.select`
   }
 `;
 
-const ImageUploadSection = styled.div`
-  border: 2px dashed ${props => props.theme.colors.border};
-  border-radius: ${props => props.theme.borderRadius.default};
-  padding: 1.5rem;
-  text-align: center;
-  margin-bottom: 1rem;
-
-  p {
-    color: ${props => props.theme.colors.text.muted};
-    margin-bottom: 1rem;
-  }
-`;
-
-const ImagePreviewGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-`;
-
-const ImagePreview = styled.div`
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: ${props => props.theme.borderRadius.small};
-  overflow: hidden;
-  background: ${props => `url(${props.image})`};
-  background-size: cover;
-  background-position: center;
-
-  button {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background: rgba(255, 0, 0, 0.8);
-    color: white;
-    border: none;
-    padding: 0.3rem;
-    border-radius: 50%;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  &:hover button {
-    opacity: 1;
-  }
-`;
 
 const KuulaSphereItem = styled.div`
   display: flex;
@@ -383,23 +338,6 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
     }));
   };
 
-  const handleImageAdd = (e) => {
-    const url = e.target.value.trim();
-    if (url) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, { url, caption: '', display_order: prev.images.length }]
-      }));
-      e.target.value = '';
-    }
-  };
-
-  const handleImageRemove = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-  };
 
   const handleKuulaAdd = () => {
     setFormData(prev => ({
@@ -673,27 +611,45 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
 
           <FormSection className="full-width">
             <SectionTitle>
-              <FaImage /> Media & Tours
+              <FaUpload /> Property Images
+            </SectionTitle>
+            <ImageUpload
+              images={formData.images}
+              onImagesChange={(newImages) => {
+                setFormData(prev => ({
+                  ...prev,
+                  images: newImages,
+                  // Set main_image_url from the main image
+                  main_image_url: newImages.find(img => img.is_main)?.url || newImages[0]?.url || ''
+                }));
+              }}
+              category="properties"
+              maxFiles={15}
+            />
+          </FormSection>
+
+          <FormSection className="full-width">
+            <SectionTitle>
+              <FaImage /> Floor Plan & 3D Tours
             </SectionTitle>
             <FormRow>
               <FormGroup>
-                <Label>Main Image URL</Label>
-                <Input
-                  type="url"
-                  name="main_image_url"
-                  value={formData.main_image_url}
-                  onChange={handleChange}
-                  placeholder="https://example.com/main-image.jpg"
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>Floor Plan URL</Label>
-                <Input
-                  type="url"
-                  name="floor_plan_url"
-                  value={formData.floor_plan_url}
-                  onChange={handleChange}
-                  placeholder="https://example.com/floor-plan.jpg"
+                <Label>Floor Plan</Label>
+                <ImageUpload
+                  images={formData.floor_plan_url ? [{
+                    id: 'floor-plan',
+                    url: formData.floor_plan_url,
+                    originalName: 'Floor Plan',
+                    is_main: true
+                  }] : []}
+                  onImagesChange={(newImages) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      floor_plan_url: newImages[0]?.url || ''
+                    }));
+                  }}
+                  category="floor-plans"
+                  maxFiles={1}
                 />
               </FormGroup>
             </FormRow>
@@ -707,36 +663,6 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
                 placeholder="https://www.zillow.com/view-imx/..."
               />
             </FormGroup>
-          </FormSection>
-
-          <FormSection className="full-width">
-            <SectionTitle>
-              <FaImage /> Additional Images
-            </SectionTitle>
-            <ImageUploadSection>
-              <p>Enter image URLs to add them to the gallery</p>
-              <Input
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleImageAdd(e);
-                  }
-                }}
-              />
-            </ImageUploadSection>
-            {formData.images.length > 0 && (
-              <ImagePreviewGrid>
-                {formData.images.map((img, index) => (
-                  <ImagePreview key={index} image={img.url || img.image_url}>
-                    <button type="button" onClick={() => handleImageRemove(index)}>
-                      <FaTimes />
-                    </button>
-                  </ImagePreview>
-                ))}
-              </ImagePreviewGrid>
-            )}
           </FormSection>
 
           <FormSection className="full-width">
