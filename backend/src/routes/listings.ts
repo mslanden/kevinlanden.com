@@ -459,6 +459,47 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
+    // First, get all associated images to clean up from storage
+    const { data: images, error: imagesFetchError } = await supabaseAdmin
+      .from('listing_images')
+      .select('image_url')
+      .eq('listing_id', id);
+
+    if (imagesFetchError) {
+      console.error('Error fetching listing images for cleanup:', imagesFetchError);
+      // Continue with deletion even if image fetch fails
+    }
+
+    // Extract storage paths from image URLs for cleanup
+    const imagePaths = [];
+    if (images && images.length > 0) {
+      images.forEach(img => {
+        if (img.image_url && img.image_url.includes('/storage/v1/object/public/listing-images/')) {
+          // Extract path after the public bucket URL
+          const path = img.image_url.split('/storage/v1/object/public/listing-images/')[1];
+          if (path) {
+            imagePaths.push(path);
+          }
+        }
+      });
+    }
+
+    // Delete images from Supabase Storage
+    if (imagePaths.length > 0) {
+      console.log(`Deleting ${imagePaths.length} images from storage for listing ${id}`);
+      const { error: storageDeleteError } = await supabaseAdmin.storage
+        .from('listing-images')
+        .remove(imagePaths);
+
+      if (storageDeleteError) {
+        console.error('Error deleting images from storage:', storageDeleteError);
+        // Continue with listing deletion even if storage cleanup fails
+      } else {
+        console.log('Successfully deleted images from storage');
+      }
+    }
+
+    // Delete the listing (this will cascade delete related records due to foreign key constraints)
     const { error } = await supabaseAdmin
       .from('listings')
       .delete()
@@ -469,7 +510,10 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(500).json({ error: 'Failed to delete listing' });
     }
 
-    res.json({ message: 'Listing deleted successfully' });
+    res.json({
+      message: 'Listing deleted successfully',
+      deletedImages: imagePaths.length
+    });
   } catch (error) {
     console.error('Error in DELETE /listings/:id:', error);
     res.status(500).json({ error: 'Internal server error' });
