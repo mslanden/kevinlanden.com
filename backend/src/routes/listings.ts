@@ -1,5 +1,5 @@
 import express from 'express';
-import { supabase } from '../utils/supabaseClient';
+import { supabase, supabaseAdmin } from '../utils/supabaseClient';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import QRCode from 'qrcode';
 import slugify from 'slugify';
@@ -32,7 +32,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
 
   // Check if slug exists and increment if needed
   while (true) {
-    const { data } = await supabase
+    const { data } = await supabaseAdmin
       .from('listings')
       .select('id')
       .eq('slug', slug)
@@ -51,7 +51,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
 router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     // For admin, return all listings regardless of status
-    const { data: listings, error } = await supabase
+    const { data: listings, error } = await supabaseAdmin
       .from('listings')
       .select(`
         *,
@@ -93,7 +93,7 @@ router.get('/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const { data: listing, error } = await supabase
+    const { data: listing, error } = await supabaseAdmin
       .from('listings')
       .select(`
         *,
@@ -126,7 +126,7 @@ router.get('/:slug', async (req, res) => {
     }
 
     // Increment view count
-    await supabase
+    await supabaseAdmin
       .from('listings')
       .update({ views_count: (listing.views_count || 0) + 1 })
       .eq('id', listing.id);
@@ -175,7 +175,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     const qrCodeDataUrl = await generateQRCode(listingUrl);
 
     // Insert main listing
-    const { data: listing, error: listingError } = await supabase
+    const { data: listing, error: listingError } = await supabaseAdmin
       .from('listings')
       .insert({
         slug,
@@ -218,7 +218,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
         is_main: img.is_main || false
       }));
 
-      await supabase.from('listing_images').insert(imageInserts);
+      await supabaseAdmin.from('listing_images').insert(imageInserts);
     }
 
     // Insert Kuula spheres if provided
@@ -231,7 +231,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
         display_order: sphere.display_order || index
       }));
 
-      await supabase.from('listing_kuula_spheres').insert(kuulaInserts);
+      await supabaseAdmin.from('listing_kuula_spheres').insert(kuulaInserts);
     }
 
     // Insert features if provided
@@ -242,7 +242,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
         category: feature.category
       }));
 
-      await supabase.from('listing_features').insert(featureInserts);
+      await supabaseAdmin.from('listing_features').insert(featureInserts);
     }
 
     res.status(201).json({
@@ -287,7 +287,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
     } = req.body;
 
     // Get current listing
-    const { data: currentListing, error: fetchError } = await supabase
+    const { data: currentListing, error: fetchError } = await supabaseAdmin
       .from('listings')
       .select('slug, title')
       .eq('id', id)
@@ -335,7 +335,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
     }
 
     // Update main listing
-    const { data: listing, error: updateError } = await supabase
+    const { data: listing, error: updateError } = await supabaseAdmin
       .from('listings')
       .update(updateData)
       .eq('id', id)
@@ -350,7 +350,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
     // Update images if provided
     if (images !== undefined) {
       // Delete existing images
-      await supabase
+      await supabaseAdmin
         .from('listing_images')
         .delete()
         .eq('listing_id', id);
@@ -365,14 +365,14 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
           is_main: img.is_main || false
         }));
 
-        await supabase.from('listing_images').insert(imageInserts);
+        await supabaseAdmin.from('listing_images').insert(imageInserts);
       }
     }
 
     // Update Kuula spheres if provided
     if (kuula_spheres !== undefined) {
       // Delete existing spheres
-      await supabase
+      await supabaseAdmin
         .from('listing_kuula_spheres')
         .delete()
         .eq('listing_id', id);
@@ -387,14 +387,14 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
           display_order: sphere.display_order || index
         }));
 
-        await supabase.from('listing_kuula_spheres').insert(kuulaInserts);
+        await supabaseAdmin.from('listing_kuula_spheres').insert(kuulaInserts);
       }
     }
 
     // Update features if provided
     if (features !== undefined) {
       // Delete existing features
-      await supabase
+      await supabaseAdmin
         .from('listing_features')
         .delete()
         .eq('listing_id', id);
@@ -407,7 +407,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
           category: feature.category
         }));
 
-        await supabase.from('listing_features').insert(featureInserts);
+        await supabaseAdmin.from('listing_features').insert(featureInserts);
       }
     }
 
@@ -423,7 +423,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('listings')
       .delete()
       .eq('id', id);
@@ -445,7 +445,7 @@ router.get('/:id/qr-code', authenticateToken, requireAdmin, async (req, res) => 
   try {
     const { id } = req.params;
 
-    const { data: listing, error } = await supabase
+    const { data: listing, error } = await supabaseAdmin
       .from('listings')
       .select('slug, qr_code_url')
       .eq('id', id)
@@ -462,7 +462,7 @@ router.get('/:id/qr-code', authenticateToken, requireAdmin, async (req, res) => 
       const qrCodeDataUrl = await generateQRCode(listingUrl);
 
       // Update listing with QR code
-      await supabase
+      await supabaseAdmin
         .from('listings')
         .update({ qr_code_url: qrCodeDataUrl })
         .eq('id', id);
