@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaUsers, FaCopy, FaTag, FaRedo, FaEnvelope, FaTrash, FaCheckCircle } from 'react-icons/fa';
+import { FaUsers, FaCopy, FaTag, FaRedo, FaEnvelope, FaTrash, FaCheckCircle, FaFileDownload } from 'react-icons/fa';
 import { getNewsletterSubscribers } from '../utils/api';
 import api from '../utils/api';
 import AdminLogin from '../components/AdminLogin';
@@ -349,25 +349,45 @@ const Admin = () => {
   const [contactSubmissions, setContactSubmissions] = useState([]);
   const [contactLoading, setContactLoading] = useState(false);
   
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    // Check if user is already logged in
-    const token = localStorage.getItem('adminToken');
-    const savedUser = localStorage.getItem('adminUser');
-    
-    if (token && savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
+  const verifySession = async (userData) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/auth/me`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies
+      });
+
+      if (response.ok) {
         setIsAuthenticated(true);
         setUser(userData);
         fetchSubscribers();
         fetchBlowoutSaleStatus();
         fetchContactSubmissions();
+      } else {
+        // Session expired or invalid
+        localStorage.removeItem('adminUser');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Session verification failed:', error);
+      localStorage.removeItem('adminUser');
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    // Check if user is already logged in
+    const savedUser = localStorage.getItem('adminUser');
+
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        // Verify the session is still valid by making an authenticated request
+        verifySession(userData);
       } catch (error) {
         console.error('Error parsing saved user data:', error);
         // Clear invalid data
-        localStorage.removeItem('adminToken');
         localStorage.removeItem('adminUser');
         setLoading(false);
       }
@@ -375,7 +395,7 @@ const Admin = () => {
       setLoading(false);
     }
   }, []);
-  
+
   const fetchSubscribers = async () => {
     try {
       const data = await getNewsletterSubscribers();
@@ -409,7 +429,7 @@ const Admin = () => {
         total_spots: totalSpots,
         is_active: isBlowoutActive
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+        withCredentials: true
       });
       await fetchBlowoutSaleStatus();
       setBlowoutSuccess('Blowout sale updated successfully!');
@@ -447,8 +467,8 @@ const Admin = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
+        },
+        credentials: 'include'
       });
       
       if (response.ok) {
@@ -470,8 +490,8 @@ const Admin = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
+        },
+        credentials: 'include'
       });
       
       if (response.ok) {
@@ -498,8 +518,8 @@ const Admin = () => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
+        },
+        credentials: 'include'
       });
       
       if (response.ok) {
@@ -519,8 +539,16 @@ const Admin = () => {
     fetchContactSubmissions();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+
     localStorage.removeItem('adminUser');
     setIsAuthenticated(false);
     setUser(null);
@@ -532,11 +560,83 @@ const Admin = () => {
     const emails = subscribers.subscribersByCommunity[community]
       .map(sub => sub.email)
       .join(', ');
-    
+
     navigator.clipboard.writeText(emails).then(() => {
       setCopiedCommunity(community);
       setTimeout(() => setCopiedCommunity(null), 2000);
     });
+  };
+
+  const exportToCSV = (community) => {
+    const subscriberData = subscribers.subscribersByCommunity[community];
+    if (!subscriberData || subscriberData.length === 0) {
+      alert('No subscribers to export');
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Name', 'Email', 'Subscribed Date'];
+    const csvContent = [
+      headers.join(','),
+      ...subscriberData.map(sub => [
+        `"${sub.name || ''}"`,
+        `"${sub.email}"`,
+        `"${formatDate(sub.subscribedAt)}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${community}_subscribers_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportAllSubscribers = () => {
+    if (!subscribers || subscribers.total === 0) {
+      alert('No subscribers to export');
+      return;
+    }
+
+    // Combine all subscribers
+    const allSubscribers = [];
+    communities.forEach(community => {
+      const communitySubscribers = subscribers.subscribersByCommunity[community] || [];
+      communitySubscribers.forEach(sub => {
+        allSubscribers.push({
+          ...sub,
+          community: community.charAt(0).toUpperCase() + community.slice(1).replace('-', ' ')
+        });
+      });
+    });
+
+    // Create CSV content
+    const headers = ['Name', 'Email', 'Community', 'Subscribed Date'];
+    const csvContent = [
+      headers.join(','),
+      ...allSubscribers.map(sub => [
+        `"${sub.name || ''}"`,
+        `"${sub.email}"`,
+        `"${sub.community}"`,
+        `"${formatDate(sub.subscribedAt)}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `all_subscribers_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
   
   const formatDate = (dateString) => {
@@ -631,6 +731,12 @@ const Admin = () => {
         <StatCard>
           <h3>{subscribers?.total || 0}</h3>
           <p>Total Subscribers</p>
+          <div style={{ marginTop: '1rem' }}>
+            <CopyButton onClick={exportAllSubscribers}>
+              <FaFileDownload />
+              Export All
+            </CopyButton>
+          </div>
         </StatCard>
         {communities.map(community => (
           <StatCard key={community}>
@@ -650,6 +756,10 @@ const Admin = () => {
               <SubscriberCount>
                 {subscribers?.subscribersByCommunity[community]?.length || 0} subscribers
               </SubscriberCount>
+              <CopyButton onClick={() => exportToCSV(community)}>
+                <FaFileDownload />
+                Export CSV
+              </CopyButton>
               <CopyButton onClick={() => copyEmailsToClipboard(community)}>
                 <FaCopy />
                 {copiedCommunity === community ? 'Copied!' : 'Copy Emails'}

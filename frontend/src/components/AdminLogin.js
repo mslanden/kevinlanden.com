@@ -107,6 +107,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify(credentials),
       });
 
@@ -116,12 +117,11 @@ const AdminLogin = ({ onLoginSuccess }) => {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store token in localStorage
-      localStorage.setItem('adminToken', data.data.token);
+      // Store user info in localStorage (non-sensitive data only)
       localStorage.setItem('adminUser', JSON.stringify(data.data.user));
 
-      // Call success callback
-      onLoginSuccess(data.data.token, data.data.user);
+      // Call success callback (no token needed anymore)
+      onLoginSuccess(null, data.data.user);
 
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');

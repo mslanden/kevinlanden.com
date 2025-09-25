@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaTachometerAlt, 
-  FaUsers, 
-  FaEnvelope, 
-  FaTag, 
-  FaChartLine, 
+import {
+  FaTachometerAlt,
+  FaUsers,
+  FaEnvelope,
+  FaTag,
+  FaChartLine,
   FaNewspaper,
   FaSignOutAlt,
   FaBars,
   FaTimes,
-  FaUserCircle
+  FaUserCircle,
+  FaHome
 } from 'react-icons/fa';
 
 const LayoutContainer = styled.div`
@@ -23,7 +24,7 @@ const LayoutContainer = styled.div`
 
 const Sidebar = styled(motion.aside)`
   width: 280px;
-  background-color: ${props => props.theme.colors.background.richDark};
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%);
   border-right: 1px solid ${props => props.theme.colors.border};
   position: fixed;
   top: 80px;
@@ -31,11 +32,13 @@ const Sidebar = styled(motion.aside)`
   height: calc(100vh - 80px);
   overflow-y: auto;
   z-index: 100;
-  
+  backdrop-filter: blur(10px);
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+
   @media (max-width: ${props => props.theme.breakpoints.lg}) {
     width: 250px;
   }
-  
+
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     width: 100%;
     max-width: 300px;
@@ -45,6 +48,18 @@ const Sidebar = styled(motion.aside)`
 const SidebarHeader = styled.div`
   padding: 2rem 1.5rem;
   border-bottom: 1px solid ${props => props.theme.colors.border};
+  background: rgba(139, 69, 19, 0.1);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, ${props => props.theme.colors.primary}, transparent);
+  }
 `;
 
 const UserInfo = styled.div`
@@ -78,10 +93,10 @@ const NavMenu = styled.nav`
   padding: 1rem 0;
 `;
 
-const NavItem = styled.button`
+const NavItem = styled(motion.button)`
   width: 100%;
   padding: 1rem 1.5rem;
-  background: ${props => props.active ? 'rgba(139, 69, 19, 0.2)' : 'transparent'};
+  background: ${props => props.active ? 'linear-gradient(90deg, rgba(139, 69, 19, 0.3), rgba(139, 69, 19, 0.1))' : 'transparent'};
   border: none;
   border-left: 3px solid ${props => props.active ? props.theme.colors.primary : 'transparent'};
   color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.text.primary};
@@ -91,16 +106,40 @@ const NavItem = styled.button`
   font-size: 1rem;
   font-weight: ${props => props.active ? '600' : '400'};
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
-  
-  &:hover {
-    background: rgba(139, 69, 19, 0.1);
-    color: ${props => props.theme.colors.primary};
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 69, 19, 0.2), transparent);
+    transform: translateY(-50%);
+    transition: left 0.5s ease;
   }
-  
+
+  &:hover {
+    background: ${props => props.active ? props.background : 'rgba(139, 69, 19, 0.15)'};
+    color: ${props => props.theme.colors.primary};
+    padding-left: 2rem;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
   svg {
     font-size: 1.2rem;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
   }
 `;
 
@@ -165,16 +204,21 @@ const Overlay = styled(motion.div)`
   }
 `;
 
-const ContentHeader = styled.div`
+const ContentHeader = styled(motion.div)`
   margin-bottom: 2rem;
-  
+  padding-bottom: 1rem;
+  border-bottom: 2px solid ${props => props.theme.colors.border};
+
   h1 {
     font-family: ${props => props.theme.fonts.heading};
     font-size: 2.5rem;
     color: ${props => props.theme.colors.text.secondary};
     margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
-  
+
   p {
     color: ${props => props.theme.colors.text.muted};
     font-size: 1.1rem;
@@ -185,12 +229,12 @@ const AdminLayout = ({ children, activeTab, onTabChange, user, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: FaTachometerAlt },
-    { id: 'subscribers', label: 'Newsletter Subscribers', icon: FaUsers },
-    { id: 'contacts', label: 'Contact Messages', icon: FaEnvelope },
-    { id: 'blowout', label: 'Blowout Sale', icon: FaTag },
-    { id: 'market', label: 'Market Data', icon: FaChartLine },
-    { id: 'newsletter', label: 'Newsletter Generator', icon: FaNewspaper },
+    { id: 'dashboard', label: 'Dashboard', icon: FaTachometerAlt, color: '#4CAF50' },
+    { id: 'subscribers', label: 'Newsletter Subscribers', icon: FaUsers, color: '#2196F3' },
+    { id: 'contacts', label: 'Contact Messages', icon: FaEnvelope, color: '#ff9800' },
+    { id: 'blowout', label: 'Blowout Sale', icon: FaTag, color: '#f44336' },
+    { id: 'market', label: 'Market Data', icon: FaChartLine, color: '#9C27B0' },
+    { id: 'newsletter', label: 'Newsletter Generator', icon: FaNewspaper, color: '#00BCD4' },
   ];
 
   const handleTabChange = (tabId) => {
@@ -236,13 +280,18 @@ const AdminLayout = ({ children, activeTab, onTabChange, user, onLogout }) => {
         </SidebarHeader>
 
         <NavMenu>
-          {menuItems.map(item => (
+          {menuItems.map((item, index) => (
             <NavItem
               key={item.id}
               active={activeTab === item.id}
               onClick={() => handleTabChange(item.id)}
+              whileHover={{ x: 5 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <item.icon />
+              <item.icon style={{ color: activeTab === item.id ? item.color : 'inherit' }} />
               {item.label}
             </NavItem>
           ))}
@@ -255,7 +304,11 @@ const AdminLayout = ({ children, activeTab, onTabChange, user, onLogout }) => {
       </Sidebar>
 
       <MainContent>
-        <ContentHeader>
+        <ContentHeader
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <h1>{getPageTitle()}</h1>
         </ContentHeader>
         {children}

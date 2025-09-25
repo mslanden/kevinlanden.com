@@ -24,9 +24,9 @@ interface JWTPayload {
 }
 
 // Environment variable validation
-const JWT_SECRET = process.env.JWT_SECRET || 'outrider-real-estate-super-secret-jwt-key-2024-production';
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-  console.warn('JWT_SECRET environment variable not set, using fallback. Set JWT_SECRET for production.');
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required. Please set it in your .env file.');
 }
 
 export const generateToken = (payload: { id: string; email: string; role: string }): string => {
@@ -47,11 +47,17 @@ export const comparePassword = async (password: string, hashedPassword: string):
 
 // Authentication middleware
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  // First check for cookie
+  let token = req.cookies?.authToken;
+
+  // Fall back to Authorization header for API clients
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  }
 
   if (!token) {
-    res.status(401).json({ 
+    res.status(401).json({
       error: 'Access denied',
       message: 'No token provided'
     });
@@ -109,8 +115,14 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction): v
 
 // Optional authentication - doesn't fail if no token
 export const optionalAuth = (req: Request, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // First check for cookie
+  let token = req.cookies?.authToken;
+
+  // Fall back to Authorization header for API clients
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    token = authHeader && authHeader.split(' ')[1];
+  }
 
   if (!token) {
     next();

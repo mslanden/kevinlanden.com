@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 
@@ -15,16 +16,10 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// Require JWT_SECRET for production
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  console.error('JWT_SECRET is required in production');
-  process.exit(1);
-}
-
-// Set default JWT_SECRET for development (not secure for production)
+// JWT_SECRET is now required in all environments
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = 'dev-secret-key-change-in-production';
-  console.warn('Using default JWT_SECRET for development. Set JWT_SECRET environment variable for production.');
+  console.error('JWT_SECRET is required. Please set it in your .env file.');
+  process.exit(1);
 }
 
 // Import error handlers
@@ -80,13 +75,16 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false // Allow images from external sources
 }));
 
+// Cookie parser middleware
+app.use(cookieParser());
+
 // CORS configuration
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
-    const allowedOrigins = process.env.NODE_ENV === 'production' 
+
+    const allowedOrigins = process.env.NODE_ENV === 'production'
       ? [
           'https://kevinlandenrealestate.com',
           'https://www.kevinlandenrealestate.com',
@@ -98,7 +96,7 @@ const corsOptions = {
           'http://localhost:3000',
           'http://127.0.0.1:3000'
         ];
-    
+
     // Allow all Vercel preview deployments
     const isVercelDeployment = origin.includes('.vercel.app');
     const isAllowedOrigin = allowedOrigins.includes(origin);

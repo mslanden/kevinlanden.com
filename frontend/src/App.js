@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import GlobalStyle from './styles/GlobalStyle';
 import theme from './styles/theme';
@@ -20,6 +20,7 @@ import WelcomeModal from './components/WelcomeModal';
 
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   useEffect(() => {
@@ -52,9 +53,12 @@ function AppContent() {
     navigate('/contact');
   };
 
+  // Check if we're on the admin page
+  const isAdminPage = location.pathname.startsWith('/admin');
+
   return (
     <>
-      <Navbar />
+      {!isAdminPage && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/buyers-guide" element={<BuyersGuide />} />
@@ -63,8 +67,8 @@ function AppContent() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
-      <Footer />
-      <WelcomeModal 
+      {!isAdminPage && <Footer />}
+      <WelcomeModal
         isOpen={showWelcomeModal}
         onClose={handleCloseModal}
         onContact={handleContact}

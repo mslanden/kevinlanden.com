@@ -24,7 +24,10 @@
       "Bash(npm run dev:*)",
       "Bash(npm start)",
       "Bash(git init:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(sed:*)",
+      "Bash(npm run generate-pdfs:*)",
+      "Bash(npm run generate-pdfs-continuous:*)"
     ],
     "deny": []
   },

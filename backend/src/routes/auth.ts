@@ -4,12 +4,13 @@ import { generateToken, hashPassword, comparePassword } from '../middleware/auth
 import { validate, schemas } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthenticationError, ConflictError, NotFoundError } from '../middleware/errorHandler';
+import { authLimiter, criticalLimiter } from '../middleware/rateLimiter';
 import Joi from 'joi';
 
 const router = express.Router();
 
 // Register admin user (should be restricted in production)
-router.post('/register', validate(schemas.register), asyncHandler(async (req: Request, res: Response) => {
+router.post('/register', authLimiter, validate(schemas.register), asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, role } = req.body;
 
   // Check if user already exists
@@ -51,6 +52,14 @@ router.post('/register', validate(schemas.register), asyncHandler(async (req: Re
     role: user.role
   });
 
+  // Set httpOnly cookie
+  res.cookie('authToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  });
+
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
@@ -62,14 +71,13 @@ router.post('/register', validate(schemas.register), asyncHandler(async (req: Re
         role: user.role,
         isActive: user.is_active,
         createdAt: user.created_at
-      },
-      token
+      }
     }
   });
 }));
 
-// Login
-router.post('/login', validate(schemas.login), asyncHandler(async (req: Request, res: Response) => {
+// Login with rate limiting
+router.post('/login', criticalLimiter, validate(schemas.login), asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   // Get user with password
@@ -136,6 +144,14 @@ router.post('/login', validate(schemas.login), asyncHandler(async (req: Request,
     role: user.role
   });
 
+  // Set httpOnly cookie
+  res.cookie('authToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  });
+
   res.json({
     success: true,
     message: 'Login successful',
@@ -146,8 +162,7 @@ router.post('/login', validate(schemas.login), asyncHandler(async (req: Request,
         email: user.email,
         role: user.role,
         isActive: user.is_active
-      },
-      token
+      }
     }
   });
 }));
@@ -167,16 +182,17 @@ router.get('/me', asyncHandler(async (req: Request, res: Response) => {
   });
 }));
 
-// Logout (client-side token removal)
+// Logout - clear cookie
 router.post('/logout', (req: Request, res: Response) => {
+  res.clearCookie('authToken');
   res.json({
     success: true,
-    message: 'Logged out successfully. Please remove token from client storage.'
+    message: 'Logged out successfully.'
   });
 });
 
-// Password reset request
-router.post('/forgot-password', validate(Joi.object({ email: Joi.string().email().required() })), asyncHandler(async (req: Request, res: Response) => {
+// Password reset request with rate limiting
+router.post('/forgot-password', authLimiter, validate(Joi.object({ email: Joi.string().email().required() })), asyncHandler(async (req: Request, res: Response) => {
   const { email } = req.body;
 
   // Check if user exists
