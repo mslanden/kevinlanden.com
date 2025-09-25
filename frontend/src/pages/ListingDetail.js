@@ -761,11 +761,11 @@ const ListingDetail = () => {
               variants={fadeIn}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <CardTitle>Contact Agent</CardTitle>
+              <CardTitle>Contact</CardTitle>
               <ContactInfo>
-                <p>Interested in this property? Get in touch with Kevin Landen for more information, to schedule a viewing, or to make an offer.</p>
+                <p>Interested in this property? Get in touch with Outrider Realty for more information, to schedule a viewing, or to make an offer.</p>
                 <ContactButton to="/contact">
-                  Contact Kevin
+                  Contact Us
                 </ContactButton>
               </ContactInfo>
             </ContentCard>
