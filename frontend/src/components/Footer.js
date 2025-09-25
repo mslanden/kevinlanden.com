@@ -167,6 +167,50 @@ const FooterBottom = styled.div`
 const Copyright = styled.p`
   font-size: 0.9rem;
   color: ${props => props.theme.colors.text.muted};
+  margin-bottom: 1rem;
+`;
+
+const LegalLinks = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+const LegalLink = styled(Link)`
+  color: ${props => props.theme.colors.text.muted};
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: ${props => props.theme.colors.primary};
+    text-decoration: underline;
+  }
+`;
+
+const LegalDivider = styled.span`
+  color: ${props => props.theme.colors.text.muted};
+  font-size: 0.85rem;
+  margin: 0 0.25rem;
+`;
+
+const DeveloperCredit = styled.p`
+  font-size: 0.8rem;
+  color: ${props => props.theme.colors.text.muted};
+  margin-top: 1rem;
+
+  a {
+    color: ${props => props.theme.colors.primary};
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: ${props => props.theme.colors.text.secondary};
+      text-decoration: underline;
+    }
+  }
 `;
 
 const NewsletterSection = styled.div`
@@ -268,6 +312,23 @@ const Footer = () => {
         
         <FooterBottom>
           <Copyright>© {currentYear} Outrider Real Estate. All rights reserved.</Copyright>
+          <LegalLinks>
+            <LegalLink to="/privacy-policy">Privacy Policy</LegalLink>
+            <LegalDivider>|</LegalDivider>
+            <LegalLink to="/terms-of-service">Terms of Service</LegalLink>
+            <LegalDivider>|</LegalDivider>
+            <LegalLink to="/accessibility">Accessibility</LegalLink>
+          </LegalLinks>
+          <DeveloperCredit>
+            For website-related accessibility questions or technical support, contact{' '}
+            <a href="mailto:contact@marcelinolanden.com" target="_blank" rel="noopener noreferrer">
+              Marcelino Landen
+            </a>{' '}
+            at{' '}
+            <a href="https://marcelinolanden.com" target="_blank" rel="noopener noreferrer">
+              marcelinolanden.com
+            </a>
+          </DeveloperCredit>
         </FooterBottom>
       </FooterContent>
       

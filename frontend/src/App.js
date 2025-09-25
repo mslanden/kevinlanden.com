@@ -12,11 +12,15 @@ import SellersGuide from './pages/SellersGuide';
 import BestInShow from './pages/BestInShow';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Accessibility from './pages/Accessibility';
 
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WelcomeModal from './components/WelcomeModal';
+import CookieConsent from './components/CookieConsent';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -66,6 +70,9 @@ function AppContent() {
         <Route path="/best-in-show" element={<BestInShow />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/accessibility" element={<Accessibility />} />
       </Routes>
       {!isAdminPage && <Footer />}
       <WelcomeModal
@@ -73,6 +80,7 @@ function AppContent() {
         onClose={handleCloseModal}
         onContact={handleContact}
       />
+      <CookieConsent />
     </>
   );
 }

@@ -1168,11 +1168,6 @@ const Admin = () => {
       case 'dashboard':
         return (
           <AdminDashboard
-            subscribersCount={subscribers?.total || 0}
-            unreadMessagesCount={unreadMessagesCount}
-            totalMessagesCount={contactSubmissions.length}
-            blowoutSaleData={blowoutSale}
-            recentActivity={recentActivity}
             onNavigate={setActiveTab}
           />
         );
