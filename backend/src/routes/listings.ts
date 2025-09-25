@@ -188,25 +188,39 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     console.log('QR code generated successfully');
 
     console.log('Inserting main listing into database...');
+
+    // Helper function to convert empty strings to null for numeric fields
+    const parseNumeric = (value: any) => {
+      if (value === '' || value === null || value === undefined) return null;
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? null : parsed;
+    };
+
+    const parseInteger = (value: any) => {
+      if (value === '' || value === null || value === undefined) return null;
+      const parsed = parseInt(value);
+      return isNaN(parsed) ? null : parsed;
+    };
+
     const listingData = {
       slug,
       title,
-      description,
-      location,
-      address,
-      city,
+      description: description || null,
+      location: location || null,
+      address: address || null,
+      city: city || null,
       state: state || 'CA',
-      zip_code,
-      price,
-      bedrooms,
-      bathrooms,
-      square_feet,
-      lot_size,
-      year_built,
+      zip_code: zip_code || null,
+      price: parseNumeric(price),
+      bedrooms: parseInteger(bedrooms),
+      bathrooms: parseNumeric(bathrooms),
+      square_feet: parseInteger(square_feet),
+      lot_size: parseNumeric(lot_size),
+      year_built: parseInteger(year_built),
       property_type,
-      main_image_url,
-      zillow_tour_url,
-      floor_plan_url,
+      main_image_url: main_image_url || null,
+      zillow_tour_url: zillow_tour_url || null,
+      floor_plan_url: floor_plan_url || null,
       qr_code_url: qrCodeDataUrl,
       status: status || 'active',
       featured: featured || false
