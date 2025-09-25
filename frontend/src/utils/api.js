@@ -22,10 +22,14 @@ const handleSessionExpiration = () => {
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   if (response.status === 401) {
-    handleSessionExpiration();
-    return;
+    // Only trigger session expiration for authenticated endpoints, not login
+    const url = response.url || '';
+    if (!url.includes('/auth/login')) {
+      handleSessionExpiration();
+      return;
+    }
   }
-  
+
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Network error' }));
     throw new Error(error.message || 'API request failed');
