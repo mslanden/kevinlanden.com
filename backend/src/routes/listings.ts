@@ -181,7 +181,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 
     console.log('Generating QR code...');
     // Generate QR code
-    const baseUrl = process.env.FRONTEND_URL || 'https://kevinlandenrealestate.com';
+    const baseUrl = process.env.FRONTEND_URL || 'https://outriderrealty.com';
     const listingUrl = `${baseUrl}/listing/${slug}`;
     console.log('Listing URL for QR code:', listingUrl);
     const qrCodeDataUrl = await generateQRCode(listingUrl);
@@ -356,12 +356,12 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       updateData.slug = await generateUniqueSlug(title);
 
       // Generate new QR code with new slug
-      const baseUrl = process.env.FRONTEND_URL || 'https://kevinlandenrealestate.com';
+      const baseUrl = process.env.FRONTEND_URL || 'https://outriderrealty.com';
       const listingUrl = `${baseUrl}/listing/${updateData.slug}`;
       updateData.qr_code_url = await generateQRCode(listingUrl);
     } else if (regenerate_qr) {
       // Regenerate QR code with existing slug
-      const baseUrl = process.env.FRONTEND_URL || 'https://kevinlandenrealestate.com';
+      const baseUrl = process.env.FRONTEND_URL || 'https://outriderrealty.com';
       const listingUrl = `${baseUrl}/listing/${currentListing.slug}`;
       updateData.qr_code_url = await generateQRCode(listingUrl);
     }
@@ -489,7 +489,7 @@ router.get('/:id/qr-code', authenticateToken, requireAdmin, async (req, res) => 
 
     // If QR code doesn't exist, generate it
     if (!listing.qr_code_url) {
-      const baseUrl = process.env.FRONTEND_URL || 'https://kevinlandenrealestate.com';
+      const baseUrl = process.env.FRONTEND_URL || 'https://outriderrealty.com';
       const listingUrl = `${baseUrl}/listing/${listing.slug}`;
       const qrCodeDataUrl = await generateQRCode(listingUrl);
 
@@ -501,7 +501,7 @@ router.get('/:id/qr-code', authenticateToken, requireAdmin, async (req, res) => 
 
       res.json({ qr_code_url: qrCodeDataUrl, listing_url: listingUrl });
     } else {
-      const baseUrl = process.env.FRONTEND_URL || 'https://kevinlandenrealestate.com';
+      const baseUrl = process.env.FRONTEND_URL || 'https://outriderrealty.com';
       res.json({
         qr_code_url: listing.qr_code_url,
         listing_url: `${baseUrl}/listing/${listing.slug}`
