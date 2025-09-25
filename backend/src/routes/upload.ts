@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { supabase } from '../utils/supabaseClient';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import path from 'path';
 
 const router = express.Router();
@@ -33,7 +33,7 @@ const upload = multer({
 // Helper function to generate unique filename
 function generateFileName(originalName: string): string {
   const ext = path.extname(originalName).toLowerCase();
-  const uuid = uuidv4();
+  const uuid = randomUUID();
   const timestamp = Date.now();
   return `${timestamp}-${uuid}${ext}`;
 }
