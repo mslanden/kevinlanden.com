@@ -1,5 +1,6 @@
 import express from 'express';
 import { supabase } from '../utils/supabaseClient';
+import { requireAdmin } from '../middleware/auth';
 import QRCode from 'qrcode';
 import slugify from 'slugify';
 
@@ -47,7 +48,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
 }
 
 // GET all listings (admin only)
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     // For admin, return all listings regardless of status
     const { data: listings, error } = await supabase
@@ -138,7 +139,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // POST create new listing (admin only)
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const {
       title,
@@ -256,7 +257,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update listing (admin only)
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -418,7 +419,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE listing (admin only)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -440,7 +441,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET QR code for a listing (admin only)
-router.get('/:id/qr-code', async (req, res) => {
+router.get('/:id/qr-code', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
