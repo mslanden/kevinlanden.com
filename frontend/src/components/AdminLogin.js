@@ -117,12 +117,11 @@ const AdminLogin = ({ onLoginSuccess }) => {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store token and user info in localStorage
-      localStorage.setItem('adminToken', data.data.token);
+      // Store user info in localStorage (token is in httpOnly cookie)
       localStorage.setItem('adminUser', JSON.stringify(data.data.user));
 
       // Call success callback
-      onLoginSuccess(data.data.token, data.data.user);
+      onLoginSuccess(null, data.data.user);
 
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');

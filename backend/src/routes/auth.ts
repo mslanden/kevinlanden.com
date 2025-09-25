@@ -162,8 +162,7 @@ router.post('/login', criticalLimiter, validate(schemas.login), asyncHandler(asy
         email: user.email,
         role: user.role,
         isActive: user.is_active
-      },
-      token: token // Include token in response for API client
+      }
     }
   });
 }));

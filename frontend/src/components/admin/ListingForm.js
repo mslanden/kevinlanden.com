@@ -400,8 +400,9 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
               <FaHome /> Basic Information
             </SectionTitle>
             <FormGroup>
-              <Label>Title <span>*</span></Label>
+              <Label htmlFor="listing-title">Title <span>*</span></Label>
               <Input
+                id="listing-title"
                 type="text"
                 name="title"
                 value={formData.title}
@@ -411,8 +412,9 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
               />
             </FormGroup>
             <FormGroup>
-              <Label>Description</Label>
+              <Label htmlFor="listing-description">Description</Label>
               <TextArea
+                id="listing-description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -421,8 +423,8 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
             </FormGroup>
             <FormRow>
               <FormGroup>
-                <Label>Property Type</Label>
-                <Select name="property_type" value={formData.property_type} onChange={handleChange}>
+                <Label htmlFor="property-type">Property Type</Label>
+                <Select id="property-type" name="property_type" value={formData.property_type} onChange={handleChange}>
                   <option value="house">House</option>
                   <option value="condo">Condo</option>
                   <option value="land">Land</option>
@@ -508,8 +510,9 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
               <FaDollarSign /> Property Details
             </SectionTitle>
             <FormGroup>
-              <Label>Price</Label>
+              <Label htmlFor="listing-price">Price</Label>
               <Input
+                id="listing-price"
                 type="number"
                 name="price"
                 value={formData.price}

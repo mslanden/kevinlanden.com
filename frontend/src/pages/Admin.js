@@ -707,8 +707,9 @@ const Admin = () => {
       });
 
       if (response.ok) {
+        const data = await response.json();
         setIsAuthenticated(true);
-        setUser(userData);
+        setUser(data.data.user); // Use the verified user data from the server
         fetchSubscribers();
         fetchBlowoutSaleStatus();
         fetchContactSubmissions();

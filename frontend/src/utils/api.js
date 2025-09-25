@@ -1,25 +1,20 @@
 // API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-// Get auth headers
+// Get auth headers (no token needed - using httpOnly cookies)
 const getAuthHeaders = (includeContentType = true) => {
-  const token = localStorage.getItem('adminToken');
   const headers = {};
 
   if (includeContentType) {
     headers['Content-Type'] = 'application/json';
   }
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
   return headers;
 };
 
-// Helper function to handle token expiration
-const handleTokenExpiration = () => {
-  localStorage.removeItem('adminToken');
+// Helper function to handle session expiration
+const handleSessionExpiration = () => {
+  localStorage.removeItem('adminUser');
   alert('Your session has expired. Please log in again.');
   window.location.href = '/admin';
 };
@@ -27,7 +22,7 @@ const handleTokenExpiration = () => {
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   if (response.status === 401) {
-    handleTokenExpiration();
+    handleSessionExpiration();
     return;
   }
   
@@ -67,6 +62,7 @@ export const getNewsletterSubscribers = async () => {
   const response = await fetch(`${API_BASE_URL}/newsletter/subscribers`, {
     method: 'GET',
     headers: getAuthHeaders(),
+    credentials: 'include'
   });
   return handleResponse(response);
 };
@@ -76,6 +72,7 @@ const get = async (endpoint) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'GET',
     headers: getAuthHeaders(),
+    credentials: 'include'
   });
   return { data: await handleResponse(response) };
 };
@@ -84,6 +81,7 @@ const post = async (endpoint, data) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'POST',
     headers: getAuthHeaders(),
+    credentials: 'include',
     body: JSON.stringify(data),
   });
   return { data: await handleResponse(response) };
@@ -93,6 +91,7 @@ const put = async (endpoint, data) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'PUT',
     headers: getAuthHeaders(),
+    credentials: 'include',
     body: JSON.stringify(data),
   });
   return { data: await handleResponse(response) };
@@ -102,6 +101,7 @@ const del = async (endpoint, data) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
+    credentials: 'include',
     body: data ? JSON.stringify(data) : undefined,
   });
   return { data: await handleResponse(response) };
@@ -112,6 +112,7 @@ const postFormData = async (endpoint, formData) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'POST',
     headers: getAuthHeaders(false), // Don't include Content-Type for FormData
+    credentials: 'include',
     body: formData,
   });
   return { data: await handleResponse(response) };
