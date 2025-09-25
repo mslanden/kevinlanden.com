@@ -92,10 +92,10 @@ const NavMenu = styled.nav`
   padding: 1rem 0;
 `;
 
-const NavItem = styled(motion.button)`
+const NavItem = styled.button`
   width: 100%;
   padding: 1rem 1.5rem;
-  background: ${props => props.active ? 'linear-gradient(90deg, rgba(139, 69, 19, 0.3), rgba(139, 69, 19, 0.1))' : 'transparent'};
+  background: ${props => props.active ? 'rgba(139, 69, 19, 0.2)' : 'transparent'};
   border: none;
   border-left: 3px solid ${props => props.active ? props.theme.colors.primary : 'transparent'};
   color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.text.primary};
@@ -105,40 +105,16 @@ const NavItem = styled(motion.button)`
   font-size: 1rem;
   font-weight: ${props => props.active ? '600' : '400'};
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   text-align: left;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(139, 69, 19, 0.2), transparent);
-    transform: translateY(-50%);
-    transition: left 0.5s ease;
-  }
 
   &:hover {
-    background: ${props => props.active ? props.background : 'rgba(139, 69, 19, 0.15)'};
+    background: rgba(139, 69, 19, 0.1);
     color: ${props => props.theme.colors.primary};
-    transform: translateX(0.5rem);
-
-    &::before {
-      left: 100%;
-    }
   }
 
   svg {
     font-size: 1.2rem;
-    transition: transform 0.3s ease;
-  }
-
-  &:hover svg {
-    transform: scale(1.1);
   }
 `;
 
@@ -150,7 +126,6 @@ const LogoutButton = styled(NavItem)`
   &:hover {
     color: #ff6b6b;
     background: rgba(255, 107, 107, 0.1);
-    transform: translateX(0.5rem);
   }
 `;
 
@@ -280,16 +255,11 @@ const AdminLayout = ({ children, activeTab, onTabChange, user, onLogout }) => {
         </SidebarHeader>
 
         <NavMenu>
-          {menuItems.map((item, index) => (
+          {menuItems.map((item) => (
             <NavItem
               key={item.id}
               active={activeTab === item.id}
               onClick={() => handleTabChange(item.id)}
-              whileHover={{ x: 5 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
             >
               <item.icon style={{ color: activeTab === item.id ? item.color : 'inherit' }} />
               {item.label}
