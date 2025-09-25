@@ -259,11 +259,7 @@ const ImageUpload = ({
       });
       formData.append('category', category);
 
-      const response = await api.post('/upload/images', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.postFormData('/upload/images', formData);
 
       if (response.data.success) {
         const newImages = response.data.data.map((uploadResult, index) => ({
@@ -324,9 +320,7 @@ const ImageUpload = ({
     try {
       // If image has a path (uploaded to storage), delete from storage
       if (imageToRemove.path) {
-        await api.delete('/upload/image', {
-          data: { path: imageToRemove.path }
-        });
+        await api.delete('/upload/image', { path: imageToRemove.path });
       }
 
       // Remove from local state

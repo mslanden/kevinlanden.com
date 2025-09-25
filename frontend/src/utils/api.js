@@ -2,12 +2,19 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 // Get auth headers
-const getAuthHeaders = () => {
+const getAuthHeaders = (includeContentType = true) => {
   const token = localStorage.getItem('adminToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` })
-  };
+  const headers = {};
+
+  if (includeContentType) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
 };
 
 // Helper function to handle token expiration
@@ -91,6 +98,25 @@ const put = async (endpoint, data) => {
   return { data: await handleResponse(response) };
 };
 
+const del = async (endpoint, data) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    body: data ? JSON.stringify(data) : undefined,
+  });
+  return { data: await handleResponse(response) };
+};
+
+// For file uploads (multipart/form-data)
+const postFormData = async (endpoint, formData) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: getAuthHeaders(false), // Don't include Content-Type for FormData
+    body: formData,
+  });
+  return { data: await handleResponse(response) };
+};
+
 // Export all API methods
 const api = {
   submitContactForm,
@@ -99,6 +125,8 @@ const api = {
   get,
   post,
   put,
+  delete: del,
+  postFormData,
 };
 
 export default api;

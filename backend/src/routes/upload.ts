@@ -3,6 +3,7 @@ import multer from 'multer';
 import { supabase } from '../utils/supabaseClient';
 import { randomUUID } from 'crypto';
 import path from 'path';
+import { authenticateToken, requireAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -44,7 +45,7 @@ function getFilePath(category: string, filename: string): string {
 }
 
 // Upload single image
-router.post('/image', upload.single('image'), async (req, res) => {
+router.post('/image', authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file provided' });
@@ -92,7 +93,7 @@ router.post('/image', upload.single('image'), async (req, res) => {
 });
 
 // Upload multiple images
-router.post('/images', upload.array('images', 10), async (req, res) => {
+router.post('/images', authenticateToken, requireAdmin, upload.array('images', 10), async (req, res) => {
   try {
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ error: 'No files provided' });
@@ -146,7 +147,7 @@ router.post('/images', upload.array('images', 10), async (req, res) => {
 });
 
 // Delete image
-router.delete('/image', async (req, res) => {
+router.delete('/image', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { path } = req.body;
 
@@ -175,7 +176,7 @@ router.delete('/image', async (req, res) => {
 });
 
 // Delete multiple images
-router.delete('/images', async (req, res) => {
+router.delete('/images', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { paths } = req.body;
 

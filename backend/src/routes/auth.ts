@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { supabase } from '../utils/supabaseClient';
-import { generateToken, hashPassword, comparePassword } from '../middleware/auth';
+import { generateToken, hashPassword, comparePassword, authenticateToken, requireAdmin } from '../middleware/auth';
 import { validate, schemas } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
 import { AuthenticationError, ConflictError, NotFoundError } from '../middleware/errorHandler';
@@ -162,23 +162,46 @@ router.post('/login', criticalLimiter, validate(schemas.login), asyncHandler(asy
         email: user.email,
         role: user.role,
         isActive: user.is_active
-      }
+      },
+      token: token // Include token in response for API client
     }
   });
 }));
 
 // Get current user profile
-router.get('/me', asyncHandler(async (req: Request, res: Response) => {
-  // This would use the authenticateToken middleware
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) {
-    throw new AuthenticationError('No token provided');
+router.get('/me', authenticateToken, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new AuthenticationError('User not authenticated');
   }
 
-  // For now, return a simple response
+  // Get user details from database
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id, name, email, role, is_active, created_at, last_login')
+    .eq('id', req.user.id)
+    .single();
+
+  if (error || !user) {
+    throw new NotFoundError('User not found');
+  }
+
+  if (!user.is_active) {
+    throw new AuthenticationError('Account is deactivated');
+  }
+
   res.json({
     success: true,
-    message: 'Profile endpoint - authentication middleware needed'
+    data: {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.is_active,
+        createdAt: user.created_at,
+        lastLogin: user.last_login
+      }
+    }
   });
 }));
 
