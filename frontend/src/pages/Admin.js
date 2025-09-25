@@ -10,6 +10,7 @@ import MarketDataManager from '../components/MarketDataManager';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import AdminCard from '../components/admin/AdminCard';
+import ListingsManager from '../components/admin/ListingsManager';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -1171,22 +1172,25 @@ const Admin = () => {
             onNavigate={setActiveTab}
           />
         );
-        
+
       case 'subscribers':
         return renderSubscribersContent();
-        
+
       case 'contacts':
         return renderContactsContent();
-        
+
+      case 'listings':
+        return <ListingsManager />;
+
       case 'blowout':
         return renderBlowoutContent();
-        
+
       case 'market':
         return <MarketDataManager />;
-        
+
       case 'newsletter':
         return <NewsletterGenerator />;
-        
+
       default:
         return null;
     }

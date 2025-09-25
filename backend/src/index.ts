@@ -166,6 +166,7 @@ import blowoutSaleRoutes from './routes/blowoutSale';
 import marketDataRoutes from './routes/marketData';
 import marketDataExtractRoutes from './routes/marketDataExtract';
 import analyticsRoutes from './routes/analytics';
+import listingsRoutes from './routes/listings';
 
 // Authentication routes (with specific rate limiting)
 app.use('/api/auth', authRoutes);
@@ -179,6 +180,7 @@ app.use('/api/blowout-sale', blowoutSaleRoutes);
 app.use('/api/market-data', marketDataRoutes);
 app.use('/api/market-data', marketDataExtractRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/listings', listingsRoutes);
 
 // 404 handler for unmatched routes
 app.use(notFoundHandler);

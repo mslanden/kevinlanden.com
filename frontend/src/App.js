@@ -12,6 +12,7 @@ import SellersGuide from './pages/SellersGuide';
 import BestInShow from './pages/BestInShow';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
+import ListingDetail from './pages/ListingDetail';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Accessibility from './pages/Accessibility';
@@ -57,12 +58,14 @@ function AppContent() {
     navigate('/contact');
   };
 
-  // Check if we're on the admin page
+  // Check if we're on the admin page or listing page
   const isAdminPage = location.pathname.startsWith('/admin');
+  const isListingPage = location.pathname.startsWith('/listing');
+  const hideNavFooter = isAdminPage;
 
   return (
     <>
-      {!isAdminPage && <Navbar />}
+      {!hideNavFooter && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/buyers-guide" element={<BuyersGuide />} />
@@ -70,11 +73,12 @@ function AppContent() {
         <Route path="/best-in-show" element={<BestInShow />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/listing/:slug" element={<ListingDetail />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/accessibility" element={<Accessibility />} />
       </Routes>
-      {!isAdminPage && <Footer />}
+      {!hideNavFooter && <Footer />}
       <WelcomeModal
         isOpen={showWelcomeModal}
         onClose={handleCloseModal}
