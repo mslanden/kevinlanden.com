@@ -19,7 +19,6 @@ const LayoutContainer = styled.div`
   display: flex;
   min-height: 100vh;
   background-color: ${props => props.theme.colors.background.dark};
-  padding-top: 80px; /* Account for navbar */
 `;
 
 const Sidebar = styled(motion.aside)`
@@ -27,9 +26,9 @@ const Sidebar = styled(motion.aside)`
   background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%);
   border-right: 1px solid ${props => props.theme.colors.border};
   position: fixed;
-  top: 80px;
+  top: 0;
   left: 0;
-  height: calc(100vh - 80px);
+  height: 100vh;
   overflow-y: auto;
   z-index: 100;
   backdrop-filter: blur(10px);
@@ -126,7 +125,7 @@ const NavItem = styled(motion.button)`
   &:hover {
     background: ${props => props.active ? props.background : 'rgba(139, 69, 19, 0.15)'};
     color: ${props => props.theme.colors.primary};
-    padding-left: 2rem;
+    transform: translateX(0.5rem);
 
     &::before {
       left: 100%;
@@ -147,10 +146,11 @@ const LogoutButton = styled(NavItem)`
   margin-top: auto;
   border-top: 1px solid ${props => props.theme.colors.border};
   color: ${props => props.theme.colors.text.muted};
-  
+
   &:hover {
     color: #ff6b6b;
     background: rgba(255, 107, 107, 0.1);
+    transform: translateX(0.5rem);
   }
 `;
 
@@ -172,7 +172,7 @@ const MainContent = styled.main`
 const MobileMenuButton = styled.button`
   display: none;
   position: fixed;
-  top: 90px;
+  top: 1rem;
   left: 1rem;
   background-color: ${props => props.theme.colors.primary};
   color: white;
@@ -181,7 +181,7 @@ const MobileMenuButton = styled.button`
   border-radius: ${props => props.theme.borderRadius.small};
   cursor: pointer;
   z-index: 101;
-  
+
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     display: flex;
     align-items: center;
