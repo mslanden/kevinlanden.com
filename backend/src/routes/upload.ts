@@ -27,7 +27,7 @@ const upload = multer({
   fileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 10 // Maximum 10 files per request
+    files: 50 // Maximum 50 files per request
   }
 });
 
@@ -93,7 +93,7 @@ router.post('/image', authenticateToken, requireAdmin, upload.single('image'), a
 });
 
 // Upload multiple images
-router.post('/images', authenticateToken, requireAdmin, upload.array('images', 10), async (req, res) => {
+router.post('/images', authenticateToken, requireAdmin, upload.array('images', 50), async (req, res) => {
   try {
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ error: 'No files provided' });
@@ -259,7 +259,7 @@ router.use((error: any, req: express.Request, res: express.Response, next: expre
       return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
     }
     if (error.code === 'LIMIT_FILE_COUNT') {
-      return res.status(400).json({ error: 'Too many files. Maximum is 10 files per request.' });
+      return res.status(400).json({ error: 'Too many files. Maximum is 50 files per request.' });
     }
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
       return res.status(400).json({ error: 'Unexpected field name for file upload.' });
