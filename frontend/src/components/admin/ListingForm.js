@@ -321,9 +321,23 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
 
   useEffect(() => {
     if (listing) {
+      // Convert backend image format to frontend format
+      const mappedImages = (listing.listing_images || []).map((img, index) => ({
+        id: img.id || `existing-${index}`,
+        url: img.image_url,
+        path: img.path || img.image_url, // Fallback for existing images
+        filename: img.filename || `image-${index}`,
+        originalName: img.originalName || img.filename || `Image ${index + 1}`,
+        size: img.size,
+        mimetype: img.mimetype,
+        caption: img.caption || '',
+        display_order: img.display_order || index,
+        is_main: img.is_main || false
+      }));
+
       setFormData({
         ...listing,
-        images: listing.listing_images || [],
+        images: mappedImages,
         kuula_spheres: listing.listing_kuula_spheres || [],
         features: listing.listing_features || []
       });
@@ -381,7 +395,21 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    // Convert frontend image format back to backend format
+    const convertedImages = formData.images.map((img, index) => ({
+      url: img.url,
+      caption: img.caption || '',
+      display_order: img.display_order || index,
+      is_main: img.is_main || false
+    }));
+
+    const submitData = {
+      ...formData,
+      images: convertedImages
+    };
+
+    onSubmit(submitData);
   };
 
   return (
@@ -627,7 +655,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
                 }));
               }}
               category="properties"
-              maxFiles={15}
+              maxFiles={50}
             />
           </FormSection>
 

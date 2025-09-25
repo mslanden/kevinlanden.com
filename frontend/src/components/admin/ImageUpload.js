@@ -232,7 +232,7 @@ const ImageUpload = ({
   images = [],
   onImagesChange,
   category = 'general',
-  maxFiles = 10,
+  maxFiles = 50,
   accept = { 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }
 }) => {
   const [uploading, setUploading] = useState(false);
