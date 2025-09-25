@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { supabase } from '../utils/supabaseClient';
+import { supabase, supabaseAdmin } from '../utils/supabaseClient';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
@@ -56,7 +56,7 @@ router.post('/image', authenticateToken, requireAdmin, upload.single('image'), a
     const filePath = getFilePath(category, filename);
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabaseAdmin.storage
       .from('listing-images')
       .upload(filePath, req.file.buffer, {
         contentType: req.file.mimetype,
@@ -70,7 +70,7 @@ router.post('/image', authenticateToken, requireAdmin, upload.single('image'), a
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabaseAdmin.storage
       .from('listing-images')
       .getPublicUrl(filePath);
 
@@ -105,7 +105,7 @@ router.post('/images', authenticateToken, requireAdmin, upload.array('images', 1
       const filePath = getFilePath(category, filename);
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from('listing-images')
         .upload(filePath, file.buffer, {
           contentType: file.mimetype,
@@ -118,7 +118,7 @@ router.post('/images', authenticateToken, requireAdmin, upload.array('images', 1
       }
 
       // Get public URL
-      const { data: urlData } = supabase.storage
+      const { data: urlData } = supabaseAdmin.storage
         .from('listing-images')
         .getPublicUrl(filePath);
 
@@ -155,7 +155,7 @@ router.delete('/image', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'File path is required' });
     }
 
-    const { error } = await supabase.storage
+    const { error } = await supabaseAdmin.storage
       .from('listing-images')
       .remove([path]);
 
@@ -184,7 +184,7 @@ router.delete('/images', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'File paths array is required' });
     }
 
-    const { error } = await supabase.storage
+    const { error } = await supabaseAdmin.storage
       .from('listing-images')
       .remove(paths);
 
@@ -215,7 +215,7 @@ router.get('/info/:path(*)', async (req, res) => {
     }
 
     // Get file info from Supabase Storage
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabaseAdmin.storage
       .from('listing-images')
       .list(path.dirname(filePath), {
         search: path.basename(filePath)
@@ -233,7 +233,7 @@ router.get('/info/:path(*)', async (req, res) => {
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabaseAdmin.storage
       .from('listing-images')
       .getPublicUrl(filePath);
 
