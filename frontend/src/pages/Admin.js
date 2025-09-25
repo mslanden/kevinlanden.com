@@ -631,7 +631,73 @@ const Admin = () => {
   const [currentPage, setCurrentPage] = useState({});
   const [pageSize, setPageSize] = useState(10);
   const [selectedSubscribers, setSelectedSubscribers] = useState(new Set());
-  
+
+  const communities = ['anza', 'aguanga', 'idyllwild', 'mountain-center'];
+
+  // Enhanced subscriber filtering and sorting
+  const filteredAndSortedSubscribers = useMemo(() => {
+    if (!subscribers?.subscribersByCommunity) return {};
+
+    const result = {};
+
+    communities.forEach(community => {
+      let communitySubscribers = subscribers.subscribersByCommunity[community] || [];
+
+      // Apply search filter
+      if (searchTerm) {
+        communitySubscribers = communitySubscribers.filter(sub =>
+          sub.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          sub.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      // Apply sorting
+      communitySubscribers.sort((a, b) => {
+        let aValue = a[sortField];
+        let bValue = b[sortField];
+
+        if (sortField === 'subscribedAt') {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        } else if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+
+        if (sortDirection === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+
+      result[community] = communitySubscribers;
+    });
+
+    return result;
+  }, [subscribers, searchTerm, sortField, sortDirection]);
+
+  // Pagination logic for each community
+  const paginatedSubscribers = useMemo(() => {
+    const result = {};
+
+    Object.keys(filteredAndSortedSubscribers).forEach(community => {
+      const communityData = filteredAndSortedSubscribers[community];
+      const page = currentPage[community] || 1;
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+
+      result[community] = {
+        data: communityData.slice(startIndex, endIndex),
+        total: communityData.length,
+        totalPages: Math.ceil(communityData.length / pageSize),
+        currentPage: page
+      };
+    });
+
+    return result;
+  }, [filteredAndSortedSubscribers, currentPage, pageSize]);
+
   const verifySession = async (userData) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/auth/me`, {
@@ -971,72 +1037,6 @@ const Admin = () => {
       </PageContainer>
     );
   }
-  
-  const communities = ['anza', 'aguanga', 'idyllwild', 'mountain-center'];
-
-  // Enhanced subscriber filtering and sorting
-  const filteredAndSortedSubscribers = useMemo(() => {
-    if (!subscribers?.subscribersByCommunity) return {};
-
-    const result = {};
-
-    communities.forEach(community => {
-      let communitySubscribers = subscribers.subscribersByCommunity[community] || [];
-
-      // Apply search filter
-      if (searchTerm) {
-        communitySubscribers = communitySubscribers.filter(sub =>
-          sub.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          sub.email?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-
-      // Apply sorting
-      communitySubscribers.sort((a, b) => {
-        let aValue = a[sortField];
-        let bValue = b[sortField];
-
-        if (sortField === 'subscribedAt') {
-          aValue = new Date(aValue);
-          bValue = new Date(bValue);
-        } else if (typeof aValue === 'string') {
-          aValue = aValue.toLowerCase();
-          bValue = bValue.toLowerCase();
-        }
-
-        if (sortDirection === 'asc') {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
-      });
-
-      result[community] = communitySubscribers;
-    });
-
-    return result;
-  }, [subscribers, searchTerm, sortField, sortDirection]);
-
-  // Pagination logic for each community
-  const paginatedSubscribers = useMemo(() => {
-    const result = {};
-
-    Object.keys(filteredAndSortedSubscribers).forEach(community => {
-      const communityData = filteredAndSortedSubscribers[community];
-      const page = currentPage[community] || 1;
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-
-      result[community] = {
-        data: communityData.slice(startIndex, endIndex),
-        total: communityData.length,
-        totalPages: Math.ceil(communityData.length / pageSize),
-        currentPage: page
-      };
-    });
-
-    return result;
-  }, [filteredAndSortedSubscribers, currentPage, pageSize]);
 
   // Helper functions for subscriber management
   const handleSort = (field) => {
