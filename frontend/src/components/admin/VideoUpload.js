@@ -247,7 +247,9 @@ const VideoUpload = ({ video, onVideoChange, accept = { 'video/*': ['.mp4', '.mo
     setIsPlaying(false);
   };
 
-  const togglePlayPause = () => {
+  const togglePlayPause = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (videoRef) {
       if (isPlaying) {
         videoRef.pause();
@@ -312,6 +314,10 @@ const VideoUpload = ({ video, onVideoChange, accept = { 'video/*': ['.mp4', '.mo
             ref={setVideoRef}
             src={video.url}
             onEnded={() => setIsPlaying(false)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             loop
             muted
             playsInline

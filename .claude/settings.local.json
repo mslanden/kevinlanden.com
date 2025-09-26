@@ -30,7 +30,8 @@
       "Bash(npm run generate-pdfs-continuous:*)",
       "Read(//Users/marcelinolanden/Documents/myProjects/personalWebsite/**)",
       "Read(//Users/marcelinolanden/Documents/myProjects/**)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "mcp__supabase__get_project"
     ],
     "deny": []
   },

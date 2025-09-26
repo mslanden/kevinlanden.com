@@ -547,15 +547,16 @@ const GoogleDriveVideo = ({ url, title, height = "400px" }) => {
 // Hero Video Component
 const HeroVideoContainer = styled(motion.div)`
   position: relative;
-  width: 100%;
-  height: 600px;
-  border-radius: ${props => props.theme.borderRadius.large};
+  width: 100vw;
+  height: 100vh;
+  margin-left: calc(-50vw + 50%);
   overflow: hidden;
   background: #000;
   cursor: pointer;
+  border-radius: 0;
 
   @media (max-width: ${props => props.theme.breakpoints.md}) {
-    height: 400px;
+    height: 100vh;
   }
 `;
 
@@ -1016,28 +1017,6 @@ const ListingDetail = () => {
         </ContentContainer>
       </ContentSection>
 
-      {listing.drone_video_url && (
-        <ToursSection>
-          <ToursContainer>
-            <TourTitle
-              initial="hidden"
-              animate="visible"
-              variants={fadeIn}
-              transition={{ duration: 0.6 }}
-            >
-              Drone Video
-            </TourTitle>
-            <KuulaSpheresContainer
-              initial="hidden"
-              animate="visible"
-              variants={fadeIn}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <GoogleDriveVideo url={listing.drone_video_url} title="Property Drone Video" height="500px" />
-            </KuulaSpheresContainer>
-          </ToursContainer>
-        </ToursSection>
-      )}
 
       {(listing.zillow_tour_url || listing.floor_plan_url ||
         (listing.listing_kuula_spheres && listing.listing_kuula_spheres.length > 0)) && (
