@@ -15,7 +15,9 @@ import {
   FaChevronRight,
   FaExpand,
   FaTimes,
-  FaCheckCircle
+  FaCheckCircle,
+  FaPlay,
+  FaPause
 } from 'react-icons/fa';
 import api from '../utils/api';
 
@@ -542,6 +544,78 @@ const GoogleDriveVideo = ({ url, title, height = "400px" }) => {
   );
 };
 
+// Hero Video Component
+const HeroVideoContainer = styled(motion.div)`
+  position: relative;
+  width: 100%;
+  height: 600px;
+  border-radius: ${props => props.theme.borderRadius.large};
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    height: 400px;
+  }
+`;
+
+const HeroVideo = styled.video`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const VideoOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
+`;
+
+const PlayPauseButton = styled.button`
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  svg {
+    font-size: 1.5rem;
+    margin-left: ${props => props.$isPlaying ? '0' : '3px'};
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    width: 50px;
+    height: 50px;
+    bottom: 1rem;
+    right: 1rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+`;
+
 // Photo Sphere Viewer Component
 const PhotoSphere = ({ imageUrl, title, height = "400px" }) => {
   const viewerRef = useRef(null);
@@ -643,6 +717,8 @@ const ListingDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
+  const [videoRef, setVideoRef] = useState(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
 
   const [headerRef, headerInView] = useInView({ triggerOnce: true, threshold: 0.2 });
   const [galleryRef, galleryInView] = useInView({ triggerOnce: true, threshold: 0.1 });
@@ -693,6 +769,17 @@ const ListingDetail = () => {
 
   const closeLightbox = () => {
     setLightboxOpen(false);
+  };
+
+  const toggleVideoPlayPause = () => {
+    if (videoRef) {
+      if (isVideoPlaying) {
+        videoRef.pause();
+      } else {
+        videoRef.play();
+      }
+      setIsVideoPlaying(!isVideoPlaying);
+    }
   };
 
   const navigateLightbox = (direction) => {
@@ -810,21 +897,49 @@ const ListingDetail = () => {
         </HeaderContent>
       </ListingHeader>
 
-      {images.length > 0 && (
+      {(images.length > 0 || listing.drone_video_url) && (
         <GallerySection ref={galleryRef}>
           <GalleryContainer>
-            <MainImage
-              initial="hidden"
-              animate={galleryInView ? "visible" : "hidden"}
-              variants={fadeIn}
-              transition={{ duration: 0.6 }}
-              onClick={() => openLightbox(currentImageIndex)}
-            >
-              <img src={images[currentImageIndex].url} alt={images[currentImageIndex].caption} />
-              <ExpandIcon className="expand-icon">
-                <FaExpand />
-              </ExpandIcon>
-            </MainImage>
+            {listing.drone_video_url ? (
+              <HeroVideoContainer
+                initial="hidden"
+                animate={galleryInView ? "visible" : "hidden"}
+                variants={fadeIn}
+                transition={{ duration: 0.6 }}
+              >
+                <HeroVideo
+                  ref={(el) => setVideoRef(el)}
+                  src={listing.drone_video_url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  onPlay={() => setIsVideoPlaying(true)}
+                  onPause={() => setIsVideoPlaying(false)}
+                />
+                <VideoOverlay />
+                <PlayPauseButton
+                  $isPlaying={isVideoPlaying}
+                  onClick={toggleVideoPlayPause}
+                  aria-label={isVideoPlaying ? 'Pause video' : 'Play video'}
+                >
+                  {isVideoPlaying ? <FaPause /> : <FaPlay />}
+                </PlayPauseButton>
+              </HeroVideoContainer>
+            ) : images.length > 0 ? (
+              <MainImage
+                initial="hidden"
+                animate={galleryInView ? "visible" : "hidden"}
+                variants={fadeIn}
+                transition={{ duration: 0.6 }}
+                onClick={() => openLightbox(currentImageIndex)}
+              >
+                <img src={images[currentImageIndex].url} alt={images[currentImageIndex].caption} />
+                <ExpandIcon className="expand-icon">
+                  <FaExpand />
+                </ExpandIcon>
+              </MainImage>
+            ) : null}
 
             {images.length > 1 && (
               <ThumbnailGrid>

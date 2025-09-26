@@ -12,9 +12,11 @@ import {
   FaHome,
   FaMapMarkerAlt,
   FaDollarSign,
-  FaUpload
+  FaUpload,
+  FaVideo
 } from 'react-icons/fa';
 import ImageUpload from './ImageUpload';
+import VideoUpload from './VideoUpload';
 import api from '../../utils/api';
 
 const FormContainer = styled.div`
@@ -706,14 +708,19 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
                 placeholder="https://www.zillow.com/view-imx/..."
               />
             </FormGroup>
-            <FormGroup>
-              <Label>Drone Video URL (Google Drive)</Label>
-              <Input
-                type="url"
-                name="drone_video_url"
-                value={formData.drone_video_url}
-                onChange={handleChange}
-                placeholder="https://drive.google.com/file/d/.../view"
+            <FormGroup className="full-width">
+              <Label><FaVideo /> Drone Video (Hero Background)</Label>
+              <VideoUpload
+                video={formData.drone_video_url ? {
+                  url: formData.drone_video_url,
+                  originalName: 'Drone Video'
+                } : null}
+                onVideoChange={(videoData) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    drone_video_url: videoData ? videoData.url : ''
+                  }));
+                }}
               />
             </FormGroup>
           </FormSection>

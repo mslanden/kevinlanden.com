@@ -29,7 +29,8 @@
       "Bash(npm run generate-pdfs:*)",
       "Bash(npm run generate-pdfs-continuous:*)",
       "Read(//Users/marcelinolanden/Documents/myProjects/personalWebsite/**)",
-      "Read(//Users/marcelinolanden/Documents/myProjects/**)"
+      "Read(//Users/marcelinolanden/Documents/myProjects/**)",
+      "Bash(git diff:*)"
     ],
     "deny": []
   },

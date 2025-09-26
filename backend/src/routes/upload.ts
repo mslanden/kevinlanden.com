@@ -21,6 +21,17 @@ const fileFilter = (req: any, file: any, cb: any) => {
   }
 };
 
+// File filter for videos
+const videoFileFilter = (req: any, file: any, cb: any) => {
+  const allowedTypes = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv', 'video/webm'];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only MP4, MPEG, MOV, AVI, WMV, and WebM videos are allowed.'), false);
+  }
+};
+
 // Configure multer with file size limit and filter
 const upload = multer({
   storage,
@@ -28,6 +39,16 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
     files: 50 // Maximum 50 files per request
+  }
+});
+
+// Configure multer for video uploads with larger file size limit
+const uploadVideo = multer({
+  storage,
+  fileFilter: videoFileFilter,
+  limits: {
+    fileSize: 200 * 1024 * 1024, // 200MB limit for videos
+    files: 1 // Maximum 1 video per request
   }
 });
 
@@ -252,11 +273,62 @@ router.get('/info/:path(*)', async (req, res) => {
   }
 });
 
+// Upload video
+router.post('/video', authenticateToken, requireAdmin, uploadVideo.single('video'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No video file provided' });
+    }
+
+    const { category = 'videos' } = req.body;
+    const filename = generateFileName(req.file.originalname);
+    const filePath = getFilePath(category, filename);
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabaseAdmin.storage
+      .from('listing-images') // Using same bucket for videos
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase video upload error:', error);
+      return res.status(500).json({ error: 'Failed to upload video' });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabaseAdmin.storage
+      .from('listing-images')
+      .getPublicUrl(filePath);
+
+    res.json({
+      success: true,
+      data: {
+        path: data.path,
+        publicUrl: urlData.publicUrl,
+        filename: filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      }
+    });
+
+  } catch (error) {
+    console.error('Video upload error:', error);
+    res.status(500).json({ error: 'Internal server error during video upload' });
+  }
+});
+
 // Error handling middleware for multer errors
 router.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
+      // Check if it's a video upload based on field name or request path
+      const isVideoUpload = req.path.includes('/video');
+      const maxSize = isVideoUpload ? '200MB' : '10MB';
+      return res.status(400).json({ error: `File too large. Maximum size is ${maxSize}.` });
     }
     if (error.code === 'LIMIT_FILE_COUNT') {
       return res.status(400).json({ error: 'Too many files. Maximum is 50 files per request.' });
