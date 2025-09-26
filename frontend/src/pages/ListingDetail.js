@@ -851,15 +851,23 @@ const ListingDetail = () => {
 
   const getAllImages = () => {
     const images = [];
+
+    // Add main image first
     if (listing?.main_image_url) {
       images.push({ url: listing.main_image_url, caption: 'Main Image' });
     }
+
+    // Add additional images, but filter out any that match the main image URL
     if (listing?.listing_images) {
-      images.push(...listing.listing_images.map(img => ({
-        url: img.image_url,
-        caption: img.caption || ''
-      })));
+      const additionalImages = listing.listing_images
+        .filter(img => img.image_url !== listing?.main_image_url)
+        .map(img => ({
+          url: img.image_url,
+          caption: img.caption || ''
+        }));
+      images.push(...additionalImages);
     }
+
     return images;
   };
 
