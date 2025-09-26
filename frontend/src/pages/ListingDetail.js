@@ -541,27 +541,10 @@ const GoogleDriveVideo = ({ url, title, height = "400px" }) => {
   );
 };
 
-// Google Drive 360° Sphere Viewer
-const GoogleDriveSphere = ({ driveUrl, title, height = "300px" }) => {
-  // Try to convert Google Drive URL to direct image URL
-  const getDirectImageUrl = (url) => {
-    if (!url) return '';
-
-    // Handle Google Drive direct download format
-    // https://drive.google.com/file/d/FILE_ID/view -> https://drive.google.com/uc?export=view&id=FILE_ID
-    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveMatch) {
-      const fileId = driveMatch[1];
-      return `https://drive.google.com/uc?export=view&id=${fileId}`;
-    }
-
-    // If it's a Google Photos URL (photos.app.goo.gl), we can't easily convert it
-    // So we'll just use the URL as-is and let the image tag try to load it
-    return url;
-  };
-
-  const imageUrl = getDirectImageUrl(driveUrl);
-  const handleClick = () => window.open(driveUrl, '_blank');
+// Photo Sphere Viewer Component
+const PhotoSphere = ({ imageUrl, title, height = "300px" }) => {
+  // If it's a Supabase URL or direct image URL, just display it
+  // Otherwise, show fallback UI
 
   return (
     <div style={{ position: 'relative', width: '100%', height: height }}>
@@ -574,51 +557,11 @@ const GoogleDriveSphere = ({ driveUrl, title, height = "300px" }) => {
           objectFit: 'cover',
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          cursor: 'pointer'
+          backgroundColor: '#1a1a1a'
         }}
-        onClick={handleClick}
         onError={(e) => {
-          // If image fails to load, show fallback UI
+          // If image fails to load, hide it
           e.target.style.display = 'none';
-          e.target.parentElement.innerHTML = `
-            <div style="
-              width: 100%;
-              height: ${height};
-              borderRadius: 8px;
-              boxShadow: 0 4px 12px rgba(0,0,0,0.3);
-              background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
-              display: flex;
-              alignItems: center;
-              justifyContent: center;
-              cursor: pointer;
-            " onclick="window.open('${driveUrl}', '_blank')">
-              <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 1rem;
-                color: #fff;
-                text-align: center;
-              ">
-                <div style="
-                  width: 70px;
-                  height: 70px;
-                  border-radius: 50%;
-                  background: linear-gradient(135deg, #8B4513 0%, #a0530f 100%);
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-size: 1.8rem;
-                ">🌐</div>
-                <div>
-                  <h4 style="margin: 0; color: #fff; font-size: 1rem">${title || '360° Photo'}</h4>
-                  <p style="margin: 0.5rem 0 0; color: #ccc; font-size: 0.85rem">
-                    Click to view on Google Drive
-                  </p>
-                </div>
-              </div>
-            </div>
-          `;
         }}
       />
       <div
@@ -989,7 +932,7 @@ const ListingDetail = () => {
                   {listing.listing_kuula_spheres.map((sphere, index) => (
                     <KuulaSphere key={index}>
                       {sphere.title && <h4>{sphere.title}</h4>}
-                      <GoogleDriveSphere driveUrl={sphere.drive_url || sphere.kuula_id} title={sphere.title} />
+                      <PhotoSphere imageUrl={sphere.image_url || sphere.drive_url || sphere.kuula_id} title={sphere.title} />
                     </KuulaSphere>
                   ))}
                 </KuulaSpheresContainer>

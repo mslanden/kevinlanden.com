@@ -15,6 +15,7 @@ import {
   FaUpload
 } from 'react-icons/fa';
 import ImageUpload from './ImageUpload';
+import api from '../../utils/api';
 
 const FormContainer = styled.div`
   max-width: 1200px;
@@ -341,7 +342,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
         images: mappedImages,
         kuula_spheres: (listing.listing_kuula_spheres || []).map(sphere => ({
           ...sphere,
-          drive_url: sphere.drive_url || sphere.kuula_id // Handle migration from kuula_id
+          image_url: sphere.image_url || sphere.drive_url || sphere.kuula_id // Handle migration
         })),
         features: listing.listing_features || []
       });
@@ -360,7 +361,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
   const handleKuulaAdd = () => {
     setFormData(prev => ({
       ...prev,
-      kuula_spheres: [...prev.kuula_spheres, { drive_url: '', title: '', description: '' }]
+      kuula_spheres: [...prev.kuula_spheres, { image_url: '', title: '', description: '' }]
     }));
   };
 
@@ -408,9 +409,16 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
       is_main: img.is_main || false
     }));
 
+    // Ensure spheres have the correct field name
+    const convertedSpheres = formData.kuula_spheres.map((sphere) => ({
+      ...sphere,
+      image_url: sphere.image_url // Ensure we're using image_url
+    }));
+
     const submitData = {
       ...formData,
-      images: convertedImages
+      images: convertedImages,
+      kuula_spheres: convertedSpheres
     };
 
     onSubmit(submitData);
@@ -717,26 +725,31 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
             {formData.kuula_spheres.map((sphere, index) => (
               <KuulaSphereItem key={index}>
                 <div style={{ flex: 1 }}>
-                  <FormRow>
-                    <FormGroup>
-                      <Label>Google Drive URL</Label>
-                      <Input
-                        type="url"
-                        value={sphere.drive_url}
-                        onChange={(e) => handleKuulaChange(index, 'drive_url', e.target.value)}
-                        placeholder="https://drive.google.com/file/d/.../view"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Title</Label>
-                      <Input
-                        type="text"
-                        value={sphere.title}
-                        onChange={(e) => handleKuulaChange(index, 'title', e.target.value)}
-                        placeholder="Living Room"
-                      />
-                    </FormGroup>
-                  </FormRow>
+                  <FormGroup>
+                    <Label>Title</Label>
+                    <Input
+                      type="text"
+                      value={sphere.title}
+                      onChange={(e) => handleKuulaChange(index, 'title', e.target.value)}
+                      placeholder="Living Room"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>360° Photo</Label>
+                    <ImageUpload
+                      images={sphere.image_url ? [{
+                        id: `sphere-${index}`,
+                        url: sphere.image_url,
+                        originalName: sphere.title || '360° Photo',
+                        is_main: true
+                      }] : []}
+                      onImagesChange={(newImages) => {
+                        handleKuulaChange(index, 'image_url', newImages[0]?.url || '');
+                      }}
+                      category="spheres"
+                      maxFiles={1}
+                    />
+                  </FormGroup>
                 </div>
                 <RemoveButton type="button" onClick={() => handleKuulaRemove(index)}>
                   <FaTrash />

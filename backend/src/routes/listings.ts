@@ -64,7 +64,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
         ),
         listing_kuula_spheres (
           id,
-          drive_url,
+          image_url,
           title,
           display_order
         ),
@@ -106,7 +106,7 @@ router.get('/:slug', async (req, res) => {
         ),
         listing_kuula_spheres (
           id,
-          drive_url,
+          image_url,
           title,
           description,
           display_order
@@ -259,7 +259,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     if (kuula_spheres && kuula_spheres.length > 0) {
       const kuulaInserts = kuula_spheres.map((sphere: any, index: number) => ({
         listing_id: listing.id,
-        drive_url: sphere.drive_url,
+        image_url: sphere.image_url,
         title: sphere.title,
         description: sphere.description,
         display_order: sphere.display_order || index
@@ -421,7 +421,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       if (kuula_spheres.length > 0) {
         const kuulaInserts = kuula_spheres.map((sphere: any, index: number) => ({
           listing_id: id,
-          drive_url: sphere.drive_url,
+          image_url: sphere.image_url,
           title: sphere.title,
           description: sphere.description,
           display_order: sphere.display_order || index
