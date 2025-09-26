@@ -543,35 +543,65 @@ const GoogleDriveVideo = ({ url, title, height = "400px" }) => {
 
 // Google Drive 360° Sphere Viewer
 const GoogleDriveSphere = ({ driveUrl, title, height = "300px" }) => {
-  // For 360° photos, we'll use the same embed approach
-  // Note: Google Drive doesn't have native 360° viewer, but the image will display
-  const getEmbedUrl = (url) => {
-    if (!url) return '';
-
-    const shareMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (shareMatch) {
-      const fileId = shareMatch[1];
-      return `https://drive.google.com/file/d/${fileId}/preview`;
-    }
-
-    return url.includes('/preview') ? url : url;
+  const handleSphereClick = () => {
+    window.open(driveUrl, '_blank');
   };
 
-  const embedUrl = getEmbedUrl(driveUrl);
-
   return (
-    <iframe
-      title={title || '360° Photo Sphere'}
-      width="100%"
-      height={height}
-      frameBorder="0"
-      allowFullScreen
-      src={embedUrl}
+    <div
+      onClick={handleSphereClick}
       style={{
+        width: '100%',
+        height: height,
         borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'transform 0.3s ease',
+        border: '2px solid transparent'
       }}
-    ></iframe>
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.borderColor = '#8B4513';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.borderColor = 'transparent';
+      }}
+    >
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '1rem',
+        color: '#fff',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          width: '70px',
+          height: '70px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #8B4513 0%, #a0530f 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '1.8rem'
+        }}>
+          🌐
+        </div>
+        <div>
+          <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem' }}>{title || '360° Photo'}</h4>
+          <p style={{ margin: '0.5rem 0 0', color: '#ccc', fontSize: '0.85rem' }}>
+            Click to view on Google Drive
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -853,12 +883,26 @@ const ListingDetail = () => {
               3D Tours & Floor Plans
             </TourTitle>
 
+            {listing.drone_video_url && (
+              <KuulaSpheresContainer
+                initial="hidden"
+                animate={toursInView ? "visible" : "hidden"}
+                variants={fadeIn}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                <h3>Drone Video</h3>
+                <KuulaSphere>
+                  <GoogleDriveVideo url={listing.drone_video_url} title="Property Drone Video" />
+                </KuulaSphere>
+              </KuulaSpheresContainer>
+            )}
+
             {listing.zillow_tour_url && (
               <ZillowTourContainer
                 initial="hidden"
                 animate={toursInView ? "visible" : "hidden"}
                 variants={fadeIn}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <iframe
                   src={listing.zillow_tour_url}
@@ -888,20 +932,6 @@ const ListingDetail = () => {
                   <h3>Floor Plan</h3>
                   <p>Coming soon</p>
                 </ComingSoon>
-              )}
-
-              {listing.drone_video_url && (
-                <KuulaSpheresContainer
-                  initial="hidden"
-                  animate={toursInView ? "visible" : "hidden"}
-                  variants={fadeIn}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  <h3>Drone Video</h3>
-                  <KuulaSphere>
-                    <GoogleDriveVideo url={listing.drone_video_url} title="Property Drone Video" />
-                  </KuulaSphere>
-                </KuulaSpheresContainer>
               )}
 
               {listing.listing_kuula_spheres && listing.listing_kuula_spheres.length > 0 ? (
