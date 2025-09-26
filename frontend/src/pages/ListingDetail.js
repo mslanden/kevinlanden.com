@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
@@ -453,7 +453,7 @@ const LightboxImage = styled.img`
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 2rem;
+  top: 5rem;
   right: 2rem;
   background: rgba(255, 255, 255, 0.1);
   color: white;
@@ -463,6 +463,7 @@ const CloseButton = styled.button`
   cursor: pointer;
   font-size: 1.5rem;
   transition: all 0.3s ease;
+  z-index: 10001;
 
   &:hover {
     background: rgba(255, 255, 255, 0.2);
@@ -542,43 +543,87 @@ const GoogleDriveVideo = ({ url, title, height = "400px" }) => {
 };
 
 // Photo Sphere Viewer Component
-const PhotoSphere = ({ imageUrl, title, height = "300px" }) => {
-  // If it's a Supabase URL or direct image URL, just display it
-  // Otherwise, show fallback UI
+const PhotoSphere = ({ imageUrl, title, height = "400px" }) => {
+  const viewerRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!imageUrl || !containerRef.current) return;
+
+    // Import Photo Sphere Viewer dynamically
+    import('@photo-sphere-viewer/core').then(({ Viewer }) => {
+      // Clean up any existing viewer
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+      }
+
+      try {
+        viewerRef.current = new Viewer({
+          container: containerRef.current,
+          panorama: imageUrl,
+          caption: title,
+          navbar: [
+            'autorotate',
+            'zoom',
+            'caption',
+            'fullscreen',
+          ],
+          defaultZoomLvl: 0,
+          mousewheelCtrlKey: true,
+          touchmoveTwoFingers: true,
+          useXmpData: false,
+          loadingImg: null,
+          loadingTxt: 'Loading 360° Photo...',
+        });
+      } catch (error) {
+        console.error('Error initializing PhotoSphere viewer:', error);
+        // Fallback to regular image if viewer fails
+        if (containerRef.current) {
+          containerRef.current.innerHTML = `
+            <img
+              src="${imageUrl}"
+              alt="${title || '360° Photo'}"
+              style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"
+            />
+          `;
+        }
+      }
+    }).catch(error => {
+      console.error('Failed to load PhotoSphere viewer:', error);
+      // Fallback to regular image
+      if (containerRef.current) {
+        containerRef.current.innerHTML = `
+          <img
+            src="${imageUrl}"
+            alt="${title || '360° Photo'}"
+            style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"
+          />
+        `;
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+        viewerRef.current = null;
+      }
+    };
+  }, [imageUrl, title]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: height }}>
-      <img
-        src={imageUrl}
-        alt={title || '360° Photo'}
+      <div
+        ref={containerRef}
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
           borderRadius: '8px',
+          overflow: 'hidden',
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           backgroundColor: '#1a1a1a'
         }}
-        onError={(e) => {
-          // If image fails to load, hide it
-          e.target.style.display = 'none';
-        }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '10px',
-          right: '10px',
-          background: 'rgba(0, 0, 0, 0.7)',
-          color: 'white',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          fontSize: '0.85rem',
-          pointerEvents: 'none'
-        }}
-      >
-        {title || '360° View'}
-      </div>
     </div>
   );
 };
