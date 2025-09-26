@@ -547,16 +547,19 @@ const GoogleDriveVideo = ({ url, title, height = "400px" }) => {
 // Hero Video Component
 const HeroVideoContainer = styled(motion.div)`
   position: relative;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   margin-left: calc(-50vw + 50%);
+  margin-top: -80px;
   overflow: hidden;
   background: #000;
   cursor: pointer;
-  border-radius: 0;
 
   @media (max-width: ${props => props.theme.breakpoints.md}) {
     height: 100vh;
+    margin-top: -70px;
   }
 `;
 
