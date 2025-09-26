@@ -286,7 +286,7 @@ router.post('/video', authenticateToken, requireAdmin, uploadVideo.single('video
 
     // Upload to Supabase Storage
     const { data, error } = await supabaseAdmin.storage
-      .from('listing-images') // Using same bucket for videos
+      .from('listing-videos') // Use dedicated video bucket
       .upload(filePath, req.file.buffer, {
         contentType: req.file.mimetype,
         cacheControl: '3600',
@@ -300,7 +300,7 @@ router.post('/video', authenticateToken, requireAdmin, uploadVideo.single('video
 
     // Get public URL
     const { data: urlData } = supabaseAdmin.storage
-      .from('listing-images')
+      .from('listing-videos')
       .getPublicUrl(filePath);
 
     res.json({
