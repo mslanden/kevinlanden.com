@@ -617,6 +617,96 @@ const PlayPauseButton = styled.button`
   }
 `;
 
+// Property Info Overlay for Hero Video
+const PropertyInfoOverlay = styled(motion.div)`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
+  padding: 4rem 2rem 2rem 2rem;
+  z-index: 5;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    padding: 3rem 1.5rem 1.5rem 1.5rem;
+  }
+`;
+
+const OverlayContent = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  color: white;
+`;
+
+const OverlayTitle = styled.h1`
+  font-family: ${props => props.theme.fonts.heading};
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: 2rem;
+  }
+`;
+
+const OverlayPrice = styled.div`
+  font-size: 2rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.primary};
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: 1.5rem;
+  }
+`;
+
+const OverlayLocation = styled.div`
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+
+  svg {
+    color: ${props => props.theme.colors.primary};
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: 1rem;
+  }
+`;
+
+const OverlayDetails = styled.div`
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    gap: 1rem;
+  }
+`;
+
+const OverlayDetailItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255,255,255,0.9);
+  font-size: 1rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+
+  svg {
+    color: rgba(255,255,255,0.7);
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    font-size: 0.9rem;
+  }
+`;
+
 // Photo Sphere Viewer Component
 const PhotoSphere = ({ imageUrl, title, height = "400px" }) => {
   const viewerRef = useRef(null);
@@ -820,7 +910,77 @@ const ListingDetail = () => {
 
   return (
     <PageContainer>
-      <ListingHeader ref={headerRef}>
+      {listing.drone_video_url && (
+        <HeroVideoContainer
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
+          transition={{ duration: 0.6 }}
+        >
+          <HeroVideo
+            ref={(el) => setVideoRef(el)}
+            src={listing.drone_video_url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            onPlay={() => setIsVideoPlaying(true)}
+            onPause={() => setIsVideoPlaying(false)}
+          />
+          <VideoOverlay />
+          <PropertyInfoOverlay
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <OverlayContent>
+              <OverlayTitle>{listing.title}</OverlayTitle>
+              <OverlayPrice>{formatPrice(listing.price)}</OverlayPrice>
+              <OverlayLocation>
+                <FaMapMarkerAlt />
+                {listing.address && `${listing.address}, `}
+                {listing.city}, {listing.state} {listing.zip_code}
+              </OverlayLocation>
+              <OverlayDetails>
+                {listing.bedrooms && (
+                  <OverlayDetailItem>
+                    <FaBed />
+                    <span>{listing.bedrooms}</span> Bedrooms
+                  </OverlayDetailItem>
+                )}
+                {listing.bathrooms && (
+                  <OverlayDetailItem>
+                    <FaBath />
+                    <span>{listing.bathrooms}</span> Bathrooms
+                  </OverlayDetailItem>
+                )}
+                {listing.square_feet && (
+                  <OverlayDetailItem>
+                    <FaRulerCombined />
+                    <span>{Number(listing.square_feet).toLocaleString()}</span> Sq Ft
+                  </OverlayDetailItem>
+                )}
+                {listing.property_type && (
+                  <OverlayDetailItem>
+                    <FaHome />
+                    <span>{listing.property_type.charAt(0).toUpperCase() + listing.property_type.slice(1)}</span>
+                  </OverlayDetailItem>
+                )}
+              </OverlayDetails>
+            </OverlayContent>
+          </PropertyInfoOverlay>
+          <PlayPauseButton
+            $isPlaying={isVideoPlaying}
+            onClick={toggleVideoPlayPause}
+            aria-label={isVideoPlaying ? 'Pause video' : 'Play video'}
+          >
+            {isVideoPlaying ? <FaPause /> : <FaPlay />}
+          </PlayPauseButton>
+        </HeroVideoContainer>
+      )}
+
+      {!listing.drone_video_url && (
+        <ListingHeader ref={headerRef}>
         <HeaderContent>
           <TitleRow>
             <ListingTitle
@@ -897,37 +1057,12 @@ const ListingDetail = () => {
           </DetailsList>
         </HeaderContent>
       </ListingHeader>
+      )}
 
-      {(images.length > 0 || listing.drone_video_url) && (
+      {images.length > 0 && (
         <GallerySection ref={galleryRef}>
           <GalleryContainer>
-            {listing.drone_video_url ? (
-              <HeroVideoContainer
-                initial="hidden"
-                animate={galleryInView ? "visible" : "hidden"}
-                variants={fadeIn}
-                transition={{ duration: 0.6 }}
-              >
-                <HeroVideo
-                  ref={(el) => setVideoRef(el)}
-                  src={listing.drone_video_url}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  onPlay={() => setIsVideoPlaying(true)}
-                  onPause={() => setIsVideoPlaying(false)}
-                />
-                <VideoOverlay />
-                <PlayPauseButton
-                  $isPlaying={isVideoPlaying}
-                  onClick={toggleVideoPlayPause}
-                  aria-label={isVideoPlaying ? 'Pause video' : 'Play video'}
-                >
-                  {isVideoPlaying ? <FaPause /> : <FaPlay />}
-                </PlayPauseButton>
-              </HeroVideoContainer>
-            ) : images.length > 0 ? (
+            {images.length > 0 && (
               <MainImage
                 initial="hidden"
                 animate={galleryInView ? "visible" : "hidden"}
@@ -940,7 +1075,7 @@ const ListingDetail = () => {
                   <FaExpand />
                 </ExpandIcon>
               </MainImage>
-            ) : null}
+            )}
 
             {images.length > 1 && (
               <ThumbnailGrid>
