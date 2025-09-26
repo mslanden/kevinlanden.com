@@ -575,7 +575,9 @@ const VideoOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.4) 100%);
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 10%, rgba(0,0,0,0) 15%),
+    linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0) 30%);
   pointer-events: none;
 `;
 
