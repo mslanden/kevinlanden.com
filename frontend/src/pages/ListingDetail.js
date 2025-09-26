@@ -639,8 +639,13 @@ const PropertyInfoOverlay = styled(motion.div)`
 
 const OverlayContent = styled.div`
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 0;
   color: white;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    margin: 0 auto;
+    text-align: center;
+  }
 `;
 
 const OverlayTitle = styled.h1`
