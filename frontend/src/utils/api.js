@@ -112,7 +112,58 @@ const del = async (endpoint, data) => {
 };
 
 // For file uploads (multipart/form-data)
-const postFormData = async (endpoint, formData) => {
+const postFormData = async (endpoint, formData, options = {}) => {
+  // For upload progress, we need to use XMLHttpRequest
+  if (options.onUploadProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          options.onUploadProgress({
+            loaded: event.loaded,
+            total: event.total
+          });
+        }
+      });
+
+      xhr.addEventListener('load', async () => {
+        if (xhr.status === 401) {
+          const url = `${API_BASE_URL}${endpoint}`;
+          if (!url.includes('/auth/login')) {
+            handleSessionExpiration();
+            return;
+          }
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            resolve({ data });
+          } catch (error) {
+            reject(new Error('Failed to parse response'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.message || 'API request failed'));
+          } catch {
+            reject(new Error('API request failed'));
+          }
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error'));
+      });
+
+      xhr.open('POST', `${API_BASE_URL}${endpoint}`);
+      xhr.withCredentials = true;
+      xhr.send(formData);
+    });
+  }
+
+  // Fallback to fetch for requests without progress tracking
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'POST',
     headers: getAuthHeaders(false), // Don't include Content-Type for FormData
