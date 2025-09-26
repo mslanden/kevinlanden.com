@@ -494,17 +494,83 @@ const NavigationButton = styled.button`
   }
 `;
 
-// Kuula Viewer Component (same as BestInShow)
-const KuulaViewer = ({ kuulaId, title, height = "300px" }) => {
+// Google Drive Video Component
+const GoogleDriveVideo = ({ url, title, height = "400px" }) => {
+  // Convert Google Drive share URL to embed URL
+  const getEmbedUrl = (driveUrl) => {
+    if (!driveUrl) return '';
+
+    // Extract file ID from various Google Drive URL formats
+    let fileId = '';
+
+    // Handle direct share URLs: https://drive.google.com/file/d/FILE_ID/view
+    const shareMatch = driveUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (shareMatch) {
+      fileId = shareMatch[1];
+    }
+
+    // If we found a file ID, create embed URL
+    if (fileId) {
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+
+    // Fallback: if already a preview URL, use as-is
+    if (driveUrl.includes('/preview')) {
+      return driveUrl;
+    }
+
+    return driveUrl; // Return original if can't parse
+  };
+
+  const embedUrl = getEmbedUrl(url);
+
   return (
     <iframe
-      title={title || `Kuula 360° View ${kuulaId}`}
+      title={title || 'Property Video'}
       width="100%"
       height={height}
       frameBorder="0"
       allowFullScreen
-      allow="xr-spatial-tracking; gyroscope; accelerometer"
-      src={`https://kuula.co/share/${kuulaId}?logo=1&info=1&fs=1&vr=0&sd=1&thumbs=1`}
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      src={embedUrl}
+      style={{
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+      }}
+    ></iframe>
+  );
+};
+
+// Google Drive 360° Sphere Viewer
+const GoogleDriveSphere = ({ driveUrl, title, height = "300px" }) => {
+  // For 360° photos, we'll use the same embed approach
+  // Note: Google Drive doesn't have native 360° viewer, but the image will display
+  const getEmbedUrl = (url) => {
+    if (!url) return '';
+
+    const shareMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (shareMatch) {
+      const fileId = shareMatch[1];
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+
+    return url.includes('/preview') ? url : url;
+  };
+
+  const embedUrl = getEmbedUrl(driveUrl);
+
+  return (
+    <iframe
+      title={title || '360° Photo Sphere'}
+      width="100%"
+      height={height}
+      frameBorder="0"
+      allowFullScreen
+      src={embedUrl}
+      style={{
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+      }}
     ></iframe>
   );
 };
@@ -774,7 +840,7 @@ const ListingDetail = () => {
         </ContentContainer>
       </ContentSection>
 
-      {(listing.zillow_tour_url || listing.floor_plan_url ||
+      {(listing.zillow_tour_url || listing.floor_plan_url || listing.drone_video_url ||
         (listing.listing_kuula_spheres && listing.listing_kuula_spheres.length > 0)) && (
         <ToursSection ref={toursRef}>
           <ToursContainer>
@@ -824,6 +890,20 @@ const ListingDetail = () => {
                 </ComingSoon>
               )}
 
+              {listing.drone_video_url && (
+                <KuulaSpheresContainer
+                  initial="hidden"
+                  animate={toursInView ? "visible" : "hidden"}
+                  variants={fadeIn}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <h3>Drone Video</h3>
+                  <KuulaSphere>
+                    <GoogleDriveVideo url={listing.drone_video_url} title="Property Drone Video" />
+                  </KuulaSphere>
+                </KuulaSpheresContainer>
+              )}
+
               {listing.listing_kuula_spheres && listing.listing_kuula_spheres.length > 0 ? (
                 <KuulaSpheresContainer
                   initial="hidden"
@@ -835,7 +915,7 @@ const ListingDetail = () => {
                   {listing.listing_kuula_spheres.map((sphere, index) => (
                     <KuulaSphere key={index}>
                       {sphere.title && <h4>{sphere.title}</h4>}
-                      <KuulaViewer kuulaId={sphere.kuula_id} title={sphere.title} />
+                      <GoogleDriveSphere driveUrl={sphere.drive_url || sphere.kuula_id} title={sphere.title} />
                     </KuulaSphere>
                   ))}
                 </KuulaSpheresContainer>

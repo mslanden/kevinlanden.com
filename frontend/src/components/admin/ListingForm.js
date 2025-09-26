@@ -310,6 +310,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
     main_image_url: '',
     zillow_tour_url: '',
     floor_plan_url: '',
+    drone_video_url: '',
     status: 'active',
     featured: false,
     images: [],
@@ -338,7 +339,10 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
       setFormData({
         ...listing,
         images: mappedImages,
-        kuula_spheres: listing.listing_kuula_spheres || [],
+        kuula_spheres: (listing.listing_kuula_spheres || []).map(sphere => ({
+          ...sphere,
+          drive_url: sphere.drive_url || sphere.kuula_id // Handle migration from kuula_id
+        })),
         features: listing.listing_features || []
       });
     }
@@ -356,7 +360,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
   const handleKuulaAdd = () => {
     setFormData(prev => ({
       ...prev,
-      kuula_spheres: [...prev.kuula_spheres, { kuula_id: '', title: '', description: '' }]
+      kuula_spheres: [...prev.kuula_spheres, { drive_url: '', title: '', description: '' }]
     }));
   };
 
@@ -694,23 +698,33 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
                 placeholder="https://www.zillow.com/view-imx/..."
               />
             </FormGroup>
+            <FormGroup>
+              <Label>Drone Video URL (Google Drive)</Label>
+              <Input
+                type="url"
+                name="drone_video_url"
+                value={formData.drone_video_url}
+                onChange={handleChange}
+                placeholder="https://drive.google.com/file/d/.../view"
+              />
+            </FormGroup>
           </FormSection>
 
           <FormSection className="full-width">
             <SectionTitle>
-              <FaCube /> Kuula 360° Spheres
+              <FaCube /> 360° Photo Spheres (Google Drive)
             </SectionTitle>
             {formData.kuula_spheres.map((sphere, index) => (
               <KuulaSphereItem key={index}>
                 <div style={{ flex: 1 }}>
                   <FormRow>
                     <FormGroup>
-                      <Label>Kuula ID</Label>
+                      <Label>Google Drive URL</Label>
                       <Input
-                        type="text"
-                        value={sphere.kuula_id}
-                        onChange={(e) => handleKuulaChange(index, 'kuula_id', e.target.value)}
-                        placeholder="h5Hpv"
+                        type="url"
+                        value={sphere.drive_url}
+                        onChange={(e) => handleKuulaChange(index, 'drive_url', e.target.value)}
+                        placeholder="https://drive.google.com/file/d/.../view"
                       />
                     </FormGroup>
                     <FormGroup>
@@ -730,7 +744,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
               </KuulaSphereItem>
             ))}
             <AddButton type="button" onClick={handleKuulaAdd}>
-              <FaPlus /> Add Kuula Sphere
+              <FaPlus /> Add 360° Sphere
             </AddButton>
           </FormSection>
         </FormGrid>

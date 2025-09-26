@@ -64,7 +64,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
         ),
         listing_kuula_spheres (
           id,
-          kuula_id,
+          drive_url,
           title,
           display_order
         ),
@@ -106,7 +106,7 @@ router.get('/:slug', async (req, res) => {
         ),
         listing_kuula_spheres (
           id,
-          kuula_id,
+          drive_url,
           title,
           description,
           display_order
@@ -161,6 +161,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       main_image_url,
       zillow_tour_url,
       floor_plan_url,
+      drone_video_url,
       status,
       featured,
       images,
@@ -221,6 +222,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       main_image_url: main_image_url || null,
       zillow_tour_url: zillow_tour_url || null,
       floor_plan_url: floor_plan_url || null,
+      drone_video_url: drone_video_url || null,
       qr_code_url: qrCodeDataUrl,
       status: status || 'active',
       featured: featured || false
@@ -253,11 +255,11 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       await supabaseAdmin.from('listing_images').insert(imageInserts);
     }
 
-    // Insert Kuula spheres if provided
+    // Insert Google Drive spheres if provided
     if (kuula_spheres && kuula_spheres.length > 0) {
       const kuulaInserts = kuula_spheres.map((sphere: any, index: number) => ({
         listing_id: listing.id,
-        kuula_id: sphere.kuula_id,
+        drive_url: sphere.drive_url,
         title: sphere.title,
         description: sphere.description,
         display_order: sphere.display_order || index
@@ -310,6 +312,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       main_image_url,
       zillow_tour_url,
       floor_plan_url,
+      drone_video_url,
       status,
       featured,
       images,
@@ -346,6 +349,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       main_image_url,
       zillow_tour_url,
       floor_plan_url,
+      drone_video_url,
       status,
       featured
     };
@@ -417,7 +421,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       if (kuula_spheres.length > 0) {
         const kuulaInserts = kuula_spheres.map((sphere: any, index: number) => ({
           listing_id: id,
-          kuula_id: sphere.kuula_id,
+          drive_url: sphere.drive_url,
           title: sphere.title,
           description: sphere.description,
           display_order: sphere.display_order || index
