@@ -550,8 +550,12 @@ const PhotoSphere = ({ imageUrl, title, height = "400px" }) => {
   useEffect(() => {
     if (!imageUrl || !containerRef.current) return;
 
-    // Import Photo Sphere Viewer dynamically
-    import('@photo-sphere-viewer/core').then(({ Viewer }) => {
+    // Import Photo Sphere Viewer and CSS dynamically
+    Promise.all([
+      import('@photo-sphere-viewer/core'),
+      import('@photo-sphere-viewer/autorotate-plugin'),
+      import('@photo-sphere-viewer/core/index.css')
+    ]).then(([{ Viewer }, { AutorotatePlugin }]) => {
       // Clean up any existing viewer
       if (viewerRef.current) {
         viewerRef.current.destroy();
@@ -562,6 +566,12 @@ const PhotoSphere = ({ imageUrl, title, height = "400px" }) => {
           container: containerRef.current,
           panorama: imageUrl,
           caption: title,
+          plugins: [
+            [AutorotatePlugin, {
+              autostartDelay: 3000,
+              autorotateSpeed: '2rpm'
+            }]
+          ],
           navbar: [
             'autorotate',
             'zoom',
@@ -569,10 +579,8 @@ const PhotoSphere = ({ imageUrl, title, height = "400px" }) => {
             'fullscreen',
           ],
           defaultZoomLvl: 0,
-          mousewheelCtrlKey: true,
+          mousewheelCtrlKey: false,
           touchmoveTwoFingers: true,
-          useXmpData: false,
-          loadingImg: null,
           loadingTxt: 'Loading 360° Photo...',
         });
       } catch (error) {
