@@ -475,7 +475,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
     }
 
     // Extract storage paths from image URLs for cleanup
-    const imagePaths = [];
+    const imagePaths: string[] = [];
     if (images && images.length > 0) {
       images.forEach(img => {
         if (img.image_url && img.image_url.includes('/storage/v1/object/public/listing-images/')) {
