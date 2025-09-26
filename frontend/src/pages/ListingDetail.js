@@ -1089,15 +1089,19 @@ const ListingDetail = () => {
 
             {images.length > 1 && (
               <ThumbnailGrid>
-                {images.map((img, index) => (
-                  <Thumbnail
-                    key={index}
-                    active={index === currentImageIndex}
-                    onClick={() => setCurrentImageIndex(index)}
-                  >
-                    <img src={img.url} alt={img.caption} />
-                  </Thumbnail>
-                ))}
+                {images.map((img, index) => {
+                  // Don't show the currently displayed image in thumbnails
+                  if (index === currentImageIndex) return null;
+
+                  return (
+                    <Thumbnail
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                    >
+                      <img src={img.url} alt={img.caption} />
+                    </Thumbnail>
+                  );
+                })}
               </ThumbnailGrid>
             )}
           </GalleryContainer>
