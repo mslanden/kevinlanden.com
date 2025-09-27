@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import { Helmet } from 'react-helmet-async';
 import {
   FaBed,
   FaBath,
@@ -926,8 +927,40 @@ const ListingDetail = () => {
 
   const images = getAllImages();
 
+  // Get the main image URL for OG tags
+  const ogImage = images.length > 0
+    ? images[0].url
+    : `${window.location.origin}/images/shared.jpeg`;
+
+  // Format price for display
+  const formattedPrice = listing.price
+    ? `$${listing.price.toLocaleString()}`
+    : 'Contact for Price';
+
+  // Build description for meta tags
+  const metaDescription = `${formattedPrice} - ${listing.bedrooms || 0} beds, ${listing.bathrooms || 0} baths, ${listing.square_feet || 'N/A'} sq ft. ${listing.address}, ${listing.city}, ${listing.state}. ${listing.description ? listing.description.substring(0, 150) + '...' : 'View this property listing at Outrider Real Estate.'}`;
+
   return (
     <PageContainer>
+      <Helmet>
+        <title>{listing.address} - Outrider Real Estate</title>
+        <meta name="description" content={metaDescription} />
+
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content={`${listing.address} - ${formattedPrice}`} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Outrider Real Estate" />
+
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${listing.address} - ${formattedPrice}`} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={ogImage} />
+      </Helmet>
+
       {listing.drone_video_url && (
         <HeroVideoContainer
           initial="hidden"
