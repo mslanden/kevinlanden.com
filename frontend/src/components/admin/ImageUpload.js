@@ -319,8 +319,21 @@ const ImageUpload = ({
 
     try {
       // If image has a path (uploaded to storage), delete from storage
-      if (imageToRemove.path) {
-        await api.delete('/upload/image', { path: imageToRemove.path });
+      if (imageToRemove.path || imageToRemove.url) {
+        // Extract storage path from full URL if needed
+        let storagePath = imageToRemove.path;
+
+        // If path is a full URL, extract the storage path
+        if (storagePath && storagePath.includes('/storage/v1/object/public/listing-images/')) {
+          storagePath = storagePath.split('/storage/v1/object/public/listing-images/')[1];
+        } else if (imageToRemove.url && imageToRemove.url.includes('/storage/v1/object/public/listing-images/')) {
+          // Fallback to extracting from url if path extraction failed
+          storagePath = imageToRemove.url.split('/storage/v1/object/public/listing-images/')[1];
+        }
+
+        if (storagePath) {
+          await api.delete('/upload/image', { path: storagePath });
+        }
       }
 
       // Remove from local state
@@ -406,12 +419,14 @@ const ImageUpload = ({
                 )}
                 <PreviewOverlay className="overlay">
                   <ActionButton
+                    type="button"
                     onClick={() => handleSetMain(index)}
                     title="Set as main image"
                   >
                     <FaCheckCircle />
                   </ActionButton>
                   <ActionButton
+                    type="button"
                     className="danger"
                     onClick={() => handleRemove(index)}
                     title="Remove image"
