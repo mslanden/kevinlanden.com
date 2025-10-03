@@ -233,7 +233,8 @@ const ImageUpload = ({
   onImagesChange,
   category = 'general',
   maxFiles = 50,
-  accept = { 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }
+  accept = { 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] },
+  listingId = null // Optional: if provided, will delete from database immediately
 }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -318,7 +319,7 @@ const ImageUpload = ({
     const imageToRemove = images[index];
 
     try {
-      // If image has a path (uploaded to storage), delete from storage
+      // Delete from storage
       if (imageToRemove.path || imageToRemove.url) {
         // Extract storage path from full URL if needed
         let storagePath = imageToRemove.path;
@@ -340,6 +341,12 @@ const ImageUpload = ({
         if (storagePath) {
           await api.delete('/upload/image', { path: storagePath });
         }
+      }
+
+      // If this is for a listing, delete from database immediately
+      if (listingId && imageToRemove.id && !imageToRemove.id.toString().startsWith('existing-')) {
+        console.log('Deleting image from database:', imageToRemove.id);
+        await api.delete(`/listings/${listingId}/image/${imageToRemove.id}`);
       }
 
       // Remove from local state

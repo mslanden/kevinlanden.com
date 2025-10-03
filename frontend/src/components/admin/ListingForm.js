@@ -670,6 +670,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
               }}
               category="properties"
               maxFiles={50}
+              listingId={listing?.id}
             />
           </FormSection>
 

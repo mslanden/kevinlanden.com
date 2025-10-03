@@ -525,6 +525,63 @@ router.delete('/:id', adminLimiter, authenticateToken, requireAdmin, async (req,
   }
 });
 
+// DELETE single image from listing (admin only)
+router.delete('/:id/image/:imageId', adminLimiter, authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id, imageId } = req.params;
+
+    // First, get the image to find its storage path
+    const { data: image, error: fetchError } = await supabaseAdmin
+      .from('listing_images')
+      .select('image_url')
+      .eq('id', imageId)
+      .eq('listing_id', id)
+      .single();
+
+    if (fetchError || !image) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+
+    // Extract storage path from URL
+    let storagePath: string | null = null;
+    if (image.image_url && image.image_url.includes('/storage/v1/object/public/listing-images/')) {
+      storagePath = image.image_url.split('/storage/v1/object/public/listing-images/')[1];
+    }
+
+    // Delete from storage if path exists
+    if (storagePath) {
+      const { error: storageError } = await supabaseAdmin.storage
+        .from('listing-images')
+        .remove([storagePath]);
+
+      if (storageError) {
+        console.error('Error deleting image from storage:', storageError);
+        // Continue with database deletion even if storage fails
+      }
+    }
+
+    // Delete from database
+    const { error: deleteError } = await supabaseAdmin
+      .from('listing_images')
+      .delete()
+      .eq('id', imageId)
+      .eq('listing_id', id);
+
+    if (deleteError) {
+      console.error('Error deleting image from database:', deleteError);
+      return res.status(500).json({ error: 'Failed to delete image from database' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Image deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error in DELETE /listings/:id/image/:imageId:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET QR code for a listing (admin only)
 router.get('/:id/qr-code', authenticateToken, requireAdmin, async (req, res) => {
   try {
