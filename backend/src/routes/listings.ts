@@ -1,6 +1,7 @@
 import express from 'express';
 import { supabase, supabaseAdmin } from '../utils/supabaseClient';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
+import { adminLimiter } from '../middleware/rateLimiter';
 import QRCode from 'qrcode';
 import slugify from 'slugify';
 
@@ -48,7 +49,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
 }
 
 // GET all listings (admin only)
-router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/', adminLimiter, authenticateToken, requireAdmin, async (req, res) => {
   try {
     // For admin, return all listings regardless of status
     const { data: listings, error } = await supabaseAdmin
@@ -139,7 +140,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // POST create new listing (admin only)
-router.post('/', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/', adminLimiter, authenticateToken, requireAdmin, async (req, res) => {
   try {
     console.log('POST /listings - Request body:', JSON.stringify(req.body, null, 2));
 
@@ -291,7 +292,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // PUT update listing (admin only)
-router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/:id', adminLimiter, authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -459,7 +460,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // DELETE listing (admin only)
-router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/:id', adminLimiter, authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

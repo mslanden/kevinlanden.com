@@ -4,8 +4,12 @@ import { supabase, supabaseAdmin } from '../utils/supabaseClient';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
+import { adminLimiter } from '../middleware/rateLimiter';
 
 const router = express.Router();
+
+// Apply admin rate limiter to all upload routes
+router.use(adminLimiter);
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();

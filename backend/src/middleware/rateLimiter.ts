@@ -74,10 +74,10 @@ export const newsletterLimiter = rateLimit({
   skip: skipRateLimit
 });
 
-// Admin operations rate limiter
+// Admin operations rate limiter (more permissive for authenticated admins)
 export const adminLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 20, // limit each IP to 20 admin requests per minute
+  max: 100, // limit each IP to 100 admin requests per minute
   message: 'Too many admin operations. Please slow down.',
   standardHeaders: true,
   legacyHeaders: false,
