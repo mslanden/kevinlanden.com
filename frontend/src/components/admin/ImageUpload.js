@@ -323,13 +323,19 @@ const ImageUpload = ({
         // Extract storage path from full URL if needed
         let storagePath = imageToRemove.path;
 
+        console.log('Original path:', storagePath);
+
         // If path is a full URL, extract the storage path
         if (storagePath && storagePath.includes('/storage/v1/object/public/listing-images/')) {
           storagePath = storagePath.split('/storage/v1/object/public/listing-images/')[1];
+          console.log('Extracted from path:', storagePath);
         } else if (imageToRemove.url && imageToRemove.url.includes('/storage/v1/object/public/listing-images/')) {
           // Fallback to extracting from url if path extraction failed
           storagePath = imageToRemove.url.split('/storage/v1/object/public/listing-images/')[1];
+          console.log('Extracted from URL:', storagePath);
         }
+
+        console.log('Final storage path being sent:', storagePath);
 
         if (storagePath) {
           await api.delete('/upload/image', { path: storagePath });
