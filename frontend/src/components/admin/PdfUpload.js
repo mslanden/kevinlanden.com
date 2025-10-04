@@ -216,10 +216,10 @@ const PdfUpload = ({ pdf, onPdfChange, accept = { 'application/pdf': ['.pdf'] } 
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('pdf', file);
       formData.append('category', 'listing-pdfs');
 
-      const response = await api.postFormData('/upload/image', formData, {
+      const response = await api.postFormData('/upload/pdf', formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgress(percentCompleted);
@@ -260,7 +260,7 @@ const PdfUpload = ({ pdf, onPdfChange, accept = { 'application/pdf': ['.pdf'] } 
   const handleRemove = async () => {
     if (pdf?.path) {
       try {
-        await api.delete('/upload/image', { data: { path: pdf.path } });
+        await api.delete('/upload/pdf', { data: { path: pdf.path } });
       } catch (error) {
         console.error('Error removing PDF:', error);
       }

@@ -36,6 +36,17 @@ const videoFileFilter = (req: any, file: any, cb: any) => {
   }
 };
 
+// File filter for PDFs
+const pdfFileFilter = (req: any, file: any, cb: any) => {
+  const allowedTypes = ['application/pdf'];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only PDF files are allowed.'), false);
+  }
+};
+
 // Configure multer with file size limit and filter
 const upload = multer({
   storage,
@@ -53,6 +64,16 @@ const uploadVideo = multer({
   limits: {
     fileSize: 200 * 1024 * 1024, // 200MB limit for videos
     files: 1 // Maximum 1 video per request
+  }
+});
+
+// Configure multer for PDF uploads
+const uploadPdf = multer({
+  storage,
+  fileFilter: pdfFileFilter,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit for PDFs
+    files: 1 // Maximum 1 PDF per request
   }
 });
 
@@ -325,13 +346,91 @@ router.post('/video', authenticateToken, requireAdmin, uploadVideo.single('video
   }
 });
 
+// Upload PDF
+router.post('/pdf', authenticateToken, requireAdmin, uploadPdf.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No PDF file provided' });
+    }
+
+    const { category = 'listing-pdfs' } = req.body;
+    const filename = generateFileName(req.file.originalname);
+    const filePath = getFilePath(category, filename);
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabaseAdmin.storage
+      .from('listing-pdfs')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase PDF upload error:', error);
+      return res.status(500).json({ error: 'Failed to upload PDF' });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabaseAdmin.storage
+      .from('listing-pdfs')
+      .getPublicUrl(filePath);
+
+    res.json({
+      success: true,
+      data: {
+        path: data.path,
+        publicUrl: urlData.publicUrl,
+        filename: filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      }
+    });
+
+  } catch (error) {
+    console.error('PDF upload error:', error);
+    res.status(500).json({ error: 'Internal server error during PDF upload' });
+  }
+});
+
+// Delete PDF
+router.delete('/pdf', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { path } = req.body;
+
+    if (!path) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+
+    const { error } = await supabaseAdmin.storage
+      .from('listing-pdfs')
+      .remove([path]);
+
+    if (error) {
+      console.error('Delete PDF error:', error);
+      return res.status(500).json({ error: 'Failed to delete PDF' });
+    }
+
+    res.json({
+      success: true,
+      message: 'PDF deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete PDF error:', error);
+    res.status(500).json({ error: 'Internal server error during PDF deletion' });
+  }
+});
+
 // Error handling middleware for multer errors
 router.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
-      // Check if it's a video upload based on field name or request path
+      // Check upload type based on request path
       const isVideoUpload = req.path.includes('/video');
-      const maxSize = isVideoUpload ? '200MB' : '10MB';
+      const isPdfUpload = req.path.includes('/pdf');
+      const maxSize = isVideoUpload ? '200MB' : isPdfUpload ? '50MB' : '10MB';
       return res.status(400).json({ error: `File too large. Maximum size is ${maxSize}.` });
     }
     if (error.code === 'LIMIT_FILE_COUNT') {
