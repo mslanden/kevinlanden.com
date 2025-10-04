@@ -21,7 +21,14 @@ import {
   FaPause,
   FaFilePdf,
   FaDownload,
-  FaBook
+  FaBook,
+  FaShare,
+  FaFacebook,
+  FaTwitter,
+  FaLinkedin,
+  FaEnvelope,
+  FaCopy,
+  FaPrint
 } from 'react-icons/fa';
 import api from '../utils/api';
 
@@ -483,6 +490,111 @@ const ContactInfo = styled.div`
   }
 `;
 
+const ShareGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+`;
+
+const ShareButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.colors.border};
+  background: rgba(255, 255, 255, 0.05);
+  color: ${props => props.theme.colors.text.primary};
+  border-radius: ${props => props.theme.borderRadius.small};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+
+  &:hover {
+    background: ${props => props.$color || props.theme.colors.primary}22;
+    border-color: ${props => props.$color || props.theme.colors.primary};
+    color: ${props => props.$color || props.theme.colors.primary};
+    transform: translateY(-2px);
+  }
+
+  svg {
+    font-size: 1.1rem;
+  }
+
+  &.facebook:hover {
+    background: #1877f222;
+    border-color: #1877f2;
+    color: #1877f2;
+  }
+
+  &.twitter:hover {
+    background: #1da1f222;
+    border-color: #1da1f2;
+    color: #1da1f2;
+  }
+
+  &.linkedin:hover {
+    background: #0077b522;
+    border-color: #0077b5;
+    color: #0077b5;
+  }
+
+  &.email:hover {
+    background: ${props => props.theme.colors.secondary}22;
+    border-color: ${props => props.theme.colors.secondary};
+    color: ${props => props.theme.colors.secondary};
+  }
+`;
+
+const StatGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const StatItem = styled.div`
+  text-align: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: ${props => props.theme.borderRadius.small};
+  border: 1px solid ${props => props.theme.colors.border};
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: ${props => props.theme.colors.primary};
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: ${props => props.theme.colors.text.muted};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+`;
+
+const CopyNotification = styled(motion.div)`
+  position: fixed;
+  top: 100px;
+  right: 2rem;
+  background: ${props => props.theme.colors.primary};
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: ${props => props.theme.borderRadius.default};
+  box-shadow: ${props => props.theme.shadows.large};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1000;
+
+  svg {
+    font-size: 1.2rem;
+  }
+`;
+
 const Lightbox = styled(motion.div)`
   position: fixed;
   top: 0;
@@ -870,6 +982,7 @@ const ListingDetail = () => {
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [videoRef, setVideoRef] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [showCopyNotification, setShowCopyNotification] = useState(false);
 
   const [headerRef, headerInView] = useInView({ triggerOnce: true, threshold: 0.2 });
   const [galleryRef, galleryInView] = useInView({ triggerOnce: true, threshold: 0.1 });
@@ -953,6 +1066,48 @@ const ListingDetail = () => {
   const fadeIn = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 }
+  };
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = listing ? `${listing.title} - ${formatPrice(listing.price)}` : '';
+  const shareDescription = listing ? `Check out this ${listing.property_type} in ${listing.city}, ${listing.state}` : '';
+
+  const handleShare = (platform) => {
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedTitle = encodeURIComponent(shareTitle);
+    const encodedDescription = encodeURIComponent(shareDescription);
+
+    let shareLink = '';
+
+    switch (platform) {
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        break;
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
+        break;
+      case 'linkedin':
+        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+      case 'email':
+        shareLink = `mailto:?subject=${encodedTitle}&body=${encodedDescription}%0A%0A${encodedUrl}`;
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          setShowCopyNotification(true);
+          setTimeout(() => setShowCopyNotification(false), 3000);
+        });
+        return;
+      case 'print':
+        window.print();
+        return;
+      default:
+        return;
+    }
+
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'width=600,height=400');
+    }
   };
 
   if (loading) {
@@ -1272,6 +1427,82 @@ const ListingDetail = () => {
                 </ContactButton>
               </ContactInfo>
             </ContentCard>
+
+            <ContentCard
+              initial="hidden"
+              animate={contentInView ? "visible" : "hidden"}
+              variants={fadeIn}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <CardTitle><FaShare /> Share Listing</CardTitle>
+              <ShareGrid>
+                <ShareButton className="facebook" onClick={() => handleShare('facebook')}>
+                  <FaFacebook /> Facebook
+                </ShareButton>
+                <ShareButton className="twitter" onClick={() => handleShare('twitter')}>
+                  <FaTwitter /> Twitter
+                </ShareButton>
+                <ShareButton className="linkedin" onClick={() => handleShare('linkedin')}>
+                  <FaLinkedin /> LinkedIn
+                </ShareButton>
+                <ShareButton className="email" onClick={() => handleShare('email')}>
+                  <FaEnvelope /> Email
+                </ShareButton>
+                <ShareButton onClick={() => handleShare('copy')}>
+                  <FaCopy /> Copy Link
+                </ShareButton>
+                <ShareButton onClick={() => handleShare('print')}>
+                  <FaPrint /> Print
+                </ShareButton>
+              </ShareGrid>
+            </ContentCard>
+
+            <ContentCard
+              initial="hidden"
+              animate={contentInView ? "visible" : "hidden"}
+              variants={fadeIn}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <CardTitle>Quick Stats</CardTitle>
+              <StatGrid>
+                {listing.bedrooms && (
+                  <StatItem>
+                    <div className="stat-value">{listing.bedrooms}</div>
+                    <div className="stat-label">Bedrooms</div>
+                  </StatItem>
+                )}
+                {listing.bathrooms && (
+                  <StatItem>
+                    <div className="stat-value">{listing.bathrooms}</div>
+                    <div className="stat-label">Bathrooms</div>
+                  </StatItem>
+                )}
+                {listing.square_feet && (
+                  <StatItem>
+                    <div className="stat-value">{Number(listing.square_feet).toLocaleString()}</div>
+                    <div className="stat-label">Sq Ft</div>
+                  </StatItem>
+                )}
+                {listing.lot_size && (
+                  <StatItem>
+                    <div className="stat-value">{listing.lot_size}</div>
+                    <div className="stat-label">Acres</div>
+                  </StatItem>
+                )}
+                {listing.year_built && (
+                  <StatItem>
+                    <div className="stat-value">{listing.year_built}</div>
+                    <div className="stat-label">Year Built</div>
+                  </StatItem>
+                )}
+                {listing.property_type && (
+                  <StatItem>
+                    <div className="stat-value">{listing.property_type.charAt(0).toUpperCase() + listing.property_type.slice(1)}</div>
+                    <div className="stat-label">Type</div>
+                  </StatItem>
+                )}
+              </StatGrid>
+            </ContentCard>
           </Sidebar>
         </ContentContainer>
       </ContentSection>
@@ -1388,6 +1619,19 @@ const ListingDetail = () => {
           />
         </Lightbox>
       )}
+
+      <AnimatePresence>
+        {showCopyNotification && (
+          <CopyNotification
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+          >
+            <FaCheckCircle />
+            Link copied to clipboard!
+          </CopyNotification>
+        )}
+      </AnimatePresence>
     </PageContainer>
   );
 };
