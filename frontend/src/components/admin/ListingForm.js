@@ -17,6 +17,7 @@ import {
 } from 'react-icons/fa';
 import ImageUpload from './ImageUpload';
 import VideoUpload from './VideoUpload';
+import PdfUpload from './PdfUpload';
 import api from '../../utils/api';
 
 const FormContainer = styled.div`
@@ -314,6 +315,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
     zillow_tour_url: '',
     floor_plan_url: '',
     drone_video_url: '',
+    listing_book_pdf_url: '',
     status: 'active',
     featured: false,
     images: [],
@@ -720,6 +722,21 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
                   setFormData(prev => ({
                     ...prev,
                     drone_video_url: videoData ? videoData.url : ''
+                  }));
+                }}
+              />
+            </FormGroup>
+            <FormGroup className="full-width">
+              <Label>Listing Book PDF</Label>
+              <PdfUpload
+                pdf={formData.listing_book_pdf_url ? {
+                  url: formData.listing_book_pdf_url,
+                  originalName: 'Property Listing Book.pdf'
+                } : null}
+                onPdfChange={(pdfData) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    listing_book_pdf_url: pdfData ? pdfData.url : ''
                   }));
                 }}
               />

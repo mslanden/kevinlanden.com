@@ -18,7 +18,10 @@ import {
   FaTimes,
   FaCheckCircle,
   FaPlay,
-  FaPause
+  FaPause,
+  FaFilePdf,
+  FaDownload,
+  FaBook
 } from 'react-icons/fa';
 import api from '../utils/api';
 
@@ -420,6 +423,52 @@ const ContactButton = styled(Link)`
   &:focus {
     outline: 2px solid ${props => props.theme.colors.secondary};
     outline-offset: 2px;
+  }
+`;
+
+const PdfViewerContainer = styled.div`
+  width: 100%;
+  height: 600px;
+  background: #525659;
+  border-radius: ${props => props.theme.borderRadius.default};
+  overflow: hidden;
+  margin-bottom: 1rem;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    height: 400px;
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+`;
+
+const DownloadButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: ${props => props.theme.colors.primary};
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: ${props => props.theme.borderRadius.default};
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  justify-content: center;
+
+  &:hover {
+    background: ${props => props.theme.colors.secondary};
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadows.medium};
+  }
+
+  svg {
+    font-size: 1.1rem;
   }
 `;
 
@@ -1180,6 +1229,30 @@ const ListingDetail = () => {
                     </FeatureItem>
                   ))}
                 </FeaturesList>
+              </ContentCard>
+            )}
+
+            {listing.listing_book_pdf_url && (
+              <ContentCard
+                initial="hidden"
+                animate={contentInView ? "visible" : "hidden"}
+                variants={fadeIn}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <CardTitle>
+                  <FaBook /> Property Listing Book
+                </CardTitle>
+                <PdfViewerContainer>
+                  <iframe
+                    src={`${listing.listing_book_pdf_url}#toolbar=0&navpanes=0&scrollbar=0`}
+                    title="Property Listing Book"
+                  />
+                </PdfViewerContainer>
+                <DownloadButton
+                  onClick={() => window.open(listing.listing_book_pdf_url, '_blank')}
+                >
+                  <FaDownload /> Download Listing Book
+                </DownloadButton>
               </ContentCard>
             )}
           </MainContent>

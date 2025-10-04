@@ -163,6 +163,7 @@ router.post('/', adminLimiter, authenticateToken, requireAdmin, async (req, res)
       zillow_tour_url,
       floor_plan_url,
       drone_video_url,
+      listing_book_pdf_url,
       status,
       featured,
       images,
@@ -224,6 +225,7 @@ router.post('/', adminLimiter, authenticateToken, requireAdmin, async (req, res)
       zillow_tour_url: zillow_tour_url || null,
       floor_plan_url: floor_plan_url || null,
       drone_video_url: drone_video_url || null,
+      listing_book_pdf_url: listing_book_pdf_url || null,
       qr_code_url: qrCodeDataUrl,
       status: status || 'active',
       featured: featured || false
@@ -314,6 +316,7 @@ router.put('/:id', adminLimiter, authenticateToken, requireAdmin, async (req, re
       zillow_tour_url,
       floor_plan_url,
       drone_video_url,
+      listing_book_pdf_url,
       status,
       featured,
       images,
@@ -351,6 +354,7 @@ router.put('/:id', adminLimiter, authenticateToken, requireAdmin, async (req, re
       zillow_tour_url,
       floor_plan_url,
       drone_video_url,
+      listing_book_pdf_url,
       status,
       featured
     };
