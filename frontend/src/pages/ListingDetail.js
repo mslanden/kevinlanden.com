@@ -1052,6 +1052,22 @@ const ListingDetail = () => {
     return `$${Number(price).toLocaleString()}`;
   };
 
+  const formatPropertyType = (type) => {
+    const typeMap = {
+      'single-family': 'Single Family Home',
+      'manufactured': 'Manufactured Home',
+      'mobile': 'Mobile Home',
+      'townhome': 'Town Home',
+      'condo': 'Condo',
+      'vacant-lot': 'Vacant Lot',
+      'land': 'Land',
+      'ranch': 'Ranch',
+      'farm': 'Farm',
+      'commercial': 'Commercial'
+    };
+    return typeMap[type] || type;
+  };
+
   const getAllImages = () => {
     const images = [];
 
@@ -1110,7 +1126,7 @@ const ListingDetail = () => {
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareTitle = listing ? `${listing.title} - ${formatPrice(listing.price)}` : '';
-  const shareDescription = listing ? `Check out this ${listing.property_type} in ${listing.city}, ${listing.state}` : '';
+  const shareDescription = listing ? `Check out this ${formatPropertyType(listing.property_type)} in ${listing.city}, ${listing.state}` : '';
 
   const handleShare = (platform) => {
     const encodedUrl = encodeURIComponent(shareUrl);
@@ -1258,7 +1274,7 @@ const ListingDetail = () => {
                 {listing.property_type && (
                   <OverlayDetailItem>
                     <FaHome />
-                    <span>{listing.property_type.charAt(0).toUpperCase() + listing.property_type.slice(1)}</span>
+                    <span>{formatPropertyType(listing.property_type)}</span>
                   </OverlayDetailItem>
                 )}
               </OverlayDetails>
@@ -1346,7 +1362,7 @@ const ListingDetail = () => {
             {listing.property_type && (
               <DetailItem>
                 <FaHome />
-                <span>{listing.property_type.charAt(0).toUpperCase() + listing.property_type.slice(1)}</span>
+                <span>{formatPropertyType(listing.property_type)}</span>
               </DetailItem>
             )}
           </DetailsList>
@@ -1555,7 +1571,7 @@ const ListingDetail = () => {
                 )}
                 {listing.property_type && (
                   <StatItem>
-                    <div className="stat-value">{listing.property_type.charAt(0).toUpperCase() + listing.property_type.slice(1)}</div>
+                    <div className="stat-value">{formatPropertyType(listing.property_type)}</div>
                     <div className="stat-label">Type</div>
                   </StatItem>
                 )}
