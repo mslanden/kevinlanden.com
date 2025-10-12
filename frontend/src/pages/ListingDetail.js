@@ -31,6 +31,7 @@ import {
   FaPrint
 } from 'react-icons/fa';
 import api from '../utils/api';
+import PdfViewer from '../components/PdfViewer';
 
 const PageContainer = styled.div`
   padding-top: 80px;
@@ -433,24 +434,7 @@ const ContactButton = styled(Link)`
   }
 `;
 
-const PdfViewerContainer = styled.div`
-  width: 100%;
-  height: 600px;
-  background: #525659;
-  border-radius: ${props => props.theme.borderRadius.default};
-  overflow: hidden;
-  margin-bottom: 1rem;
-
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    height: 400px;
-  }
-
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-`;
+// PdfViewerContainer moved to PdfViewer component
 
 const DownloadButton = styled.button`
   display: inline-flex;
@@ -1397,12 +1381,7 @@ const ListingDetail = () => {
                 <CardTitle>
                   <FaBook /> Property Listing Book
                 </CardTitle>
-                <PdfViewerContainer>
-                  <iframe
-                    src={`${listing.listing_book_pdf_url}#toolbar=0&navpanes=0&scrollbar=0`}
-                    title="Property Listing Book"
-                  />
-                </PdfViewerContainer>
+                <PdfViewer pdfUrl={listing.listing_book_pdf_url} />
                 <DownloadButton
                   onClick={() => window.open(listing.listing_book_pdf_url, '_blank')}
                 >
