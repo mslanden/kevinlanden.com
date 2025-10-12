@@ -491,8 +491,12 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
               <FormGroup>
                 <Label htmlFor="property-type">Property Type</Label>
                 <Select id="property-type" name="property_type" value={formData.property_type} onChange={handleChange}>
-                  <option value="house">House</option>
+                  <option value="single-family">Single Family Home</option>
+                  <option value="manufactured">Manufactured Home</option>
+                  <option value="mobile">Mobile Home</option>
+                  <option value="townhome">Town Home</option>
                   <option value="condo">Condo</option>
+                  <option value="vacant-lot">Vacant Lot</option>
                   <option value="land">Land</option>
                   <option value="ranch">Ranch</option>
                   <option value="farm">Farm</option>

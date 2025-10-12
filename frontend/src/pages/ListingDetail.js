@@ -1206,7 +1206,7 @@ const ListingDetail = () => {
                 {listing.bathrooms && (
                   <OverlayDetailItem>
                     <FaBath />
-                    <span>{listing.bathrooms}</span> Bathrooms
+                    <span>{listing.bathrooms}</span> Baths
                   </OverlayDetailItem>
                 )}
                 {listing.square_feet && (
@@ -1282,7 +1282,7 @@ const ListingDetail = () => {
             {listing.bathrooms && (
               <DetailItem>
                 <FaBath />
-                <span>{listing.bathrooms}</span> Bathrooms
+                <span>{listing.bathrooms}</span> Baths
               </DetailItem>
             )}
             {listing.square_feet && (
@@ -1474,7 +1474,7 @@ const ListingDetail = () => {
                 {listing.bathrooms && (
                   <StatItem>
                     <div className="stat-value">{listing.bathrooms}</div>
-                    <div className="stat-label">Bathrooms</div>
+                    <div className="stat-label">Baths</div>
                   </StatItem>
                 )}
                 {listing.square_feet && (

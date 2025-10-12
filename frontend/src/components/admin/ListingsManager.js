@@ -522,7 +522,7 @@ const ListingsManager = () => {
                   {listing.bathrooms && (
                     <DetailItem>
                       <FaBath />
-                      {listing.bathrooms} baths
+                      {listing.bathrooms} Baths
                     </DetailItem>
                   )}
                   {listing.square_feet && (
