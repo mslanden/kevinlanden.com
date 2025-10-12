@@ -28,10 +28,10 @@ import {
   FaLinkedin,
   FaEnvelope,
   FaCopy,
-  FaPrint
+  FaPrint,
+  FaMobileAlt
 } from 'react-icons/fa';
 import api from '../utils/api';
-import PdfViewer from '../components/PdfViewer';
 
 const PageContainer = styled.div`
   padding-top: 80px;
@@ -434,7 +434,57 @@ const ContactButton = styled(Link)`
   }
 `;
 
-// PdfViewerContainer moved to PdfViewer component
+const PdfViewerContainer = styled.div`
+  width: 100%;
+  height: 600px;
+  background: #525659;
+  border-radius: ${props => props.theme.borderRadius.default};
+  overflow: hidden;
+  margin-bottom: 1rem;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    display: none; /* Hide iframe on mobile */
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+`;
+
+const MobilePdfCard = styled.div`
+  display: none;
+  background: rgba(139, 69, 19, 0.1);
+  border: 2px solid ${props => props.theme.colors.primary};
+  border-radius: ${props => props.theme.borderRadius.default};
+  padding: 3rem 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+
+  @media (max-width: ${props => props.theme.breakpoints.md}) {
+    display: block; /* Show on mobile */
+  }
+
+  svg {
+    font-size: 4rem;
+    color: ${props => props.theme.colors.primary};
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-family: ${props => props.theme.fonts.heading};
+    font-size: 1.5rem;
+    color: ${props => props.theme.colors.text.secondary};
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: ${props => props.theme.colors.text.primary};
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+`;
 
 const DownloadButton = styled.button`
   display: inline-flex;
@@ -460,6 +510,12 @@ const DownloadButton = styled.button`
 
   svg {
     font-size: 1.1rem;
+  }
+
+  &.desktop-download {
+    @media (max-width: ${props => props.theme.breakpoints.md}) {
+      display: none; /* Hide desktop download button on mobile */
+    }
   }
 `;
 
@@ -1381,9 +1437,32 @@ const ListingDetail = () => {
                 <CardTitle>
                   <FaBook /> Property Listing Book
                 </CardTitle>
-                <PdfViewer pdfUrl={listing.listing_book_pdf_url} />
+
+                {/* Desktop: Show PDF in iframe */}
+                <PdfViewerContainer>
+                  <iframe
+                    src={`${listing.listing_book_pdf_url}#toolbar=0&navpanes=0&scrollbar=0`}
+                    title="Property Listing Book"
+                  />
+                </PdfViewerContainer>
+
+                {/* Mobile: Show download card */}
+                <MobilePdfCard>
+                  <FaMobileAlt />
+                  <h3>View on Mobile</h3>
+                  <p>For the best mobile experience, download the PDF to view the full property listing book.</p>
+                  <DownloadButton
+                    onClick={() => window.open(listing.listing_book_pdf_url, '_blank')}
+                  >
+                    <FaDownload /> Download PDF
+                  </DownloadButton>
+                </MobilePdfCard>
+
+                {/* Desktop: Download button below iframe */}
                 <DownloadButton
                   onClick={() => window.open(listing.listing_book_pdf_url, '_blank')}
+                  style={{ display: 'block', width: '100%' }}
+                  className="desktop-download"
                 >
                   <FaDownload /> Download Listing Book
                 </DownloadButton>
