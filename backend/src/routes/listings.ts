@@ -529,6 +529,85 @@ router.delete('/:id', adminLimiter, authenticateToken, requireAdmin, async (req,
   }
 });
 
+// DELETE batch images from listing (admin only)
+router.delete('/:id/images/batch', adminLimiter, authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { imageIds } = req.body;
+
+    if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+      return res.json({ success: true, deletedCount: 0, message: 'No images to delete' });
+    }
+
+    console.log(`Batch deleting ${imageIds.length} images from listing ${id}`);
+
+    // Fetch all images in ONE query
+    const { data: images, error: fetchError } = await supabaseAdmin
+      .from('listing_images')
+      .select('id, image_url')
+      .eq('listing_id', id)
+      .in('id', imageIds);
+
+    if (fetchError) {
+      console.error('Error fetching images for batch deletion:', fetchError);
+      return res.status(500).json({ error: 'Failed to fetch images for deletion' });
+    }
+
+    if (!images || images.length === 0) {
+      return res.json({ success: true, deletedCount: 0, message: 'No images found to delete' });
+    }
+
+    // Extract storage paths
+    const storagePaths: string[] = [];
+    images.forEach(img => {
+      if (img.image_url && img.image_url.includes('/storage/v1/object/public/listing-images/')) {
+        const path = img.image_url.split('/storage/v1/object/public/listing-images/')[1];
+        if (path) {
+          storagePaths.push(path);
+        }
+      }
+    });
+
+    // Batch delete from storage (ONE call for all images)
+    if (storagePaths.length > 0) {
+      console.log(`Deleting ${storagePaths.length} images from storage`);
+      const { error: storageError } = await supabaseAdmin.storage
+        .from('listing-images')
+        .remove(storagePaths);
+
+      if (storageError) {
+        console.error('Error deleting images from storage:', storageError);
+        // Continue with database deletion even if storage fails
+      } else {
+        console.log('Successfully deleted images from storage');
+      }
+    }
+
+    // Batch delete from database (ONE call for all images)
+    const { error: deleteError } = await supabaseAdmin
+      .from('listing_images')
+      .delete()
+      .eq('listing_id', id)
+      .in('id', imageIds);
+
+    if (deleteError) {
+      console.error('Error deleting images from database:', deleteError);
+      return res.status(500).json({ error: 'Failed to delete images from database' });
+    }
+
+    console.log(`Successfully deleted ${images.length} images`);
+
+    res.json({
+      success: true,
+      deletedCount: images.length,
+      message: `Successfully deleted ${images.length} image(s)`
+    });
+  } catch (error) {
+    console.error('Error in DELETE /listings/:id/images/batch:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // DELETE single image from listing (admin only)
 router.delete('/:id/image/:imageId', adminLimiter, authenticateToken, requireAdmin, async (req, res) => {
   try {

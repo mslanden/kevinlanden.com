@@ -324,6 +324,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
   });
 
   const [newFeature, setNewFeature] = useState('');
+  const [imagesToDelete, setImagesToDelete] = useState([]);
 
   useEffect(() => {
     if (listing) {
@@ -402,30 +403,51 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Convert frontend image format back to backend format
-    const convertedImages = formData.images.map((img, index) => ({
-      url: img.url,
-      caption: img.caption || '',
-      display_order: img.display_order || index,
-      is_main: img.is_main || false
-    }));
+    try {
+      // Batch delete images if any were removed during editing
+      if (listing && imagesToDelete.length > 0) {
+        console.log(`Batch deleting ${imagesToDelete.length} images before update`);
+        await api.delete(`/listings/${listing.id}/images/batch`, {
+          imageIds: imagesToDelete
+        });
+        console.log('Successfully batch deleted images');
+      }
 
-    // Ensure spheres have the correct field name
-    const convertedSpheres = formData.kuula_spheres.map((sphere) => ({
-      ...sphere,
-      image_url: sphere.image_url // Ensure we're using image_url
-    }));
+      // Convert frontend image format back to backend format
+      const convertedImages = formData.images.map((img, index) => ({
+        url: img.url,
+        caption: img.caption || '',
+        display_order: img.display_order || index,
+        is_main: img.is_main || false
+      }));
 
-    const submitData = {
-      ...formData,
-      images: convertedImages,
-      kuula_spheres: convertedSpheres
-    };
+      // Ensure spheres have the correct field name
+      const convertedSpheres = formData.kuula_spheres.map((sphere) => ({
+        ...sphere,
+        image_url: sphere.image_url // Ensure we're using image_url
+      }));
 
-    onSubmit(submitData);
+      const submitData = {
+        ...formData,
+        images: convertedImages,
+        kuula_spheres: convertedSpheres
+      };
+
+      await onSubmit(submitData);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to save listing. Please try again.');
+    }
+  };
+
+  const handleImageDelete = (imageId) => {
+    // Track deleted images for batch deletion on submit
+    if (imageId && !imageId.toString().startsWith('existing-')) {
+      setImagesToDelete(prev => [...prev, imageId]);
+    }
   };
 
   return (
@@ -670,6 +692,7 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
                   main_image_url: newImages.find(img => img.is_main)?.url || newImages[0]?.url || ''
                 }));
               }}
+              onImageDelete={handleImageDelete}
               category="properties"
               maxFiles={50}
               listingId={listing?.id}

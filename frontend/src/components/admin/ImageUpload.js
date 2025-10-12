@@ -231,6 +231,7 @@ const formatFileSize = (bytes) => {
 const ImageUpload = ({
   images = [],
   onImagesChange,
+  onImageDelete = null, // Optional: callback when image is deleted (for batch tracking)
   category = 'general',
   maxFiles = 50,
   accept = { 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] },
@@ -318,45 +319,23 @@ const ImageUpload = ({
   const handleRemove = async (index) => {
     const imageToRemove = images[index];
 
+    // Remove from local state immediately (optimistic update)
+    const newImages = images.filter((_, i) => i !== index);
+    onImagesChange(newImages);
+
     try {
-      // Delete from storage
-      if (imageToRemove.path || imageToRemove.url) {
-        // Extract storage path from full URL if needed
-        let storagePath = imageToRemove.path;
-
-        console.log('Original path:', storagePath);
-
-        // If path is a full URL, extract the storage path
-        if (storagePath && storagePath.includes('/storage/v1/object/public/listing-images/')) {
-          storagePath = storagePath.split('/storage/v1/object/public/listing-images/')[1];
-          console.log('Extracted from path:', storagePath);
-        } else if (imageToRemove.url && imageToRemove.url.includes('/storage/v1/object/public/listing-images/')) {
-          // Fallback to extracting from url if path extraction failed
-          storagePath = imageToRemove.url.split('/storage/v1/object/public/listing-images/')[1];
-          console.log('Extracted from URL:', storagePath);
-        }
-
-        console.log('Final storage path being sent:', storagePath);
-
-        if (storagePath) {
-          await api.delete('/upload/image', { path: storagePath });
-        }
+      // If callback provided, use it to track deletion for batch processing
+      if (onImageDelete && imageToRemove.id) {
+        onImageDelete(imageToRemove.id);
       }
-
-      // If this is for a listing, delete from database immediately
-      if (listingId && imageToRemove.id && !imageToRemove.id.toString().startsWith('existing-')) {
+      // Otherwise, delete immediately (for single image uploads or immediate deletion)
+      else if (listingId && imageToRemove.id && !imageToRemove.id.toString().startsWith('existing-')) {
         console.log('Deleting image from database:', imageToRemove.id);
         await api.delete(`/listings/${listingId}/image/${imageToRemove.id}`);
       }
-
-      // Remove from local state
-      const newImages = images.filter((_, i) => i !== index);
-      onImagesChange(newImages);
     } catch (error) {
       console.error('Error removing image:', error);
-      // Still remove from local state even if storage deletion fails
-      const newImages = images.filter((_, i) => i !== index);
-      onImagesChange(newImages);
+      // Already removed from UI, so no rollback needed
     }
   };
 
