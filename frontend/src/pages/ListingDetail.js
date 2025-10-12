@@ -511,12 +511,6 @@ const DownloadButton = styled.button`
   svg {
     font-size: 1.1rem;
   }
-
-  &.desktop-download {
-    @media (max-width: ${props => props.theme.breakpoints.md}) {
-      display: none; /* Hide desktop download button on mobile */
-    }
-  }
 `;
 
 const ContactInfo = styled.div`
@@ -1054,6 +1048,7 @@ const ListingDetail = () => {
 
   const formatPropertyType = (type) => {
     const typeMap = {
+      'house': 'Single Family Home', // Legacy value support
       'single-family': 'Single Family Home',
       'manufactured': 'Manufactured Home',
       'mobile': 'Mobile Home',
@@ -1467,18 +1462,11 @@ const ListingDetail = () => {
                   <FaMobileAlt />
                   <h3>View on Mobile</h3>
                   <p>For the best mobile experience, download the PDF to view the full property listing book.</p>
-                  <DownloadButton
-                    onClick={() => window.open(listing.listing_book_pdf_url, '_blank')}
-                  >
-                    <FaDownload /> Download PDF
-                  </DownloadButton>
                 </MobilePdfCard>
 
-                {/* Desktop: Download button below iframe */}
+                {/* Download button (both mobile and desktop) */}
                 <DownloadButton
                   onClick={() => window.open(listing.listing_book_pdf_url, '_blank')}
-                  style={{ display: 'block', width: '100%' }}
-                  className="desktop-download"
                 >
                   <FaDownload /> Download Listing Book
                 </DownloadButton>
