@@ -260,7 +260,7 @@ const PdfUpload = ({ pdf, onPdfChange, accept = { 'application/pdf': ['.pdf'] } 
   const handleRemove = async () => {
     if (pdf?.path) {
       try {
-        await api.delete('/upload/pdf', { data: { path: pdf.path } });
+        await api.delete('/upload/pdf', { path: pdf.path });
       } catch (error) {
         console.error('Error removing PDF:', error);
       }

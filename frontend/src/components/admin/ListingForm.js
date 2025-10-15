@@ -324,22 +324,24 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
   });
 
   const [newFeature, setNewFeature] = useState('');
-  const [imagesToDelete, setImagesToDelete] = useState([]);
 
   useEffect(() => {
     if (listing) {
-      // Convert backend image format to frontend format
+      // Convert backend image format to frontend format with status='existing'
       const mappedImages = (listing.listing_images || []).map((img, index) => ({
         id: img.id || `existing-${index}`,
+        status: 'existing', // Mark as existing from database
         url: img.image_url,
-        path: img.path || img.image_url, // Fallback for existing images
+        preview: img.image_url, // Use URL as preview
+        path: img.path || img.image_url,
         filename: img.filename || `image-${index}`,
         originalName: img.originalName || img.filename || `Image ${index + 1}`,
         size: img.size,
         mimetype: img.mimetype,
         caption: img.caption || '',
         display_order: img.display_order || index,
-        is_main: img.is_main || false
+        is_main: img.is_main || false,
+        file: null // No file object for existing images
       }));
 
       setFormData({
@@ -407,48 +409,94 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
     e.preventDefault();
 
     try {
-      // Batch delete images if any were removed during editing
-      if (listing && imagesToDelete.length > 0) {
-        console.log(`Batch deleting ${imagesToDelete.length} images before update`);
-        await api.delete(`/listings/${listing.id}/images/batch`, {
-          imageIds: imagesToDelete
+      console.log('Starting listing submission with batch processing...');
+
+      // Step 1: Upload new images to storage
+      const newImages = formData.images.filter(img => img.status === 'new');
+      let uploadedImageData = [];
+
+      if (newImages.length > 0) {
+        console.log(`Uploading ${newImages.length} new images...`);
+        const formDataUpload = new FormData();
+        newImages.forEach(img => {
+          formDataUpload.append('images', img.file);
         });
-        console.log('Successfully batch deleted images');
+        formDataUpload.append('category', 'properties');
+
+        const uploadResponse = await api.postFormData('/upload/images', formDataUpload);
+        if (uploadResponse.data.success) {
+          uploadedImageData = uploadResponse.data.data;
+          console.log(`Successfully uploaded ${uploadedImageData.length} images`);
+        }
       }
 
-      // Convert frontend image format back to backend format
-      const convertedImages = formData.images.map((img, index) => ({
-        url: img.url,
-        caption: img.caption || '',
-        display_order: img.display_order || index,
-        is_main: img.is_main || false
-      }));
+      // Step 2: Build final images array
+      const existingImages = formData.images
+        .filter(img => img.status === 'existing')
+        .map((img, index) => ({
+          url: img.url,
+          caption: img.caption || '',
+          display_order: img.display_order,
+          is_main: img.is_main || false
+        }));
 
-      // Ensure spheres have the correct field name
+      const newlyUploadedImages = uploadedImageData.map((upload, index) => {
+        const originalNewImage = newImages[index];
+        return {
+          url: upload.publicUrl,
+          caption: originalNewImage.caption || '',
+          display_order: originalNewImage.display_order,
+          is_main: originalNewImage.is_main || false
+        };
+      });
+
+      // Combine and sort by display_order
+      const finalImages = [...existingImages, ...newlyUploadedImages]
+        .sort((a, b) => a.display_order - b.display_order);
+
+      console.log(`Final images array: ${existingImages.length} existing + ${newlyUploadedImages.length} new = ${finalImages.length} total`);
+
+      // Step 3: Prepare spheres data
       const convertedSpheres = formData.kuula_spheres.map((sphere) => ({
         ...sphere,
-        image_url: sphere.image_url // Ensure we're using image_url
+        image_url: sphere.image_url
       }));
 
+      // Step 4: Submit listing with complete data
       const submitData = {
         ...formData,
-        images: convertedImages,
+        images: finalImages,
         kuula_spheres: convertedSpheres
       };
 
+      console.log('Submitting listing with', finalImages.length, 'images');
       await onSubmit(submitData);
+
+      // Step 5: Delete marked images from storage (edit mode only)
+      if (listing) {
+        const deletedImages = formData.images.filter(img => img.status === 'deleted');
+        if (deletedImages.length > 0) {
+          console.log(`Batch deleting ${deletedImages.length} marked images...`);
+          const imageIds = deletedImages
+            .filter(img => img.id && !String(img.id).startsWith('new-'))
+            .map(img => img.id);
+
+          if (imageIds.length > 0) {
+            await api.delete(`/listings/${listing.id}/images/batch`, {
+              imageIds: imageIds
+            });
+            console.log('Successfully batch deleted images');
+          }
+        }
+      }
+
+      console.log('Listing submission complete!');
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Failed to save listing. Please try again.');
+      alert(`Failed to save listing: ${error.message || 'Please try again.'}`);
     }
   };
 
-  const handleImageDelete = (imageId) => {
-    // Track deleted images for batch deletion on submit
-    if (imageId && !imageId.toString().startsWith('existing-')) {
-      setImagesToDelete(prev => [...prev, imageId]);
-    }
-  };
 
   return (
     <FormContainer>
@@ -692,14 +740,12 @@ const ListingForm = ({ listing, onSubmit, onCancel }) => {
                 setFormData(prev => ({
                   ...prev,
                   images: newImages,
-                  // Set main_image_url from the main image
-                  main_image_url: newImages.find(img => img.is_main)?.url || newImages[0]?.url || ''
+                  // Set main_image_url from the main image (filter out deleted images)
+                  main_image_url: newImages.filter(img => img.status !== 'deleted').find(img => img.is_main)?.url || newImages.filter(img => img.status !== 'deleted')[0]?.url || ''
                 }));
               }}
-              onImageDelete={handleImageDelete}
               category="properties"
               maxFiles={50}
-              listingId={listing?.id}
             />
           </FormSection>
 

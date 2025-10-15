@@ -1,29 +1,93 @@
 -- Create tables for Kevin Landen Real Estate Website
 
--- Properties Table
-CREATE TABLE properties (
+-- Listings Table (replaces legacy Properties table)
+CREATE TABLE listings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  slug TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  type TEXT NOT NULL, -- ranch, farm, country-home, land, luxury, mountain
-  price NUMERIC NOT NULL,
-  bedrooms INTEGER,
-  bathrooms NUMERIC,
-  square_feet NUMERIC,
-  acreage NUMERIC,
+  description TEXT,
   location TEXT NOT NULL,
   address TEXT,
   city TEXT NOT NULL,
-  state TEXT NOT NULL,
+  state TEXT DEFAULT 'CA',
   zip_code TEXT,
-  featured BOOLEAN DEFAULT false,
-  status TEXT DEFAULT 'available', -- available, pending, sold
+  price NUMERIC,
+  bedrooms INTEGER,
+  bathrooms NUMERIC,
+  square_feet NUMERIC,
+  lot_size NUMERIC,
+  year_built INTEGER,
+  property_type TEXT,
   main_image_url TEXT,
+  zillow_tour_url TEXT,
+  floor_plan_url TEXT,
+  drone_video_url TEXT,
+  listing_book_pdf_url TEXT,
+  qr_code_url TEXT,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending', 'sold')),
+  views_count INTEGER DEFAULT 0,
+  featured BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Property Images Table
+-- Listing Images Table
+CREATE TABLE listing_images (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  listing_id UUID REFERENCES listings(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
+  caption TEXT,
+  display_order INTEGER DEFAULT 0,
+  is_main BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Listing 360° Photo Spheres (Google Drive / Kuula)
+CREATE TABLE listing_kuula_spheres (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  listing_id UUID REFERENCES listings(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
+  title TEXT,
+  description TEXT,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Listing Features Table
+CREATE TABLE listing_features (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  listing_id UUID REFERENCES listings(id) ON DELETE CASCADE,
+  feature TEXT NOT NULL,
+  category TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Legacy Properties Table (kept for backwards compatibility - migrate to listings)
+CREATE TABLE properties (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('ranch', 'farm', 'country-home', 'land', 'luxury', 'mountain')),
+  price NUMERIC NOT NULL CHECK (price >= 0),
+  bedrooms INTEGER CHECK (bedrooms >= 0),
+  bathrooms NUMERIC CHECK (bathrooms >= 0),
+  square_feet NUMERIC CHECK (square_feet >= 0),
+  acreage NUMERIC CHECK (acreage >= 0),
+  location TEXT NOT NULL,
+  address TEXT,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL CHECK (length(state) = 2),
+  zip_code TEXT CHECK (zip_code ~ '^\\d{5}(-\\d{4})?$'),
+  featured BOOLEAN DEFAULT false,
+  status TEXT DEFAULT 'available' CHECK (status IN ('available', 'pending', 'sold')),
+  main_image_url TEXT,
+  price_per_sqft NUMERIC,
+  days_on_market INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Legacy Property Images Table
 CREATE TABLE property_images (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
@@ -33,7 +97,7 @@ CREATE TABLE property_images (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Property Features Table
+-- Legacy Property Features Table
 CREATE TABLE property_features (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
@@ -96,7 +160,17 @@ BEFORE UPDATE ON blog_posts
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at();
 
+-- Create trigger for listings table
+CREATE TRIGGER listings_updated_at_trigger
+BEFORE UPDATE ON listings
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at();
+
 -- Enable Row Level Security (RLS)
+ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE listing_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE listing_kuula_spheres ENABLE ROW LEVEL SECURITY;
+ALTER TABLE listing_features ENABLE ROW LEVEL SECURITY;
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE property_images ENABLE ROW LEVEL SECURITY;
 ALTER TABLE property_features ENABLE ROW LEVEL SECURITY;
@@ -104,18 +178,34 @@ ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
 
--- Create policies (adjust these based on your authentication setup)
--- For example, public can read properties but only authenticated users can write
-CREATE POLICY "Public can read properties" 
-ON properties FOR SELECT 
+-- Create policies for listings (public can read active listings)
+CREATE POLICY "Public can read active listings"
+ON listings FOR SELECT
+USING (status = 'active');
+
+CREATE POLICY "Public can read listing images"
+ON listing_images FOR SELECT
 USING (true);
 
-CREATE POLICY "Public can read property images" 
-ON property_images FOR SELECT 
+CREATE POLICY "Public can read listing spheres"
+ON listing_kuula_spheres FOR SELECT
 USING (true);
 
-CREATE POLICY "Public can read property features" 
-ON property_features FOR SELECT 
+CREATE POLICY "Public can read listing features"
+ON listing_features FOR SELECT
+USING (true);
+
+-- Legacy properties policies
+CREATE POLICY "Public can read properties"
+ON properties FOR SELECT
+USING (true);
+
+CREATE POLICY "Public can read property images"
+ON property_images FOR SELECT
+USING (true);
+
+CREATE POLICY "Public can read property features"
+ON property_features FOR SELECT
 USING (true);
 
 CREATE POLICY "Public can read blog posts" 

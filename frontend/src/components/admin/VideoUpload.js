@@ -238,7 +238,7 @@ const VideoUpload = ({ video, onVideoChange, accept = { 'video/*': ['.mp4', '.mo
   const handleRemove = async () => {
     if (video?.path) {
       try {
-        await api.delete('/upload/image', { path: video.path });
+        await api.delete('/upload/video', { path: video.path });
       } catch (error) {
         console.error('Error removing video:', error);
       }

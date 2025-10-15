@@ -3,15 +3,33 @@ import { useDropzone } from 'react-dropzone';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
   FaCloud,
   FaUpload,
   FaTimes,
   FaImage,
-  FaSpinner,
   FaCheckCircle,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaGripVertical,
+  FaArrowLeft,
+  FaArrowRight,
+  FaStar
 } from 'react-icons/fa';
-import api from '../../utils/api';
 
 const DropzoneContainer = styled.div`
   border: 2px dashed ${props => props.isDragActive ? props.theme.colors.primary : props.theme.colors.border};
@@ -93,9 +111,17 @@ const PreviewGrid = styled.div`
 const PreviewCard = styled(motion.div)`
   position: relative;
   background: rgba(20, 20, 20, 0.85);
-  border: 1px solid ${props => props.theme.colors.border};
+  border: 1px solid ${props => {
+    if (props.$isDeleted) return 'rgba(220, 53, 69, 0.5)';
+    if (props.$isNew) return 'rgba(13, 110, 253, 0.5)';
+    return props.theme.colors.border;
+  }};
   border-radius: ${props => props.theme.borderRadius.default};
   overflow: hidden;
+  opacity: ${props => props.$isDeleted ? 0.5 : 1};
+  transform: ${props => props.$isDragging ? 'scale(1.05)' : 'scale(1)'};
+  box-shadow: ${props => props.$isDragging ? props.theme.shadows.large : 'none'};
+  transition: all 0.2s ease;
 
   &:hover .overlay {
     opacity: 1;
@@ -104,12 +130,12 @@ const PreviewCard = styled(motion.div)`
 
 const PreviewImage = styled.div`
   aspect-ratio: 16 / 9;
-  background: ${props => props.src ? `url(${props.src})` : 'linear-gradient(135deg, #333 0%, #1a1a1a 100%)'};
+  background: ${props => props.$src ? `url(${props.$src})` : 'linear-gradient(135deg, #333 0%, #1a1a1a 100%)'};
   background-size: cover;
   background-position: center;
   position: relative;
 
-  ${props => !props.src && `
+  ${props => !props.$src && `
     display: flex;
     align-items: center;
     justify-content: center;
@@ -127,13 +153,28 @@ const PreviewOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  opacity: 0;
+  background: ${props => props.$isDeleted ? 'rgba(220, 53, 69, 0.8)' : 'rgba(0, 0, 0, 0.7)'};
+  opacity: ${props => props.$isDeleted ? 1 : 0};
   transition: opacity 0.3s ease;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+`;
+
+const DeletedText = styled.div`
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 `;
 
 const ActionButton = styled.button`
@@ -144,6 +185,9 @@ const ActionButton = styled.button`
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background: rgba(255, 255, 255, 0.2);
@@ -153,6 +197,70 @@ const ActionButton = styled.button`
   &.danger:hover {
     background: rgba(255, 0, 0, 0.3);
   }
+
+  &.primary:hover {
+    background: ${props => props.theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const DragHandle = styled.div`
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: grab;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  svg {
+    display: block;
+  }
+`;
+
+const OrderBadge = styled.div`
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: ${props => props.$isMain ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' : 'rgba(0, 0, 0, 0.8)'};
+  color: ${props => props.$isMain ? '#000' : '#fff'};
+  padding: 0.4rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  backdrop-filter: blur(4px);
+  border: ${props => props.$isMain ? '2px solid #FFD700' : 'none'};
+`;
+
+const StatusBadge = styled.div`
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  background: ${props => props.$status === 'new' ? 'rgba(13, 110, 253, 0.9)' : 'rgba(220, 53, 69, 0.9)'};
+  color: white;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  z-index: 2;
+  letter-spacing: 0.5px;
 `;
 
 const PreviewInfo = styled.div`
@@ -173,34 +281,59 @@ const FileName = styled.div`
 const FileSize = styled.div`
   color: ${props => props.theme.colors.text.muted};
   font-size: 0.8rem;
+  margin-bottom: 0.5rem;
 `;
 
-const StatusIndicator = styled.div`
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.3rem;
-  border-radius: 50%;
-  background: ${props => {
-    switch (props.status) {
-      case 'uploading': return 'rgba(255, 193, 7, 0.9)';
-      case 'success': return 'rgba(40, 167, 69, 0.9)';
-      case 'error': return 'rgba(220, 53, 69, 0.9)';
-      default: return 'transparent';
-    }
-  }};
-  color: white;
+const ReorderButtons = styled.div`
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+`;
 
-  svg {
-    font-size: 0.9rem;
-    ${props => props.status === 'uploading' && `
-      animation: spin 1s linear infinite;
-    `}
+const ReorderButton = styled.button`
+  flex: 1;
+  background: transparent;
+  border: 1px solid ${props => props.theme.colors.border};
+  color: ${props => props.theme.colors.text.primary};
+  padding: 0.4rem;
+  border-radius: ${props => props.theme.borderRadius.small};
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+
+  &:hover:not(:disabled) {
+    background: ${props => props.theme.colors.primary}22;
+    border-color: ${props => props.theme.colors.primary};
   }
 
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+`;
+
+const PendingChanges = styled.div`
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: ${props => props.theme.borderRadius.default};
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #ffc107;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  svg {
+    font-size: 1.2rem;
+  }
+
+  strong {
+    font-weight: 600;
   }
 `;
 
@@ -228,115 +361,202 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+// Sortable item component
+const SortableImageItem = ({ image, index, totalImages, onRemove, onRestore, onCaptionChange, onSetMain, onMoveLeft, onMoveRight }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: image.id, disabled: image.status === 'deleted' });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const isDeleted = image.status === 'deleted';
+  const isNew = image.status === 'new';
+  const displayOrder = index + 1;
+
+  return (
+    <PreviewCard
+      ref={setNodeRef}
+      style={style}
+      $isDragging={isDragging}
+      $isDeleted={isDeleted}
+      $isNew={isNew}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+    >
+      {!isDeleted && (
+        <DragHandle {...attributes} {...listeners}>
+          <FaGripVertical />
+        </DragHandle>
+      )}
+
+      <OrderBadge $isMain={image.is_main}>
+        {image.is_main && <FaStar />}
+        #{displayOrder}
+      </OrderBadge>
+
+      {(isNew || isDeleted) && (
+        <StatusBadge $status={isNew ? 'new' : 'deleted'}>
+          {isNew ? 'New' : 'Deleted'}
+        </StatusBadge>
+      )}
+
+      <PreviewImage $src={image.url || image.preview}>
+        {(!image.url && !image.preview) && <FaImage />}
+        <PreviewOverlay className="overlay" $isDeleted={isDeleted}>
+          {isDeleted ? (
+            <>
+              <DeletedText>Will be deleted</DeletedText>
+              <ActionButtons>
+                <ActionButton onClick={() => onRestore(index)} title="Restore image">
+                  <FaCheckCircle />
+                </ActionButton>
+              </ActionButtons>
+            </>
+          ) : (
+            <ActionButtons>
+              <ActionButton
+                onClick={() => onSetMain(index)}
+                className="primary"
+                title="Set as main image"
+              >
+                <FaStar />
+              </ActionButton>
+              <ActionButton
+                onClick={() => onRemove(index)}
+                className="danger"
+                title="Remove image"
+              >
+                <FaTimes />
+              </ActionButton>
+            </ActionButtons>
+          )}
+        </PreviewOverlay>
+      </PreviewImage>
+
+      <PreviewInfo>
+        <FileName>{image.originalName || image.filename}</FileName>
+        <FileSize>{image.size ? formatFileSize(image.size) : ''}</FileSize>
+
+        {!isDeleted && (
+          <>
+            <input
+              type="text"
+              value={image.caption || ''}
+              onChange={(e) => onCaptionChange(index, e.target.value)}
+              placeholder="Add caption (optional)"
+              style={{
+                width: '100%',
+                background: 'rgba(0, 0, 0, 0.3)',
+                border: '1px solid #333',
+                borderRadius: '4px',
+                padding: '0.5rem',
+                color: '#fff',
+                fontSize: '0.85rem',
+                marginBottom: '0.5rem'
+              }}
+            />
+
+            <ReorderButtons>
+              <ReorderButton
+                onClick={() => onMoveLeft(index)}
+                disabled={index === 0}
+                title="Move left"
+              >
+                <FaArrowLeft />
+              </ReorderButton>
+              <ReorderButton
+                onClick={() => onMoveRight(index)}
+                disabled={index === totalImages - 1}
+                title="Move right"
+              >
+                <FaArrowRight />
+              </ReorderButton>
+            </ReorderButtons>
+          </>
+        )}
+      </PreviewInfo>
+    </PreviewCard>
+  );
+};
+
 const ImageUpload = ({
   images = [],
   onImagesChange,
-  onImageDelete = null, // Optional: callback when image is deleted (for batch tracking)
+  onImageDelete = null, // Legacy - not used in batch mode
   category = 'general',
   maxFiles = 50,
   accept = { 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] },
-  listingId = null // Optional: if provided, will delete from database immediately
+  listingId = null // Legacy - not used in batch mode
 }) => {
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({});
   const [error, setError] = useState(null);
 
-  const onDrop = useCallback(async (acceptedFiles) => {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Stage files locally instead of uploading immediately
+  const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length === 0) return;
 
     setError(null);
-    setUploading(true);
 
-    // Initialize upload progress for each file
-    const progress = {};
-    acceptedFiles.forEach((file, index) => {
-      progress[index] = { status: 'uploading', file };
-    });
-    setUploadProgress(progress);
+    const stagedImages = acceptedFiles.map((file, index) => ({
+      id: `new-${Date.now()}-${index}`,
+      status: 'new',
+      file: file,
+      preview: URL.createObjectURL(file),
+      url: null, // Will be set after upload on form submit
+      filename: file.name,
+      originalName: file.name,
+      size: file.size,
+      mimetype: file.type,
+      caption: '',
+      display_order: images.length + index,
+      is_main: images.length === 0 && index === 0
+    }));
 
-    try {
-      const formData = new FormData();
-      acceptedFiles.forEach((file) => {
-        formData.append('images', file);
-      });
-      formData.append('category', category);
-
-      const response = await api.postFormData('/upload/images', formData);
-
-      if (response.data.success) {
-        const newImages = response.data.data.map((uploadResult, index) => ({
-          id: Date.now() + index, // Temporary ID
-          url: uploadResult.publicUrl,
-          path: uploadResult.path,
-          filename: uploadResult.filename,
-          originalName: uploadResult.originalName,
-          size: uploadResult.size,
-          mimetype: uploadResult.mimetype,
-          caption: '',
-          display_order: images.length + index,
-          is_main: images.length === 0 && index === 0 // First image is main if no existing images
-        }));
-
-        onImagesChange([...images, ...newImages]);
-
-        // Update progress to success
-        const successProgress = {};
-        acceptedFiles.forEach((_, index) => {
-          successProgress[index] = { status: 'success' };
-        });
-        setUploadProgress(successProgress);
-
-        // Clear progress after delay
-        setTimeout(() => {
-          setUploadProgress({});
-        }, 2000);
-
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      setError(error.response?.data?.error || 'Failed to upload images');
-
-      // Update progress to error
-      const errorProgress = {};
-      acceptedFiles.forEach((_, index) => {
-        errorProgress[index] = { status: 'error' };
-      });
-      setUploadProgress(errorProgress);
-    } finally {
-      setUploading(false);
-    }
-  }, [images, onImagesChange, category]);
+    onImagesChange([...images, ...stagedImages]);
+  }, [images, onImagesChange]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept,
-    maxFiles: maxFiles - images.length,
-    disabled: uploading || images.length >= maxFiles
+    maxFiles: maxFiles - images.filter(img => img.status !== 'deleted').length,
+    disabled: images.filter(img => img.status !== 'deleted').length >= maxFiles
   });
 
-  const handleRemove = async (index) => {
-    const imageToRemove = images[index];
-
-    // Remove from local state immediately (optimistic update)
-    const newImages = images.filter((_, i) => i !== index);
-    onImagesChange(newImages);
-
-    try {
-      // If callback provided, use it to track deletion for batch processing
-      if (onImageDelete && imageToRemove.id) {
-        onImageDelete(imageToRemove.id);
-      }
-      // Otherwise, delete immediately (for single image uploads or immediate deletion)
-      else if (listingId && imageToRemove.id && !imageToRemove.id.toString().startsWith('existing-')) {
-        console.log('Deleting image from database:', imageToRemove.id);
-        await api.delete(`/listings/${listingId}/image/${imageToRemove.id}`);
-      }
-    } catch (error) {
-      console.error('Error removing image:', error);
-      // Already removed from UI, so no rollback needed
+  const handleRemove = (index) => {
+    const newImages = [...images];
+    if (newImages[index].status === 'new') {
+      // New image - just remove from array
+      newImages.splice(index, 1);
+      // Re-index remaining images
+      newImages.forEach((img, i) => {
+        img.display_order = i;
+      });
+    } else {
+      // Existing image - mark for deletion
+      newImages[index] = { ...newImages[index], status: 'deleted' };
     }
+    onImagesChange(newImages);
+  };
+
+  const handleRestore = (index) => {
+    const newImages = [...images];
+    newImages[index] = { ...newImages[index], status: 'existing' };
+    onImagesChange(newImages);
   };
 
   const handleCaptionChange = (index, caption) => {
@@ -353,9 +573,64 @@ const ImageUpload = ({
     onImagesChange(newImages);
   };
 
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = images.findIndex(img => img.id === active.id);
+      const newIndex = images.findIndex(img => img.id === over.id);
+
+      const reordered = arrayMove(images, oldIndex, newIndex);
+      const updated = reordered.map((img, i) => ({
+        ...img,
+        display_order: i
+      }));
+      onImagesChange(updated);
+    }
+  };
+
+  const handleMoveLeft = (index) => {
+    if (index === 0) return;
+    const reordered = arrayMove(images, index, index - 1);
+    const updated = reordered.map((img, i) => ({
+      ...img,
+      display_order: i
+    }));
+    onImagesChange(updated);
+  };
+
+  const handleMoveRight = (index) => {
+    if (index === images.length - 1) return;
+    const reordered = arrayMove(images, index, index + 1);
+    const updated = reordered.map((img, i) => ({
+      ...img,
+      display_order: i
+    }));
+    onImagesChange(updated);
+  };
+
+  // Calculate pending changes
+  const newImagesCount = images.filter(img => img.status === 'new').length;
+  const deletedImagesCount = images.filter(img => img.status === 'deleted').length;
+  const hasPendingChanges = newImagesCount > 0 || deletedImagesCount > 0;
+
+  const activeImages = images.filter(img => img.status !== 'deleted');
+
   return (
     <div>
-      {images.length < maxFiles && (
+      {hasPendingChanges && (
+        <PendingChanges>
+          <FaExclamationCircle />
+          <div>
+            <strong>Pending Changes:</strong> {newImagesCount > 0 && `${newImagesCount} new image(s)`}
+            {newImagesCount > 0 && deletedImagesCount > 0 && ', '}
+            {deletedImagesCount > 0 && `${deletedImagesCount} to delete`}
+            {' • Changes will be saved when you submit the form'}
+          </div>
+        </PendingChanges>
+      )}
+
+      {activeImages.length < maxFiles && (
         <DropzoneContainer {...getRootProps()} isDragActive={isDragActive}>
           <FileInput {...getInputProps()} />
           <DropzoneContent>
@@ -372,9 +647,9 @@ const ImageUpload = ({
             <p>
               Supports JPEG, PNG, WebP • Max {formatFileSize(10 * 1024 * 1024)} each • Up to {maxFiles} images
             </p>
-            <UploadButton type="button" disabled={uploading}>
-              {uploading ? <FaSpinner className="spin" /> : <FaUpload />}
-              {uploading ? 'Uploading...' : 'Choose Files'}
+            <UploadButton type="button">
+              <FaUpload />
+              Choose Files
             </UploadButton>
           </DropzoneContent>
         </DropzoneContainer>
@@ -393,88 +668,34 @@ const ImageUpload = ({
         )}
       </AnimatePresence>
 
-      {(images.length > 0 || Object.keys(uploadProgress).length > 0) && (
-        <PreviewGrid>
-          {/* Existing images */}
-          {images.map((image, index) => (
-            <PreviewCard
-              key={image.id || index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <PreviewImage src={image.url}>
-                {image.is_main && (
-                  <StatusIndicator status="main">
-                    <FaCheckCircle />
-                  </StatusIndicator>
-                )}
-                <PreviewOverlay className="overlay">
-                  <ActionButton
-                    type="button"
-                    onClick={() => handleSetMain(index)}
-                    title="Set as main image"
-                  >
-                    <FaCheckCircle />
-                  </ActionButton>
-                  <ActionButton
-                    type="button"
-                    className="danger"
-                    onClick={() => handleRemove(index)}
-                    title="Remove image"
-                  >
-                    <FaTimes />
-                  </ActionButton>
-                </PreviewOverlay>
-              </PreviewImage>
-              <PreviewInfo>
-                <FileName>{image.originalName || image.filename}</FileName>
-                <FileSize>{image.size ? formatFileSize(image.size) : ''}</FileSize>
-                <input
-                  type="text"
-                  value={image.caption || ''}
-                  onChange={(e) => handleCaptionChange(index, e.target.value)}
-                  placeholder="Add caption (optional)"
-                  style={{
-                    width: '100%',
-                    background: 'rgba(0, 0, 0, 0.3)',
-                    border: '1px solid #333',
-                    borderRadius: '4px',
-                    padding: '0.5rem',
-                    color: '#fff',
-                    fontSize: '0.85rem',
-                    marginTop: '0.5rem'
-                  }}
+      {images.length > 0 && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={images.map(img => img.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <PreviewGrid>
+              {images.map((image, index) => (
+                <SortableImageItem
+                  key={image.id}
+                  image={image}
+                  index={index}
+                  totalImages={images.length}
+                  onRemove={handleRemove}
+                  onRestore={handleRestore}
+                  onCaptionChange={handleCaptionChange}
+                  onSetMain={handleSetMain}
+                  onMoveLeft={handleMoveLeft}
+                  onMoveRight={handleMoveRight}
                 />
-              </PreviewInfo>
-            </PreviewCard>
-          ))}
-
-          {/* Upload progress indicators */}
-          {Object.entries(uploadProgress).map(([index, progress]) => (
-            <PreviewCard
-              key={`progress-${index}`}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <PreviewImage>
-                <FaImage />
-                <StatusIndicator status={progress.status}>
-                  {progress.status === 'uploading' && <FaSpinner />}
-                  {progress.status === 'success' && <FaCheckCircle />}
-                  {progress.status === 'error' && <FaExclamationCircle />}
-                </StatusIndicator>
-              </PreviewImage>
-              <PreviewInfo>
-                <FileName>{progress.file?.name}</FileName>
-                <FileSize>
-                  {progress.file?.size ? formatFileSize(progress.file.size) : ''}
-                </FileSize>
-              </PreviewInfo>
-            </PreviewCard>
-          ))}
-        </PreviewGrid>
+              ))}
+            </PreviewGrid>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );

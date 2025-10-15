@@ -336,25 +336,38 @@ router.put('/:id', adminLimiter, authenticateToken, requireAdmin, async (req, re
       return res.status(404).json({ error: 'Listing not found' });
     }
 
+    // Helper function to convert empty strings to null for numeric fields
+    const parseNumeric = (value: any) => {
+      if (value === '' || value === null || value === undefined) return null;
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? null : parsed;
+    };
+
+    const parseInteger = (value: any) => {
+      if (value === '' || value === null || value === undefined) return null;
+      const parsed = parseInt(value);
+      return isNaN(parsed) ? null : parsed;
+    };
+
     let updateData: any = {
-      description,
+      description: description || null,
       location,
-      address,
+      address: address || null,
       city,
       state,
-      zip_code,
-      price,
-      bedrooms,
-      bathrooms,
-      square_feet,
-      lot_size,
-      year_built,
+      zip_code: zip_code || null,
+      price: parseNumeric(price),
+      bedrooms: parseInteger(bedrooms),
+      bathrooms: parseNumeric(bathrooms),
+      square_feet: parseInteger(square_feet),
+      lot_size: parseNumeric(lot_size),
+      year_built: parseInteger(year_built),
       property_type,
-      main_image_url,
-      zillow_tour_url,
-      floor_plan_url,
-      drone_video_url,
-      listing_book_pdf_url,
+      main_image_url: main_image_url || null,
+      zillow_tour_url: zillow_tour_url || null,
+      floor_plan_url: floor_plan_url || null,
+      drone_video_url: drone_video_url || null,
+      listing_book_pdf_url: listing_book_pdf_url || null,
       status,
       featured
     };
