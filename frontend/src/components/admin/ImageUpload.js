@@ -2,22 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { arrayMove } from '@dnd-kit/sortable';
 import {
   FaCloud,
   FaUpload,
@@ -25,7 +10,6 @@ import {
   FaImage,
   FaCheckCircle,
   FaExclamationCircle,
-  FaGripVertical,
   FaArrowLeft,
   FaArrowRight,
   FaStar
@@ -119,8 +103,6 @@ const PreviewCard = styled(motion.div)`
   border-radius: ${props => props.theme.borderRadius.default};
   overflow: hidden;
   opacity: ${props => props.$isDeleted ? 0.5 : 1};
-  transform: ${props => props.$isDragging ? 'scale(1.05)' : 'scale(1)'};
-  box-shadow: ${props => props.$isDragging ? props.theme.shadows.large : 'none'};
   transition: all 0.2s ease;
 
   &:hover .overlay {
@@ -209,43 +191,26 @@ const ActionButton = styled.button`
   }
 `;
 
-const DragHandle = styled.div`
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: grab;
-  z-index: 2;
-  backdrop-filter: blur(4px);
-
-  &:active {
-    cursor: grabbing;
-  }
-
-  svg {
-    display: block;
-  }
-`;
-
 const OrderBadge = styled.div`
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: ${props => props.$isMain ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' : 'rgba(0, 0, 0, 0.8)'};
+  background: ${props => props.$isMain ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
   color: ${props => props.$isMain ? '#000' : '#fff'};
   padding: 0.4rem 0.7rem;
-  border-radius: 20px;
+  border-radius: 4px;
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
   z-index: 2;
   display: flex;
   align-items: center;
   gap: 0.3rem;
   backdrop-filter: blur(4px);
-  border: ${props => props.$isMain ? '2px solid #FFD700' : 'none'};
+  border: ${props => props.$isMain ? '1px solid rgba(0, 0, 0, 0.2)' : 'none'};
+
+  svg {
+    font-size: 0.75rem;
+  }
 `;
 
 const StatusBadge = styled.div`
@@ -361,43 +326,20 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-// Sortable item component
-const SortableImageItem = ({ image, index, totalImages, onRemove, onRestore, onCaptionChange, onSetMain, onMoveLeft, onMoveRight }) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: image.id, disabled: image.status === 'deleted' });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
+// Simple image item component (no drag-and-drop)
+const ImageItem = ({ image, index, totalImages, onRemove, onRestore, onCaptionChange, onSetMain, onMoveLeft, onMoveRight }) => {
   const isDeleted = image.status === 'deleted';
   const isNew = image.status === 'new';
   const displayOrder = index + 1;
 
   return (
     <PreviewCard
-      ref={setNodeRef}
-      style={style}
-      $isDragging={isDragging}
       $isDeleted={isDeleted}
       $isNew={isNew}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
     >
-      {!isDeleted && (
-        <DragHandle {...attributes} {...listeners}>
-          <FaGripVertical />
-        </DragHandle>
-      )}
-
       <OrderBadge $isMain={image.is_main}>
         {image.is_main && <FaStar />}
         #{displayOrder}
@@ -416,7 +358,7 @@ const SortableImageItem = ({ image, index, totalImages, onRemove, onRestore, onC
             <>
               <DeletedText>Will be deleted</DeletedText>
               <ActionButtons>
-                <ActionButton onClick={() => onRestore(index)} title="Restore image">
+                <ActionButton type="button" onClick={() => onRestore(index)} title="Restore image">
                   <FaCheckCircle />
                 </ActionButton>
               </ActionButtons>
@@ -424,6 +366,7 @@ const SortableImageItem = ({ image, index, totalImages, onRemove, onRestore, onC
           ) : (
             <ActionButtons>
               <ActionButton
+                type="button"
                 onClick={() => onSetMain(index)}
                 className="primary"
                 title="Set as main image"
@@ -431,6 +374,7 @@ const SortableImageItem = ({ image, index, totalImages, onRemove, onRestore, onC
                 <FaStar />
               </ActionButton>
               <ActionButton
+                type="button"
                 onClick={() => onRemove(index)}
                 className="danger"
                 title="Remove image"
@@ -467,6 +411,7 @@ const SortableImageItem = ({ image, index, totalImages, onRemove, onRestore, onC
 
             <ReorderButtons>
               <ReorderButton
+                type="button"
                 onClick={() => onMoveLeft(index)}
                 disabled={index === 0}
                 title="Move left"
@@ -474,6 +419,7 @@ const SortableImageItem = ({ image, index, totalImages, onRemove, onRestore, onC
                 <FaArrowLeft />
               </ReorderButton>
               <ReorderButton
+                type="button"
                 onClick={() => onMoveRight(index)}
                 disabled={index === totalImages - 1}
                 title="Move right"
@@ -498,13 +444,6 @@ const ImageUpload = ({
   listingId = null // Legacy - not used in batch mode
 }) => {
   const [error, setError] = useState(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   // Stage files locally instead of uploading immediately
   const onDrop = useCallback((acceptedFiles) => {
@@ -571,22 +510,6 @@ const ImageUpload = ({
       is_main: i === index
     }));
     onImagesChange(newImages);
-  };
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-
-    if (active.id !== over.id) {
-      const oldIndex = images.findIndex(img => img.id === active.id);
-      const newIndex = images.findIndex(img => img.id === over.id);
-
-      const reordered = arrayMove(images, oldIndex, newIndex);
-      const updated = reordered.map((img, i) => ({
-        ...img,
-        display_order: i
-      }));
-      onImagesChange(updated);
-    }
   };
 
   const handleMoveLeft = (index) => {
@@ -669,33 +592,22 @@ const ImageUpload = ({
       </AnimatePresence>
 
       {images.length > 0 && (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={images.map(img => img.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <PreviewGrid>
-              {images.map((image, index) => (
-                <SortableImageItem
-                  key={image.id}
-                  image={image}
-                  index={index}
-                  totalImages={images.length}
-                  onRemove={handleRemove}
-                  onRestore={handleRestore}
-                  onCaptionChange={handleCaptionChange}
-                  onSetMain={handleSetMain}
-                  onMoveLeft={handleMoveLeft}
-                  onMoveRight={handleMoveRight}
-                />
-              ))}
-            </PreviewGrid>
-          </SortableContext>
-        </DndContext>
+        <PreviewGrid>
+          {images.map((image, index) => (
+            <ImageItem
+              key={image.id}
+              image={image}
+              index={index}
+              totalImages={images.length}
+              onRemove={handleRemove}
+              onRestore={handleRestore}
+              onCaptionChange={handleCaptionChange}
+              onSetMain={handleSetMain}
+              onMoveLeft={handleMoveLeft}
+              onMoveRight={handleMoveRight}
+            />
+          ))}
+        </PreviewGrid>
       )}
     </div>
   );
