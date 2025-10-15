@@ -1198,11 +1198,11 @@ const ListingDetail = () => {
   return (
     <PageContainer>
       <Helmet>
-        <title>{listing.address} - Outrider Real Estate</title>
+        <title>{listing.title || listing.address || 'Property Listing'} - Outrider Real Estate</title>
         <meta name="description" content={metaDescription} />
 
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content={`${listing.address} - ${formattedPrice}`} />
+        <meta property="og:title" content={`${listing.title || listing.address || 'Property Listing'} - ${formattedPrice}`} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={ogImage} />
         <meta property="og:url" content={window.location.href} />
@@ -1211,7 +1211,7 @@ const ListingDetail = () => {
 
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${listing.address} - ${formattedPrice}`} />
+        <meta name="twitter:title" content={`${listing.title || listing.address || 'Property Listing'} - ${formattedPrice}`} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={ogImage} />
       </Helmet>
