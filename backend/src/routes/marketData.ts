@@ -35,7 +35,7 @@ interface MLSData {
   listings: Array<{
     mls: string;
     status: string;
-    price: string;
+    price: number;
     address: string;
     beds: number;
     baths: number;
@@ -601,7 +601,7 @@ router.post('/upload-csv',
         return {
           mls: row['List Number'] || '',
           status: status,
-          price: row['List Price'] || row['Closed Price'] || '',
+          price: parseNumber(row['List Price'] || row['Closed Price']) || 0,
           address: address || `${row['City']}, ${row['State']}`,
           beds: parseIntValue(row['Total Bedrooms']) || 0,
           baths: parseNumber(row['Total Baths']) || 0,
@@ -850,16 +850,14 @@ function calculateAggregateData(listings: any[]): { priceData: any; daysData: an
   
   // Calculate price data
   const prices = validListings.map(l => {
-    const priceStr = l.price.replace(/[^\d]/g, '');
-    return parseInt(priceStr) || 0;
+    return typeof l.price === 'number' ? l.price : 0;
   }).filter(p => p > 0);
-  
+
   const sqftValues = validListings.map(l => l.sqft).filter(s => s > 0);
-  
+
   const pricePerSqftValues = validListings
     .map(l => {
-      const priceStr = l.price.replace(/[^\d]/g, '');
-      const price = parseInt(priceStr) || 0;
+      const price = typeof l.price === 'number' ? l.price : 0;
       return l.sqft > 0 && price > 0 ? Math.round(price / l.sqft) : 0;
     })
     .filter(p => p > 0);
@@ -1156,7 +1154,7 @@ function getSampleMLSData(community: string): MLSData {
       {
         mls: "219113554",
         status: "Closed",
-        price: "$1,210,000",
+        price: 1210000,
         address: "25705 Tahquitz Drive",
         beds: 5,
         baths: 4,
@@ -1167,7 +1165,7 @@ function getSampleMLSData(community: string): MLSData {
       {
         mls: "SW24167612",
         status: "Active",
-        price: "$360,000",
+        price: 360000,
         address: "53150 Mountain View Drive",
         beds: 1,
         baths: 1,
@@ -1178,7 +1176,7 @@ function getSampleMLSData(community: string): MLSData {
       {
         mls: "219111691",
         status: "Pending",
-        price: "$530,000",
+        price: 530000,
         address: "26791 Hwy 243",
         beds: 3,
         baths: 2,
