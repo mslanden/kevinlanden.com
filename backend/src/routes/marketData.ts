@@ -205,6 +205,8 @@ router.post('/price-per-sqft', async (req: Request, res: Response) => {
         average_price: average_price ? parseFloat(average_price) : null,
         total_sales: total_sales ? parseInt(total_sales) : 0,
         median_days_on_market: median_days_on_market ? parseInt(median_days_on_market) : null
+      }, {
+        onConflict: 'location,month,year'
       })
       .select();
 
@@ -261,6 +263,8 @@ router.post('/days-on-market', async (req: Request, res: Response) => {
         year,
         average_days_on_market: parseFloat(average_days_on_market),
         median_days_on_market: median_days_on_market ? parseInt(median_days_on_market) : null
+      }, {
+        onConflict: 'location,month,year'
       })
       .select();
 
@@ -805,6 +809,8 @@ async function updateAggregateStatistics(extractedData: MLSData, location: strin
           average_price: priceData.averagePrice,
           total_sales: extractedData.statusSummary.closed || priceData.totalSales,
           median_days_on_market: daysData.medianDays
+        }, {
+          onConflict: 'location,month,year'
         });
 
       if (priceError) {
@@ -824,6 +830,8 @@ async function updateAggregateStatistics(extractedData: MLSData, location: strin
           year,
           average_days_on_market: daysData.averageDays,
           median_days_on_market: daysData.medianDays
+        }, {
+          onConflict: 'location,month,year'
         });
 
       if (daysError) {
