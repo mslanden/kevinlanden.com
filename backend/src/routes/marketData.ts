@@ -18,11 +18,11 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'text/csv', 'application/csv'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF and image files (JPEG, PNG, WebP) are allowed'));
+      cb(new Error('Only PDF, image files (JPEG, PNG, WebP), and CSV files are allowed'));
     }
   },
   limits: {
@@ -592,7 +592,7 @@ router.post('/upload-csv',
           return isNaN(num) ? null : num;
         };
 
-        const parseInt = (val: any) => {
+        const parseIntValue = (val: any) => {
           if (!val) return null;
           const num = parseNumber(val);
           return num ? Math.round(num) : null;
@@ -603,11 +603,11 @@ router.post('/upload-csv',
           status: status,
           price: row['List Price'] || row['Closed Price'] || '',
           address: address || `${row['City']}, ${row['State']}`,
-          beds: parseInt(row['Total Bedrooms']) || 0,
+          beds: parseIntValue(row['Total Bedrooms']) || 0,
           baths: parseNumber(row['Total Baths']) || 0,
-          sqft: parseInt(row['Approx SqFt']) || 0,
-          yearBuilt: parseInt(row['Year Built']) || 0,
-          daysOnMarket: parseInt(row['Days on Market']) || 0,
+          sqft: parseIntValue(row['Approx SqFt']) || 0,
+          yearBuilt: parseIntValue(row['Year Built']) || 0,
+          daysOnMarket: parseIntValue(row['Days on Market']) || 0,
           pricePerSqft: parseNumber(row['List Price/SqFt']) || 0
         };
       }).filter(listing => listing.mls && listing.address); // Only keep valid listings
