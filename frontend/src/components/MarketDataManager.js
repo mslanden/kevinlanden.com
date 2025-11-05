@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaChartLine, FaSave, FaCalendarAlt, FaMapMarkedAlt, FaImage, FaTable, FaFileAlt, FaUpload } from 'react-icons/fa';
+import { FaChartLine, FaSave, FaCalendarAlt, FaMapMarkedAlt, FaTable, FaUpload } from 'react-icons/fa';
 import { Line, Bar } from 'react-chartjs-2';
-import ImageDataUploader from './admin/ImageDataUploader';
 
 const MarketDataSection = styled(motion.div)`
   margin-bottom: 3rem;
@@ -227,16 +226,6 @@ const MarketDataManager = () => {
     median_days_on_market: ''
   });
 
-  // MLS Upload state
-  const [mlsUploadFiles, setMlsUploadFiles] = useState([]);
-  const [mlsProcessing, setMlsProcessing] = useState(false);
-  const [mlsExtractedData, setMlsExtractedData] = useState(null);
-  const [mlsFormData, setMlsFormData] = useState({
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
-    location: 'anza'
-  });
-
   // CSV Upload state
   const [csvFile, setCsvFile] = useState(null);
   const [csvUploading, setCsvUploading] = useState(false);
@@ -380,76 +369,6 @@ const MarketDataManager = () => {
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save days on market data' });
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-    }
-  };
-
-  // MLS Upload Handlers
-  const handleMlsFileUpload = (event) => {
-    const files = Array.from(event.target.files);
-    const newFiles = files.map(file => ({
-      id: Date.now() + Math.random(),
-      file,
-      name: file.name,
-      status: 'ready'
-    }));
-    setMlsUploadFiles(newFiles);
-  };
-
-  const handleMlsProcessing = async () => {
-    setMlsProcessing(true);
-    setMessage({ type: '', text: '' });
-    
-    try {
-      // Update file status to processing
-      setMlsUploadFiles(prev => 
-        prev.map(f => ({ ...f, status: 'processing' }))
-      );
-
-      // Prepare form data
-      const formData = new FormData();
-      mlsUploadFiles.forEach(fileItem => {
-        formData.append('files', fileItem.file);
-      });
-      formData.append('location', mlsFormData.location);
-      formData.append('month', mlsFormData.month.toString());
-      formData.append('year', mlsFormData.year.toString());
-
-      // Send to new MLS processing endpoint
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/process-mls`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMlsExtractedData(data);
-        
-        // Update file status to completed
-        setMlsUploadFiles(prev => 
-          prev.map(f => ({ ...f, status: 'completed' }))
-        );
-
-        // Refresh market data to show new entries
-        fetchMarketData();
-        
-        setMessage({ 
-          type: 'success', 
-          text: `Successfully processed ${data.listings?.length || 0} listings and saved to database!` 
-        });
-        setTimeout(() => setMessage({ type: '', text: '' }), 5000);
-      } else {
-        throw new Error('Failed to process MLS files');
-      }
-    } catch (error) {
-      console.error('Error processing MLS files:', error);
-      setMlsUploadFiles(prev => 
-        prev.map(f => ({ ...f, status: 'error' }))
-      );
-      setMessage({ type: 'error', text: 'Failed to process MLS files. Please try again.' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 5000);
-    } finally {
-      setMlsProcessing(false);
     }
   };
 
@@ -633,20 +552,6 @@ const MarketDataManager = () => {
           >
             <FaTable style={{ marginRight: '0.5rem' }} />
             View Data
-          </Tab>
-          <Tab
-            active={activeTab === 'image-upload'}
-            onClick={() => setActiveTab('image-upload')}
-          >
-            <FaImage style={{ marginRight: '0.5rem' }} />
-            Upload PDF
-          </Tab>
-          <Tab
-            active={activeTab === 'mls-upload'}
-            onClick={() => setActiveTab('mls-upload')}
-          >
-            <FaFileAlt style={{ marginRight: '0.5rem' }} />
-            MLS Upload
           </Tab>
           <Tab
             active={activeTab === 'csv-upload'}
@@ -949,167 +854,6 @@ const MarketDataManager = () => {
                 </>
               )}
             </div>
-          </>
-        )}
-        
-        {activeTab === 'image-upload' && (
-          <ImageDataUploader 
-            onDataExtracted={() => {
-              fetchMarketData();
-              setMessage({ 
-                type: 'success', 
-                text: 'Market data extracted and saved successfully!' 
-              });
-              setTimeout(() => setMessage({ type: '', text: '' }), 5000);
-            }}
-          />
-        )}
-
-        {activeTab === 'mls-upload' && (
-          <>
-            <FormGrid>
-              <InputGroup>
-                <label>
-                  <FaMapMarkedAlt />
-                  Location
-                </label>
-                <select
-                  value={mlsFormData.location}
-                  onChange={(e) => setMlsFormData(prev => ({ ...prev, location: e.target.value }))}
-                >
-                  {Object.entries(locations).map(([key, value]) => (
-                    <option key={key} value={key}>{value}</option>
-                  ))}
-                </select>
-              </InputGroup>
-              
-              <InputGroup>
-                <label>
-                  <FaCalendarAlt />
-                  Month
-                </label>
-                <select
-                  value={mlsFormData.month}
-                  onChange={(e) => setMlsFormData(prev => ({ ...prev, month: parseInt(e.target.value) }))}
-                >
-                  {months.map((month, index) => (
-                    <option key={index + 1} value={index + 1}>{month}</option>
-                  ))}
-                </select>
-              </InputGroup>
-              
-              <InputGroup>
-                <label>
-                  <FaCalendarAlt />
-                  Year
-                </label>
-                <input
-                  type="number"
-                  min="2020"
-                  max="2030"
-                  value={mlsFormData.year}
-                  onChange={(e) => setMlsFormData(prev => ({ ...prev, year: parseInt(e.target.value) }))}
-                />
-              </InputGroup>
-            </FormGrid>
-
-            <div style={{ marginTop: '2rem' }}>
-              <h3 style={{ color: '#D2B48C', marginBottom: '1rem' }}>
-                <FaUpload style={{ marginRight: '0.5rem' }} />
-                Upload MLS Reports (PDF)
-              </h3>
-              <div
-                style={{
-                  border: '2px dashed #8B4513',
-                  borderRadius: '8px',
-                  padding: '3rem',
-                  textAlign: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  position: 'relative'
-                }}
-                onClick={() => document.getElementById('mls-file-input').click()}
-              >
-                <input
-                  id="mls-file-input"
-                  type="file"
-                  multiple
-                  accept=".pdf"
-                  onChange={handleMlsFileUpload}
-                  style={{ display: 'none' }}
-                />
-                <div style={{
-                  fontSize: '3rem',
-                  color: '#8B4513',
-                  marginBottom: '1rem'
-                }}>
-                  <FaUpload />
-                </div>
-                <div style={{
-                  color: '#D2B48C',
-                  fontSize: '1.1rem',
-                  marginBottom: '0.5rem'
-                }}>
-                  Drop MLS PDF files here or click to browse
-                </div>
-                <div style={{
-                  color: '#999',
-                  fontSize: '0.9rem'
-                }}>
-                  Supports PDF files up to 10MB
-                </div>
-              </div>
-              
-              {mlsUploadFiles.length > 0 && (
-                <div style={{ marginTop: '1rem' }}>
-                  <h4 style={{ color: '#D2B48C' }}>Uploaded Files:</h4>
-                  {mlsUploadFiles.map((file, index) => (
-                    <div key={index} style={{ 
-                      padding: '0.5rem', 
-                      margin: '0.5rem 0',
-                      backgroundColor: 'rgba(30, 30, 30, 0.5)',
-                      borderRadius: '4px',
-                      color: '#D2B48C'
-                    }}>
-                      {file.name} - {file.status}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {mlsUploadFiles.length > 0 && (
-                <ActionButton
-                  onClick={handleMlsProcessing}
-                  disabled={mlsProcessing}
-                  style={{ marginTop: '1rem' }}
-                >
-                  {mlsProcessing ? 'Processing...' : 'Process MLS Files & Save to Database'}
-                </ActionButton>
-              )}
-            </div>
-
-            {mlsExtractedData && (
-              <div style={{ marginTop: '2rem' }}>
-                <h3 style={{ color: '#D2B48C' }}>Extraction Results:</h3>
-                <div style={{ 
-                  backgroundColor: 'rgba(30, 30, 30, 0.5)',
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  marginTop: '1rem'
-                }}>
-                  <p style={{ color: '#D2B48C' }}>
-                    <strong>Properties Extracted:</strong> {mlsExtractedData.listings?.length || 0}
-                  </p>
-                  <p style={{ color: '#D2B48C' }}>
-                    <strong>Market Summary:</strong> {mlsExtractedData.summary?.quickAnalysis || 'N/A'}
-                  </p>
-                  <p style={{ color: '#D2B48C' }}>
-                    <strong>Status:</strong> Individual listings and market statistics saved to database
-                  </p>
-                </div>
-              </div>
-            )}
           </>
         )}
 
