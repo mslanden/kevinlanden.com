@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import Anthropic from '@anthropic-ai/sdk';
+import Papa from 'papaparse';
 
 const router = express.Router();
 
@@ -75,23 +76,41 @@ const validateDate = (month: number, year: number): boolean => {
   return month >= 1 && month <= 12 && year >= 2020 && year <= 2050;
 };
 
+// Normalize location name to prevent hyphen/underscore mismatches
+// Accepts both formats but always returns underscore format
+const normalizeLocation = (location: string): string => {
+  const normalized = location.toLowerCase().replace(/-/g, '_');
+
+  // Warn if hyphen format was used (for debugging)
+  if (location.includes('-')) {
+    console.warn(`Location "${location}" uses hyphens - normalized to "${normalized}". Please update frontend to use underscores.`);
+  }
+
+  return normalized;
+};
+
+// Get user-friendly location error message
+const getLocationErrorMessage = (): string => {
+  return `Invalid location. Must be one of: ${validLocations.join(', ')}`;
+};
+
 // GET /api/market-data/price-per-sqft/:location
 // Get price per sqft data for a specific location (last 6 months)
 router.get('/price-per-sqft/:location', async (req: Request, res: Response) => {
   try {
-    const { location } = req.params;
+    const location = normalizeLocation(req.params.location);
     const { limit = '6' } = req.query;
 
     if (!validateLocation(location)) {
-      return res.status(400).json({ 
-        error: 'Invalid location. Must be one of: anza, aguanga, idyllwild, mountain_center' 
+      return res.status(400).json({
+        error: getLocationErrorMessage()
       });
     }
 
     const { data, error } = await supabase
       .from('price_per_sqft_data')
       .select('*')
-      .eq('location', location.toLowerCase())
+      .eq('location', location)
       .order('year', { ascending: false })
       .order('month', { ascending: false })
       .limit(parseInt(limit as string));
@@ -112,19 +131,19 @@ router.get('/price-per-sqft/:location', async (req: Request, res: Response) => {
 // Get days on market data for a specific location (last 6 months)
 router.get('/days-on-market/:location', async (req: Request, res: Response) => {
   try {
-    const { location } = req.params;
+    const location = normalizeLocation(req.params.location);
     const { limit = '6' } = req.query;
 
     if (!validateLocation(location)) {
-      return res.status(400).json({ 
-        error: 'Invalid location. Must be one of: anza, aguanga, idyllwild, mountain_center' 
+      return res.status(400).json({
+        error: getLocationErrorMessage()
       });
     }
 
     const { data, error } = await supabase
       .from('days_on_market_data')
       .select('*')
-      .eq('location', location.toLowerCase())
+      .eq('location', location)
       .order('year', { ascending: false })
       .order('month', { ascending: false })
       .limit(parseInt(limit as string));
@@ -145,32 +164,33 @@ router.get('/days-on-market/:location', async (req: Request, res: Response) => {
 // Add or update price per sqft data for a location/month/year
 router.post('/price-per-sqft', async (req: Request, res: Response) => {
   try {
-    const { 
-      location, 
-      month, 
-      year, 
-      price_per_sqft, 
-      average_price, 
-      total_sales, 
-      median_days_on_market 
+    const {
+      month,
+      year,
+      price_per_sqft,
+      average_price,
+      total_sales,
+      median_days_on_market
     } = req.body;
 
+    const location = normalizeLocation(req.body.location);
+
     // Validate required fields
-    if (!location || !month || !year || !price_per_sqft) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: location, month, year, price_per_sqft' 
+    if (!req.body.location || !month || !year || !price_per_sqft) {
+      return res.status(400).json({
+        error: 'Missing required fields: location, month, year, price_per_sqft'
       });
     }
 
     if (!validateLocation(location)) {
-      return res.status(400).json({ 
-        error: 'Invalid location. Must be one of: anza, aguanga, idyllwild, mountain_center' 
+      return res.status(400).json({
+        error: getLocationErrorMessage()
       });
     }
 
     if (!validateDate(month, year)) {
-      return res.status(400).json({ 
-        error: 'Invalid date. Month must be 1-12, year must be 2020-2050' 
+      return res.status(400).json({
+        error: 'Invalid date. Month must be 1-12, year must be 2020-2050'
       });
     }
 
@@ -178,7 +198,7 @@ router.post('/price-per-sqft', async (req: Request, res: Response) => {
     const { data, error } = await supabase
       .from('price_per_sqft_data')
       .upsert({
-        location: location.toLowerCase(),
+        location: location,
         month,
         year,
         price_per_sqft: parseFloat(price_per_sqft),
@@ -204,30 +224,31 @@ router.post('/price-per-sqft', async (req: Request, res: Response) => {
 // Add or update days on market data for a location/month/year
 router.post('/days-on-market', async (req: Request, res: Response) => {
   try {
-    const { 
-      location, 
-      month, 
-      year, 
-      average_days_on_market, 
+    const {
+      month,
+      year,
+      average_days_on_market,
       median_days_on_market
     } = req.body;
 
+    const location = normalizeLocation(req.body.location);
+
     // Validate required fields
-    if (!location || !month || !year || !average_days_on_market) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: location, month, year, average_days_on_market' 
+    if (!req.body.location || !month || !year || !average_days_on_market) {
+      return res.status(400).json({
+        error: 'Missing required fields: location, month, year, average_days_on_market'
       });
     }
 
     if (!validateLocation(location)) {
-      return res.status(400).json({ 
-        error: 'Invalid location. Must be one of: anza, aguanga, idyllwild, mountain_center' 
+      return res.status(400).json({
+        error: getLocationErrorMessage()
       });
     }
 
     if (!validateDate(month, year)) {
-      return res.status(400).json({ 
-        error: 'Invalid date. Month must be 1-12, year must be 2020-2050' 
+      return res.status(400).json({
+        error: 'Invalid date. Month must be 1-12, year must be 2020-2050'
       });
     }
 
@@ -235,7 +256,7 @@ router.post('/days-on-market', async (req: Request, res: Response) => {
     const { data, error } = await supabase
       .from('days_on_market_data')
       .upsert({
-        location: location.toLowerCase(),
+        location: location,
         month,
         year,
         average_days_on_market: parseFloat(average_days_on_market),
@@ -259,12 +280,12 @@ router.post('/days-on-market', async (req: Request, res: Response) => {
 // Get all market data for a location (price per sqft + days on market)
 router.get('/all/:location', async (req: Request, res: Response) => {
   try {
-    const { location } = req.params;
+    const location = normalizeLocation(req.params.location);
     const { limit = '6' } = req.query;
 
     if (!validateLocation(location)) {
-      return res.status(400).json({ 
-        error: 'Invalid location. Must be one of: anza, aguanga, idyllwild, mountain_center' 
+      return res.status(400).json({
+        error: getLocationErrorMessage()
       });
     }
 
@@ -273,7 +294,7 @@ router.get('/all/:location', async (req: Request, res: Response) => {
       supabase
         .from('price_per_sqft_data')
         .select('*')
-        .eq('location', location.toLowerCase())
+        .eq('location', location)
         .order('year', { ascending: false })
         .order('month', { ascending: false })
         .limit(parseInt(limit as string)),
@@ -281,7 +302,7 @@ router.get('/all/:location', async (req: Request, res: Response) => {
       supabase
         .from('days_on_market_data')
         .select('*')
-        .eq('location', location.toLowerCase())
+        .eq('location', location)
         .order('year', { ascending: false })
         .order('month', { ascending: false })
         .limit(parseInt(limit as string))
@@ -315,23 +336,23 @@ router.get('/newsletter-data',
   asyncHandler(async (req: Request, res: Response) => {
     try {
       // Get parameters from query
-      const community = req.query.community as string;
+      const rawCommunity = req.query.community as string;
       const selectedMonth = parseInt(req.query.month as string);
       const selectedYear = parseInt(req.query.year as string);
-      
-      if (!community) {
+
+      if (!rawCommunity) {
         return res.status(400).json({
           success: false,
           message: 'Community parameter is required'
         });
       }
 
-      // Validate community
-      const validCommunities = ['anza', 'aguanga', 'idyllwild', 'mountain-center'];
-      if (!validCommunities.includes(community)) {
+      // Normalize and validate community
+      const community = normalizeLocation(rawCommunity);
+      if (!validateLocation(community)) {
         return res.status(400).json({
           success: false,
-          message: 'Invalid community. Must be one of: ' + validCommunities.join(', ')
+          message: getLocationErrorMessage()
         });
       }
 
@@ -444,19 +465,20 @@ router.post('/process-mls',
   upload.array('files'), 
   asyncHandler(async (req: Request, res: Response) => {
     const files = req.files as Express.Multer.File[];
-    const { location, month, year } = req.body;
+    const { month, year } = req.body;
+    const location = normalizeLocation(req.body.location);
 
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'No files provided' });
     }
 
-    if (!location || !month || !year) {
+    if (!req.body.location || !month || !year) {
       return res.status(400).json({ error: 'Location, month, and year are required' });
     }
 
     if (!validateLocation(location)) {
-      return res.status(400).json({ 
-        error: 'Invalid location. Must be one of: anza, aguanga, idyllwild, mountain_center' 
+      return res.status(400).json({
+        error: getLocationErrorMessage()
       });
     }
 
@@ -485,6 +507,162 @@ router.post('/process-mls',
     } catch (error) {
       console.error('Error processing MLS files:', error);
       res.status(500).json({ error: 'Failed to process MLS files' });
+    }
+  })
+);
+
+// Upload CSV file with MLS listings and save to database (admin only)
+router.post('/upload-csv',
+  authenticateToken,
+  requireAdmin,
+  upload.single('file'),
+  asyncHandler(async (req: Request, res: Response) => {
+    const file = req.file as Express.Multer.File;
+    const { month, year } = req.body;
+    const location = normalizeLocation(req.body.location);
+
+    if (!file) {
+      return res.status(400).json({ error: 'No CSV file provided' });
+    }
+
+    if (!req.body.location || !month || !year) {
+      return res.status(400).json({ error: 'Location, month, and year are required' });
+    }
+
+    if (!validateLocation(location)) {
+      return res.status(400).json({
+        error: getLocationErrorMessage()
+      });
+    }
+
+    if (!validateDate(parseInt(month), parseInt(year))) {
+      return res.status(400).json({
+        error: 'Invalid date. Month must be 1-12, year must be 2020-2050'
+      });
+    }
+
+    try {
+      // Parse CSV file
+      const csvText = file.buffer.toString('utf-8');
+      const parseResult = Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: (header) => header.trim()
+      });
+
+      if (parseResult.errors.length > 0) {
+        console.error('CSV parsing errors:', parseResult.errors);
+        return res.status(400).json({
+          error: 'Failed to parse CSV file',
+          details: parseResult.errors[0].message
+        });
+      }
+
+      const rows = parseResult.data as any[];
+      console.log(`Parsed ${rows.length} rows from CSV`);
+
+      // Transform CSV rows to MLS listing format
+      const listings = rows.map((row: any) => {
+        // Build address from components
+        const addressParts = [
+          row['Street #'],
+          row['Street Direction'],
+          row['Street Name'],
+          row['Post Direction'],
+          row['Street Suffix']
+        ].filter(Boolean);
+        const address = addressParts.join(' ').trim();
+
+        // Map status codes (A=Active, P=Pending, etc)
+        let status = 'active';
+        if (row['Status']) {
+          const statusCode = row['Status'].toUpperCase();
+          if (statusCode === 'A') status = 'active';
+          else if (statusCode === 'P') status = 'pending';
+          else if (statusCode === 'C') status = 'closed';
+          else if (statusCode === 'S') status = 'sold';
+          else if (statusCode === 'X') status = 'expired';
+          else if (statusCode === 'W') status = 'withdrawn';
+        }
+
+        // Parse numeric values
+        const parseNumber = (val: any) => {
+          if (!val) return null;
+          const num = parseFloat(String(val).replace(/[^\d.-]/g, ''));
+          return isNaN(num) ? null : num;
+        };
+
+        const parseInt = (val: any) => {
+          if (!val) return null;
+          const num = parseNumber(val);
+          return num ? Math.round(num) : null;
+        };
+
+        return {
+          mls: row['List Number'] || '',
+          status: status,
+          price: row['List Price'] || row['Closed Price'] || '',
+          address: address || `${row['City']}, ${row['State']}`,
+          beds: parseInt(row['Total Bedrooms']) || 0,
+          baths: parseNumber(row['Total Baths']) || 0,
+          sqft: parseInt(row['Approx SqFt']) || 0,
+          yearBuilt: parseInt(row['Year Built']) || 0,
+          daysOnMarket: parseInt(row['Days on Market']) || 0,
+          pricePerSqft: parseNumber(row['List Price/SqFt']) || 0
+        };
+      }).filter(listing => listing.mls && listing.address); // Only keep valid listings
+
+      console.log(`Transformed ${listings.length} valid listings from CSV`);
+
+      if (listings.length === 0) {
+        return res.status(400).json({
+          error: 'No valid listings found in CSV file'
+        });
+      }
+
+      // Save to database
+      const savedListings = await saveMlsListingsToDatabase(
+        listings,
+        location,
+        parseInt(month),
+        parseInt(year)
+      );
+
+      // Calculate and save aggregate statistics
+      const aggregateData = {
+        listings: listings,
+        summary: {
+          unitSales: '',
+          medianPrice: '',
+          inventory: listings.length.toString(),
+          daysOnMarket: '',
+          quickAnalysis: ''
+        },
+        statusSummary: {
+          active: listings.filter(l => l.status === 'active').length,
+          pending: listings.filter(l => l.status === 'pending').length,
+          closed: listings.filter(l => l.status === 'closed' || l.status === 'sold').length,
+          other: listings.filter(l => !['active', 'pending', 'closed', 'sold'].includes(l.status)).length
+        },
+        priceRanges: []
+      };
+
+      await updateAggregateStatistics(aggregateData, location, parseInt(month), parseInt(year));
+
+      res.json({
+        success: true,
+        message: `Successfully imported ${savedListings.length} listings from CSV`,
+        imported: savedListings.length,
+        total: rows.length,
+        skipped: rows.length - listings.length
+      });
+
+    } catch (error) {
+      console.error('Error processing CSV file:', error);
+      res.status(500).json({
+        error: 'Failed to process CSV file',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   })
 );
@@ -547,7 +725,7 @@ async function saveMlsListingsToDatabase(listings: any[], location: string, mont
       // Prepare listing data for database - matching actual schema
       const listingData = {
         address: cleanAddress.substring(0, 255), // Limit address length
-        location: location.toLowerCase(),
+        location: normalizeLocation(location),
         month,
         year,
         mls_number: cleanMlsNumber.substring(0, 50), // Limit MLS number length
@@ -620,7 +798,7 @@ async function updateAggregateStatistics(extractedData: MLSData, location: strin
       const { error: priceError } = await supabase
         .from('price_per_sqft_data')
         .upsert({
-          location: location.toLowerCase(),
+          location: normalizeLocation(location),
           month,
           year,
           price_per_sqft: priceData.pricePerSqft,
@@ -641,7 +819,7 @@ async function updateAggregateStatistics(extractedData: MLSData, location: strin
       const { error: daysError } = await supabase
         .from('days_on_market_data')
         .upsert({
-          location: location.toLowerCase(),
+          location: normalizeLocation(location),
           month,
           year,
           average_days_on_market: daysData.averageDays,

@@ -782,9 +782,9 @@ const NewsletterGenerator = () => {
 
   const communities = {
     'anza': 'Anza',
-    'aguanga': 'Aguanga', 
+    'aguanga': 'Aguanga',
     'idyllwild': 'Idyllwild',
-    'mountain-center': 'Mountain Center'
+    'mountain_center': 'Mountain Center'
   };
 
   const months = [

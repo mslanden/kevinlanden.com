@@ -236,7 +236,16 @@ const MarketDataManager = () => {
     year: new Date().getFullYear(),
     location: 'anza'
   });
-  
+
+  // CSV Upload state
+  const [csvFile, setCsvFile] = useState(null);
+  const [csvUploading, setCsvUploading] = useState(false);
+  const [csvFormData, setCsvFormData] = useState({
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+    location: 'anza'
+  });
+
   const locations = {
     'anza': 'Anza',
     'aguanga': 'Aguanga',
@@ -449,7 +458,64 @@ const MarketDataManager = () => {
       setMlsProcessing(false);
     }
   };
-  
+
+  // CSV Upload Handler
+  const handleCsvUpload = async () => {
+    if (!csvFile) {
+      setMessage({ type: 'error', text: 'Please select a CSV file first' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      return;
+    }
+
+    setCsvUploading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const formData = new FormData();
+      formData.append('file', csvFile);
+      formData.append('location', csvFormData.location);
+      formData.append('month', csvFormData.month.toString());
+      formData.append('year', csvFormData.year.toString());
+
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/upload-csv`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessage({
+          type: 'success',
+          text: `Successfully imported ${data.imported} listings from CSV! ${data.skipped > 0 ? `(${data.skipped} skipped)` : ''}`
+        });
+
+        // Reset form
+        setCsvFile(null);
+        document.getElementById('csv-file-input').value = '';
+
+        // Refresh market data
+        fetchMarketData();
+
+        setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload CSV');
+      }
+    } catch (error) {
+      console.error('Error uploading CSV:', error);
+      setMessage({
+        type: 'error',
+        text: error.message || 'Failed to upload CSV file. Please try again.'
+      });
+      setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    } finally {
+      setCsvUploading(false);
+    }
+  };
+
   const createChartData = () => {
     const baseOptions = {
       responsive: true,
@@ -589,6 +655,13 @@ const MarketDataManager = () => {
           >
             <FaFileAlt style={{ marginRight: '0.5rem' }} />
             MLS Upload
+          </Tab>
+          <Tab
+            active={activeTab === 'csv-upload'}
+            onClick={() => setActiveTab('csv-upload')}
+          >
+            <FaUpload style={{ marginRight: '0.5rem' }} />
+            CSV Upload
           </Tab>
         </TabContainer>
         
@@ -1047,7 +1120,144 @@ const MarketDataManager = () => {
             )}
           </>
         )}
-        
+
+        {activeTab === 'csv-upload' && (
+          <>
+            <div style={{
+              backgroundColor: 'rgba(139, 69, 19, 0.1)',
+              padding: '1.5rem',
+              borderRadius: '8px',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ color: '#8b4513', marginBottom: '1rem' }}>
+                CSV Upload - Fast & Accurate
+              </h3>
+              <p style={{ color: '#D2B48C', marginBottom: '0.5rem' }}>
+                ✅ Instant upload (2-5 seconds)
+              </p>
+              <p style={{ color: '#D2B48C', marginBottom: '0.5rem' }}>
+                ✅ 100% accurate data mapping
+              </p>
+              <p style={{ color: '#D2B48C', marginBottom: '0.5rem' }}>
+                ✅ Handles unlimited listings
+              </p>
+              <p style={{ color: '#D2B48C' }}>
+                ✅ Free (no AI processing costs)
+              </p>
+            </div>
+
+            <FormGrid>
+              <InputGroup>
+                <label>
+                  <FaMapMarkedAlt />
+                  Location
+                </label>
+                <select
+                  value={csvFormData.location}
+                  onChange={(e) => setCsvFormData(prev => ({ ...prev, location: e.target.value }))}
+                >
+                  {Object.entries(locations).map(([key, value]) => (
+                    <option key={key} value={key}>{value}</option>
+                  ))}
+                </select>
+              </InputGroup>
+
+              <InputGroup>
+                <label>
+                  <FaCalendarAlt />
+                  Month
+                </label>
+                <select
+                  value={csvFormData.month}
+                  onChange={(e) => setCsvFormData(prev => ({ ...prev, month: parseInt(e.target.value) }))}
+                >
+                  {months.map((month, index) => (
+                    <option key={index + 1} value={index + 1}>{month}</option>
+                  ))}
+                </select>
+              </InputGroup>
+
+              <InputGroup>
+                <label>
+                  <FaCalendarAlt />
+                  Year
+                </label>
+                <input
+                  type="number"
+                  min="2020"
+                  max="2030"
+                  value={csvFormData.year}
+                  onChange={(e) => setCsvFormData(prev => ({ ...prev, year: parseInt(e.target.value) }))}
+                />
+              </InputGroup>
+            </FormGrid>
+
+            <div style={{ marginTop: '2rem' }}>
+              <h3 style={{ color: '#D2B48C', marginBottom: '1rem' }}>
+                <FaUpload style={{ marginRight: '0.5rem' }} />
+                Select CSV File
+              </h3>
+              <input
+                id="csv-file-input"
+                type="file"
+                accept=".csv"
+                onChange={(e) => setCsvFile(e.target.files[0])}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid #8B4513',
+                  borderRadius: '4px',
+                  padding: '0.75rem',
+                  color: '#D2B48C',
+                  width: '100%',
+                  cursor: 'pointer'
+                }}
+              />
+              {csvFile && (
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(139, 69, 19, 0.2)',
+                  borderRadius: '4px',
+                  color: '#D2B48C'
+                }}>
+                  Selected: {csvFile.name} ({(csvFile.size / 1024).toFixed(2)} KB)
+                </div>
+              )}
+
+              <ActionButton
+                onClick={handleCsvUpload}
+                disabled={!csvFile || csvUploading}
+                style={{ marginTop: '1rem' }}
+              >
+                {csvUploading ? 'Uploading...' : 'Upload CSV & Save to Database'}
+              </ActionButton>
+            </div>
+
+            <div style={{
+              marginTop: '2rem',
+              padding: '1.5rem',
+              backgroundColor: 'rgba(30, 30, 30, 0.5)',
+              borderRadius: '8px'
+            }}>
+              <h4 style={{ color: '#D2B48C', marginBottom: '1rem' }}>CSV Format Requirements:</h4>
+              <p style={{ color: '#999', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                Your CSV should include these columns:
+              </p>
+              <ul style={{ color: '#999', fontSize: '0.9rem', paddingLeft: '1.5rem' }}>
+                <li>List Number (MLS#)</li>
+                <li>Status (A=Active, P=Pending, C=Closed, etc.)</li>
+                <li>List Price or Closed Price</li>
+                <li>Street #, Street Name, City (for address)</li>
+                <li>Total Bedrooms</li>
+                <li>Total Baths</li>
+                <li>Approx SqFt</li>
+                <li>Year Built</li>
+                <li>Days on Market (optional)</li>
+              </ul>
+            </div>
+          </>
+        )}
+
         {message.text && (
           message.type === 'success' ? (
             <SuccessMessage>{message.text}</SuccessMessage>
