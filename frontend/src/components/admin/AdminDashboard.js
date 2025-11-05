@@ -471,14 +471,6 @@ const AdminDashboard = ({ onNavigate }) => {
           icon={FaDollarSign}
           color="#FF5722"
         />
-        {overview.blowoutSaleProgress && (
-          <MetricCard
-            title="Sale Progress"
-            value={`${overview.blowoutSaleProgress.progressPercentage}%`}
-            icon={FaTag}
-            color="#607D8B"
-          />
-        )}
       </MetricsGrid>
 
       {/* System Health Monitoring */}

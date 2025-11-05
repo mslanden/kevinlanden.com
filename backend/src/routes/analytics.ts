@@ -11,8 +11,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
       subscribersResult,
       contactsResult,
       propertiesResult,
-      recentContactsResult,
-      blowoutSaleResult
+      recentContactsResult
     ] = await Promise.all([
       // Total subscribers
       supabase
@@ -34,13 +33,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
       supabase
         .from('contact_submissions')
         .select('*', { count: 'exact' })
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-
-      // Blowout sale data
-      supabase
-        .from('blowout_sale')
-        .select('*')
-        .single()
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
     ]);
 
     // Handle potential null/undefined results with defaults
@@ -58,14 +51,6 @@ router.get('/dashboard', async (req: Request, res: Response) => {
     const averagePrice = propertyPrices.length > 0
       ? Math.round(propertyPrices.reduce((sum, price) => sum + price, 0) / propertyPrices.length)
       : 0;
-
-    // Calculate blowout sale progress safely
-    const blowoutData = blowoutSaleResult.data;
-    const blowoutSaleProgress = blowoutData ? {
-      progressPercentage: Math.min(100, Math.max(0,
-        ((blowoutData.current_sales || 0) / (blowoutData.target_sales || 1)) * 100
-      ))
-    } : null;
 
     // Fetch segmentation data
     const [subscribersByCommResult, contactsByTypeResult] = await Promise.all([
@@ -127,8 +112,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
           unreadContacts,
           recentContacts,
           availableProperties,
-          averagePrice,
-          blowoutSaleProgress
+          averagePrice
         },
         segmentation: {
           subscribersByCommunity,
