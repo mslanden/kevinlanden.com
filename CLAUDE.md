@@ -121,11 +121,31 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 - No test commands configured for backend or frontend v1
 - When adding tests, follow existing patterns in the respective framework
 
+## Market Data Manager
+
+### CSV Upload (Primary Method)
+- **Fast & Free**: Upload MLS data via CSV exports - no AI processing required
+- **Location**: `/frontend/src/components/MarketDataManager.js`
+- **Process**: Upload CSV → PapaParse parses data → Calculates aggregates → Saves to database
+- **Supported Fields**: List Price, Closed Price, Approx SqFt, Status, Days on Market, MLS#, Address, Beds, Baths
+- **Aggregate Calculations**:
+  - Median price per square foot
+  - Average price
+  - Total sales count
+  - Average and median days on market
+- **Database Tables**: Saves to `price_per_sqft_data` and `days_on_market_data`
+- **Upsert Behavior**: Re-uploading same month/year updates existing data automatically
+
+### Manual Entry
+- Admin can manually enter monthly aggregate statistics
+- Useful for quick data entry or adjustments
+- Same database tables as CSV upload
+
 ## Newsletter Generator
 
 ### Key Features
 - **Monthly Newsletter Creation**: Generate professional market reports for Anza, Aguanga, Idyllwild, and Mountain Center
-- **MLS Data Integration**: Upload and process MLS reports with AI-powered data extraction
+- **Market Data Display**: Reads data from `price_per_sqft_data` and `days_on_market_data` tables
 - **PDF Export**: Generate single-page continuous PDFs using html2canvas + jsPDF
 - **Market Analytics**: Automated charts for price trends, days on market, and market summaries
 - **Email Ready**: PDFs optimized for email attachments with proper formatting
@@ -137,11 +157,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 - Optimized for email attachments and mobile viewing
 - Located in `/frontend/src/components/NewsletterGenerator.js`
 
-### Market Data Tables
+### Market Data Tables Displayed
 - **Market Summary**: Active Listings, Price per Sq Ft, Closed Sales, Total Listings, Median List Price
 - **Market Data - Last 6 Months**: Historical pricing and market trends
 - **Property Listings**: Detailed MLS property information
 - Data sourced from `price_per_sqft_data` and `days_on_market_data` tables
+- Data is uploaded via **Market Data Manager**, not through the newsletter generator
 
 ## Important Notes
 - Always check which frontend version you're working on (Next.js vs React)
