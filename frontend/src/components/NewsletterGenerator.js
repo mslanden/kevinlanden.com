@@ -1663,9 +1663,9 @@ const NewsletterGenerator = () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/newsletter-data?community=${newsletterData.community}&month=${newsletterData.month}&year=${newsletterData.year}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          'Content-Type': 'application/json'
         }
       });
       

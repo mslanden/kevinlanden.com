@@ -271,9 +271,7 @@ const MarketDataManager = () => {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/all/${selectedLocation}?limit=12`,
         {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-          }
+          credentials: 'include'
         }
       );
       
@@ -300,9 +298,7 @@ const MarketDataManager = () => {
       console.log('API URL:', url);
       
       const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
+        credentials: 'include'
       });
       
       console.log('Response status:', response.status);
@@ -333,9 +329,9 @@ const MarketDataManager = () => {
         `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/price-per-sqft`,
         {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             location: selectedLocation,
@@ -363,9 +359,9 @@ const MarketDataManager = () => {
         `${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/days-on-market`,
         {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             location: selectedLocation,
@@ -421,9 +417,7 @@ const MarketDataManager = () => {
       // Send to new MLS processing endpoint
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/process-mls`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
+        credentials: 'include',
         body: formData
       });
 
@@ -479,9 +473,7 @@ const MarketDataManager = () => {
 
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/upload-csv`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
+        credentials: 'include',
         body: formData
       });
 

@@ -283,9 +283,7 @@ const ImageDataUploader = ({ onDataExtracted }) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/pdf-support`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        }
+        credentials: 'include'
       });
       
       if (response.ok) {
@@ -359,9 +357,7 @@ const ImageDataUploader = ({ onDataExtracted }) => {
       
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/convert-pdf-to-images`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
+        credentials: 'include',
         body: formData
       });
       
@@ -435,9 +431,7 @@ const ImageDataUploader = ({ onDataExtracted }) => {
       
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/extract-from-images`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        },
+        credentials: 'include',
         body: formData
       });
       
@@ -472,9 +466,9 @@ const ImageDataUploader = ({ onDataExtracted }) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001/api'}/market-data/save-extracted`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(extractedData)
       });

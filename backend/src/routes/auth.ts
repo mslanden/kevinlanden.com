@@ -56,7 +56,10 @@ router.post('/register', authLimiter, validate(schemas.register), asyncHandler(a
   res.cookie('authToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    domain: process.env.NODE_ENV === 'production'
+      ? process.env.COOKIE_DOMAIN || '.outriderrealty.com'
+      : undefined,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   });
 
@@ -148,7 +151,10 @@ router.post('/login', criticalLimiter, validate(schemas.login), asyncHandler(asy
   res.cookie('authToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    domain: process.env.NODE_ENV === 'production'
+      ? process.env.COOKIE_DOMAIN || '.outriderrealty.com'
+      : undefined,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   });
 
