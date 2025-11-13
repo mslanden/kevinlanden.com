@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaMountain, FaDollarSign, FaEnvelope } from 'react-icons/fa';
+import { FaMountain, FaDollarSign } from 'react-icons/fa';
 import NewsletterModal from './NewsletterModal';
 
 const TerritorySection = styled.section`
@@ -254,118 +254,25 @@ const MapTitle = styled.div`
   }
 `;
 
-const NewsletterCTA = styled(motion.div)`
-  margin-top: 5rem;
-  background: linear-gradient(135deg, rgba(139, 69, 19, 0.15) 0%, rgba(139, 69, 19, 0.05) 100%);
-  border-radius: ${props => props.theme.borderRadius.large};
-  padding: 3rem;
-  border: 1px solid ${props => props.theme.colors.border};
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('/images/topographic-map.jpg');
-    background-size: cover;
-    opacity: 0.03;
-    z-index: 0;
-  }
-
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
-    padding: 2.5rem 2rem;
-  }
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    padding: 2rem 1.5rem;
-    margin-top: 3rem;
-  }
-`;
-
-const NewsletterContent = styled.div`
-  position: relative;
-  z-index: 1;
-  max-width: 700px;
-  margin: 0 auto;
-`;
-
-const NewsletterIcon = styled.div`
-  width: 70px;
-  height: 70px;
-  background-color: rgba(139, 69, 19, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-  border: 1px solid ${props => props.theme.colors.border};
-
-  svg {
-    font-size: 2rem;
-    color: ${props => props.theme.colors.primary};
-  }
-`;
-
-const NewsletterTitle = styled.h3`
-  font-family: ${props => props.theme.fonts.heading};
-  font-size: 2rem;
-  color: ${props => props.theme.colors.text.secondary};
-  margin-bottom: 1rem;
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 1.6rem;
-  }
-`;
-
-const NewsletterDescription = styled.p`
-  font-size: 1.1rem;
-  color: ${props => props.theme.colors.text.primary};
-  line-height: 1.7;
-  margin-bottom: 2rem;
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-  }
-`;
-
-const NewsletterButton = styled(motion.button)`
-  background-color: ${props => props.theme.colors.primary};
-  color: white;
+const SubscribeLink = styled.button`
+  background: none;
   border: none;
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: ${props => props.theme.borderRadius.small};
+  color: ${props => props.theme.colors.primary};
+  font-size: 0.9rem;
+  text-decoration: underline;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  transition: all ${props => props.theme.transitions.default};
-  box-shadow: ${props => props.theme.shadows.medium};
-
-  svg {
-    font-size: 1.2rem;
-  }
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  transition: color ${props => props.theme.transitions.fast};
 
   &:hover {
-    background-color: ${props => props.theme.colors.tertiary};
-    box-shadow: ${props => props.theme.shadows.large};
-  }
-
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
-    padding: 0.875rem 2rem;
-    font-size: 1rem;
+    color: ${props => props.theme.colors.tertiary};
   }
 `;
 
 const Territory = () => {
   const [isNewsletterModalOpen, setIsNewsletterModalOpen] = useState(false);
+  const [selectedCommunity, setSelectedCommunity] = useState(null);
 
   const [titleRef, titleInView] = useInView({
     triggerOnce: true,
@@ -382,10 +289,10 @@ const Territory = () => {
     threshold: 0.2,
   });
 
-  const [ctaRef, ctaInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.2,
-  });
+  const handleSubscribeClick = (communityName) => {
+    setSelectedCommunity(communityName);
+    setIsNewsletterModalOpen(true);
+  };
   
   const cardVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -402,6 +309,7 @@ const Territory = () => {
   const territories = [
     {
       name: 'Anza',
+      communityKey: 'anza',
       image: '/images/anza.jpeg',
       description: 'Rural community with spacious properties, horse-friendly parcels, and stunning mountain views.',
       elevation: '3,921 ft',
@@ -409,6 +317,7 @@ const Territory = () => {
     },
     {
       name: 'Aguanga',
+      communityKey: 'aguanga',
       image: '/images/aguanga.jpeg',
       description: 'Peaceful countryside with sprawling ranch properties and a tight-knit community atmosphere.',
       elevation: '2,667 ft',
@@ -416,6 +325,7 @@ const Territory = () => {
     },
     {
       name: 'Idyllwild',
+      communityKey: 'idyllwild',
       image: '/images/idyllwild.jpeg',
       description: 'Charming mountain town with artistic flair, surrounded by pine forests and granite peaks.',
       elevation: '5,413 ft',
@@ -423,6 +333,7 @@ const Territory = () => {
     },
     {
       name: 'Mountain Center',
+      communityKey: 'mountainCenter',
       image: '/images/mountain-center.jpeg',
       description: 'Small mountain community offering secluded homes with breathtaking panoramic views.',
       elevation: '4,518 ft',
@@ -482,6 +393,9 @@ const Territory = () => {
                     </StatInfo>
                   </TerritoryStat>
                 </TerritoryStats>
+                <SubscribeLink onClick={() => handleSubscribeClick(territory.communityKey)}>
+                  Subscribe to {territory.name} newsletter
+                </SubscribeLink>
               </TerritoryContent>
             </TerritoryCard>
           ))}
@@ -498,37 +412,12 @@ const Territory = () => {
             <h3>Our Service Area</h3>
           </MapTitle>
         </MapContainer>
-
-        <NewsletterCTA
-          ref={ctaRef}
-          initial={{ opacity: 0, y: 30 }}
-          animate={ctaInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.8 }}
-        >
-          <NewsletterContent>
-            <NewsletterIcon>
-              <FaEnvelope />
-            </NewsletterIcon>
-            <NewsletterTitle>Stay Updated on Mountain Real Estate</NewsletterTitle>
-            <NewsletterDescription>
-              Get monthly market insights and exclusive updates for your favorite mountain communities.
-              Choose from Anza, Aguanga, Idyllwild, or Mountain Center newsletters.
-            </NewsletterDescription>
-            <NewsletterButton
-              onClick={() => setIsNewsletterModalOpen(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <FaEnvelope />
-              Subscribe to Newsletter
-            </NewsletterButton>
-          </NewsletterContent>
-        </NewsletterCTA>
       </TerritoryContainer>
 
       <NewsletterModal
         isOpen={isNewsletterModalOpen}
         onClose={() => setIsNewsletterModalOpen(false)}
+        preselectedCommunity={selectedCommunity}
       />
     </TerritorySection>
   );

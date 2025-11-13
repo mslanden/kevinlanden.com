@@ -256,7 +256,7 @@ const IconWrapper = styled.div`
   border: 1px solid ${props => props.theme.colors.border};
 `;
 
-const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) => {
+const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName, preselectedCommunity }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -267,10 +267,10 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
       idyllwild: false
     }
   });
-  
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  
+
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -290,6 +290,21 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
       }, 300);
     }
   }, [isOpen]);
+
+  // Pre-select community when modal opens
+  useEffect(() => {
+    if (isOpen && preselectedCommunity) {
+      setFormData(prev => ({
+        ...prev,
+        newsletters: {
+          anza: preselectedCommunity === 'anza',
+          aguanga: preselectedCommunity === 'aguanga',
+          mountainCenter: preselectedCommunity === 'mountainCenter',
+          idyllwild: preselectedCommunity === 'idyllwild'
+        }
+      }));
+    }
+  }, [isOpen, preselectedCommunity]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
