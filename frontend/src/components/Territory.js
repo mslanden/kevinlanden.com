@@ -511,7 +511,7 @@ const Territory = () => {
             </NewsletterIcon>
             <NewsletterTitle>Stay Updated on Mountain Real Estate</NewsletterTitle>
             <NewsletterDescription>
-              Get monthly market insights, new listings, and exclusive updates for your favorite mountain communities.
+              Get monthly market insights and exclusive updates for your favorite mountain communities.
               Choose from Anza, Aguanga, Idyllwild, or Mountain Center newsletters.
             </NewsletterDescription>
             <NewsletterButton
