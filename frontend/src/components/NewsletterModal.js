@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaEnvelope, FaCheck } from 'react-icons/fa';
-// import { subscribeToNewsletter } from '../utils/api';
+import { subscribeToNewsletter } from '../utils/api';
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -312,7 +312,7 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       // Prepare data for API
       const communities = Object.entries(formData.newsletters)
@@ -322,25 +322,26 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
           if (key === 'mountainCenter') return 'mountain-center';
           return key;
         });
-      
-      // Send subscription data to backend (mock for now)
-      // await subscribeToNewsletter({
-      //   name: formData.name,
-      //   email: formData.email,
-      //   communities: communities,
-      //   source: pdfFileName ? pdfFileName.replace(/\.(pdf|html)$/, '') : 'website'
-      // });
-      
-      // Mock success for now
-      console.log('Newsletter subscription:', {
+
+      // Subscribe to each selected community separately
+      const subscriptionPromises = communities.map(community =>
+        subscribeToNewsletter({
+          name: formData.name,
+          email: formData.email,
+          community: community
+        })
+      );
+
+      await Promise.all(subscriptionPromises);
+
+      console.log('Newsletter subscription successful:', {
         name: formData.name,
         email: formData.email,
-        communities: communities,
-        source: pdfFileName ? pdfFileName.replace(/\.(pdf|html)$/, '') : 'website'
+        communities: communities
       });
-      
+
       setIsSubmitted(true);
-      
+
       // Only download if there's a file to download
       if (pdfFileName) {
         setTimeout(() => {
@@ -350,7 +351,7 @@ const NewsletterModal = ({ isOpen, onClose, onDownloadComplete, pdfFileName }) =
         // For newsletter-only signups, close modal after showing success
         setTimeout(() => {
           onClose();
-        }, 2000);
+        }, 2500);
       }
     } catch (error) {
       console.error('Error subscribing to newsletter:', error);
