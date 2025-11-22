@@ -64,11 +64,8 @@ const BestInShowManager = () => {
 
   const fetchItems = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
       const response = await fetch(`${API_URL}/best-in-show/admin/all`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include' // Important: includes httpOnly cookies
       });
 
       if (!response.ok) throw new Error('Failed to fetch items');
@@ -93,16 +90,13 @@ const BestInShowManager = () => {
   const handleFileUpload = async (file, fieldName) => {
     try {
       setUploading(true);
-      const token = localStorage.getItem('adminToken');
       const formData = new FormData();
       formData.append('image', file);
       formData.append('category', currentSection);
 
       const response = await fetch(`${API_URL}/upload/best-in-show-image`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        credentials: 'include',
         body: formData
       });
 
@@ -128,7 +122,6 @@ const BestInShowManager = () => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem('adminToken');
       const url = editingItem
         ? `${API_URL}/best-in-show/${editingItem.id}`
         : `${API_URL}/best-in-show`;
@@ -137,9 +130,9 @@ const BestInShowManager = () => {
 
       const response = await fetch(url, {
         method,
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       });
@@ -161,12 +154,9 @@ const BestInShowManager = () => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
 
     try {
-      const token = localStorage.getItem('adminToken');
       const response = await fetch(`${API_URL}/best-in-show/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       });
 
       if (!response.ok) throw new Error('Failed to delete item');
