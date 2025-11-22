@@ -715,23 +715,44 @@ const BestInShow = () => {
               </SectionDescription>
             </SectionHeader>
 
-            <GalleryGrid
-              initial="hidden"
-              animate={skyLawnInView ? "visible" : "hidden"}
-              variants={staggerItems}
-              style={{ maxWidth: '900px', margin: '0 auto 4rem' }}
-            >
-              {items['sky-lawn-replacement'].map((skyLawnItem, index) => {
-                if (skyLawnItem.item_type === 'gallery-item') {
-                  return renderGalleryItem(skyLawnItem, index);
-                } else if (skyLawnItem.item_type === 'before-after') {
-                  return renderBeforeAfter(skyLawnItem, index);
-                } else if (skyLawnItem.item_type === '360-viewer') {
-                  return render360Viewer(skyLawnItem, index);
-                }
-                return null;
-              })}
-            </GalleryGrid>
+            {/* Display single item centered and larger, grid for multiple */}
+            {items['sky-lawn-replacement'].length === 1 ? (
+              <motion.div
+                initial="hidden"
+                animate={skyLawnInView ? "visible" : "hidden"}
+                variants={item}
+                style={{ maxWidth: '800px', margin: '0 auto 4rem' }}
+              >
+                {items['sky-lawn-replacement'].map((skyLawnItem, index) => {
+                  if (skyLawnItem.item_type === 'gallery-item') {
+                    return renderGalleryItem(skyLawnItem, index);
+                  } else if (skyLawnItem.item_type === 'before-after') {
+                    return renderBeforeAfter(skyLawnItem, index);
+                  } else if (skyLawnItem.item_type === '360-viewer') {
+                    return render360Viewer(skyLawnItem, index);
+                  }
+                  return null;
+                })}
+              </motion.div>
+            ) : (
+              <GalleryGrid
+                initial="hidden"
+                animate={skyLawnInView ? "visible" : "hidden"}
+                variants={staggerItems}
+                style={{ maxWidth: '900px', margin: '0 auto 4rem' }}
+              >
+                {items['sky-lawn-replacement'].map((skyLawnItem, index) => {
+                  if (skyLawnItem.item_type === 'gallery-item') {
+                    return renderGalleryItem(skyLawnItem, index);
+                  } else if (skyLawnItem.item_type === 'before-after') {
+                    return renderBeforeAfter(skyLawnItem, index);
+                  } else if (skyLawnItem.item_type === '360-viewer') {
+                    return render360Viewer(skyLawnItem, index);
+                  }
+                  return null;
+                })}
+              </GalleryGrid>
+            )}
           </ContentContainer>
         </ContentSection>
       )}
