@@ -167,7 +167,7 @@ router.put('/:id', adminLimiter, authenticateToken, requireAdmin, async (req, re
 
     // Validate section if provided
     if (section) {
-      const validSections = ['photography', 'virtual-staging', 'item-removal', '3d-tours'];
+      const validSections = ['photography', 'virtual-staging', 'item-removal', 'sky-lawn-replacement', '3d-tours'];
       if (!validSections.includes(section)) {
         return res.status(400).json({ error: 'Invalid section value' });
       }
