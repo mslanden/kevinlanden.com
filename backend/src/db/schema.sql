@@ -322,3 +322,37 @@ INSERT INTO blog_categories (name, slug) VALUES
 ('Property Management', 'property-management'),
 ('Country Living', 'country-living'),
 ('Market Trends', 'market-trends');
+
+-- Best In Show Content Table
+CREATE TABLE best_in_show_items (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  section TEXT NOT NULL CHECK (section IN ('photography', 'virtual-staging', 'item-removal', '3d-tours')),
+  item_type TEXT NOT NULL CHECK (item_type IN ('gallery-item', 'before-after', '360-viewer', 'iframe-embed')),
+  title TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT,
+  image_url_before TEXT,
+  embed_url TEXT,
+  display_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS for best_in_show_items
+ALTER TABLE best_in_show_items ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for best_in_show_items
+CREATE POLICY "Public can read active best in show items"
+ON best_in_show_items FOR SELECT
+USING (is_active = true);
+
+CREATE POLICY "Authenticated users can manage best in show items"
+ON best_in_show_items FOR ALL
+USING (auth.role() = 'authenticated');
+
+-- Create trigger for best_in_show_items updated_at
+CREATE TRIGGER best_in_show_items_updated_at_trigger
+BEFORE UPDATE ON best_in_show_items
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at();

@@ -13,7 +13,8 @@ import {
   FaTimes,
   FaUserCircle,
   FaHome,
-  FaBuilding
+  FaBuilding,
+  FaTrophy
 } from 'react-icons/fa';
 
 const LayoutContainer = styled.div`
@@ -212,6 +213,7 @@ const AdminLayout = ({ children, activeTab, onTabChange, user, onLogout }) => {
     { id: 'blowout', label: 'Blowout Sale', icon: FaTag, color: '#f44336' },
     { id: 'market', label: 'Market Data', icon: FaChartLine, color: '#9C27B0' },
     { id: 'newsletter', label: 'Newsletter Generator', icon: FaNewspaper, color: '#00BCD4' },
+    { id: 'best-in-show', label: 'Best in Show', icon: FaTrophy, color: '#FFD700' },
   ];
 
   const handleTabChange = (tabId) => {

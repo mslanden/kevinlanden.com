@@ -167,6 +167,7 @@ import marketDataRoutes from './routes/marketData';
 import analyticsRoutes from './routes/analytics';
 import listingsRoutes from './routes/listings';
 import uploadRoutes from './routes/upload';
+import bestInShowRoutes from './routes/bestInShow';
 
 // Authentication routes (with specific rate limiting)
 app.use('/api/auth', authRoutes);
@@ -181,6 +182,7 @@ app.use('/api/market-data', marketDataRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/listings', listingsRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/best-in-show', bestInShowRoutes);
 
 // 404 handler for unmatched routes
 app.use(notFoundHandler);

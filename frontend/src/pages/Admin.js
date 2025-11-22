@@ -7,6 +7,7 @@ import api from '../utils/api';
 import AdminLogin from '../components/AdminLogin';
 import NewsletterGenerator from '../components/NewsletterGenerator';
 import MarketDataManager from '../components/MarketDataManager';
+import BestInShowManager from '../components/BestInShowManager';
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import AdminCard from '../components/admin/AdminCard';
@@ -1191,6 +1192,9 @@ const Admin = () => {
 
       case 'newsletter':
         return <NewsletterGenerator />;
+
+      case 'best-in-show':
+        return <BestInShowManager />;
 
       default:
         return null;

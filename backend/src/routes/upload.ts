@@ -423,6 +423,137 @@ router.delete('/pdf', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
+// Upload Best in Show image
+router.post('/best-in-show-image', authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file provided' });
+    }
+
+    const { category = 'general' } = req.body;
+    const filename = generateFileName(req.file.originalname);
+    const filePath = getFilePath(category, filename);
+
+    // Upload to Supabase Storage - best-in-show bucket
+    const { data, error } = await supabaseAdmin.storage
+      .from('best-in-show')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return res.status(500).json({ error: 'Failed to upload image' });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabaseAdmin.storage
+      .from('best-in-show')
+      .getPublicUrl(filePath);
+
+    res.json({
+      success: true,
+      data: {
+        path: data.path,
+        publicUrl: urlData.publicUrl,
+        filename: filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      }
+    });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Internal server error during upload' });
+  }
+});
+
+// Upload multiple Best in Show images (for before/after pairs)
+router.post('/best-in-show-images', authenticateToken, requireAdmin, upload.array('images', 10), async (req, res) => {
+  try {
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+      return res.status(400).json({ error: 'No files provided' });
+    }
+
+    const { category = 'general' } = req.body;
+    const uploadPromises = (req.files as Express.Multer.File[]).map(async (file) => {
+      const filename = generateFileName(file.originalname);
+      const filePath = getFilePath(category, filename);
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabaseAdmin.storage
+        .from('best-in-show')
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw new Error(`Failed to upload ${file.originalname}: ${error.message}`);
+      }
+
+      // Get public URL
+      const { data: urlData } = supabaseAdmin.storage
+        .from('best-in-show')
+        .getPublicUrl(filePath);
+
+      return {
+        path: data.path,
+        publicUrl: urlData.publicUrl,
+        filename: filename,
+        originalName: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype
+      };
+    });
+
+    const uploadResults = await Promise.all(uploadPromises);
+
+    res.json({
+      success: true,
+      data: uploadResults,
+      count: uploadResults.length
+    });
+
+  } catch (error) {
+    console.error('Multiple upload error:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to upload images' });
+  }
+});
+
+// Delete Best in Show image
+router.delete('/best-in-show-image', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { path } = req.body;
+
+    if (!path) {
+      return res.status(400).json({ error: 'File path is required' });
+    }
+
+    const { error } = await supabaseAdmin.storage
+      .from('best-in-show')
+      .remove([path]);
+
+    if (error) {
+      console.error('Delete error:', error);
+      return res.status(500).json({ error: 'Failed to delete image' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Image deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({ error: 'Internal server error during deletion' });
+  }
+});
+
 // Error handling middleware for multer errors
 router.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (error instanceof multer.MulterError) {
