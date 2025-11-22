@@ -377,7 +377,7 @@ const BestInShow = () => {
 
   const fetchBestInShowItems = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
       const response = await fetch(`${apiUrl}/best-in-show`);
 
       if (!response.ok) {
