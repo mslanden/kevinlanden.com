@@ -150,12 +150,18 @@ const GalleryImage = styled.div`
   height: 240px;
   overflow: hidden;
   position: relative;
-  
+  background-color: rgba(0, 0, 0, 0.3);
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
+  }
+
+  &.contain-image img {
+    object-fit: contain;
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   &.before-after {
@@ -438,17 +444,23 @@ const BestInShow = () => {
   };
 
   // Render helper functions
-  const renderGalleryItem = (galleryItem, index) => (
-    <GalleryItem key={galleryItem.id || index} variants={item}>
-      <GalleryImage>
-        <img src={galleryItem.image_url} alt={galleryItem.title} />
-      </GalleryImage>
-      <GalleryContent>
-        <GalleryTitle>{galleryItem.title}</GalleryTitle>
-        <GalleryDescription>{galleryItem.description}</GalleryDescription>
-      </GalleryContent>
-    </GalleryItem>
-  );
+  const renderGalleryItem = (galleryItem, index) => {
+    // Check if this is a floor plan or similar document that needs contain instead of cover
+    const isFloorPlan = galleryItem.title?.toLowerCase().includes('floor plan') ||
+                        galleryItem.title?.toLowerCase().includes('floorplan');
+
+    return (
+      <GalleryItem key={galleryItem.id || index} variants={item}>
+        <GalleryImage className={isFloorPlan ? 'contain-image' : ''} style={isFloorPlan ? { height: '400px' } : {}}>
+          <img src={galleryItem.image_url} alt={galleryItem.title} />
+        </GalleryImage>
+        <GalleryContent>
+          <GalleryTitle>{galleryItem.title}</GalleryTitle>
+          <GalleryDescription>{galleryItem.description}</GalleryDescription>
+        </GalleryContent>
+      </GalleryItem>
+    );
+  };
 
   const renderBeforeAfter = (beforeAfterItem, index) => (
     <GalleryItem key={beforeAfterItem.id || index} variants={item}>
