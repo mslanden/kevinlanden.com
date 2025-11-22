@@ -34,6 +34,7 @@ const BestInShowManager = () => {
     photography: [],
     'virtual-staging': [],
     'item-removal': [],
+    'sky-lawn-replacement': [],
     '3d-tours': []
   });
   const [loading, setLoading] = useState(true);
@@ -303,6 +304,13 @@ const BestInShowManager = () => {
           {renderSectionItems('item-removal')}
         </Tab>
 
+        <Tab eventKey="sky-lawn-replacement" title="Sky & Lawn Replacement">
+          <div className="mb-3">
+            <Button variant="success" onClick={() => openAddModal('sky-lawn-replacement')}>+ Add New Item</Button>
+          </div>
+          {renderSectionItems('sky-lawn-replacement')}
+        </Tab>
+
         <Tab eventKey="3d-tours" title="3D Tours">
           <div className="mb-3">
             <Button variant="success" onClick={() => openAddModal('3d-tours')}>+ Add New Item</Button>
@@ -324,6 +332,7 @@ const BestInShowManager = () => {
                 <option value="photography">Photography</option>
                 <option value="virtual-staging">Virtual Staging</option>
                 <option value="item-removal">Item Removal</option>
+                <option value="sky-lawn-replacement">Sky & Lawn Replacement</option>
                 <option value="3d-tours">3D Tours</option>
               </Form.Select>
             </Form.Group>

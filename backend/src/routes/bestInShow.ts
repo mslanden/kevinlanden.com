@@ -25,6 +25,7 @@ router.get('/', async (req, res) => {
       photography: items?.filter(item => item.section === 'photography') || [],
       'virtual-staging': items?.filter(item => item.section === 'virtual-staging') || [],
       'item-removal': items?.filter(item => item.section === 'item-removal') || [],
+      'sky-lawn-replacement': items?.filter(item => item.section === 'sky-lawn-replacement') || [],
       '3d-tours': items?.filter(item => item.section === '3d-tours') || []
     };
 
@@ -54,6 +55,7 @@ router.get('/admin/all', adminLimiter, authenticateToken, requireAdmin, async (r
       photography: items?.filter(item => item.section === 'photography') || [],
       'virtual-staging': items?.filter(item => item.section === 'virtual-staging') || [],
       'item-removal': items?.filter(item => item.section === 'item-removal') || [],
+      'sky-lawn-replacement': items?.filter(item => item.section === 'sky-lawn-replacement') || [],
       '3d-tours': items?.filter(item => item.section === '3d-tours') || []
     };
 
@@ -108,7 +110,7 @@ router.post('/', adminLimiter, authenticateToken, requireAdmin, async (req, res)
     }
 
     // Validate section values
-    const validSections = ['photography', 'virtual-staging', 'item-removal', '3d-tours'];
+    const validSections = ['photography', 'virtual-staging', 'item-removal', 'sky-lawn-replacement', '3d-tours'];
     if (!validSections.includes(section)) {
       return res.status(400).json({ error: 'Invalid section value' });
     }

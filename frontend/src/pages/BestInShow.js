@@ -371,6 +371,7 @@ const BestInShow = () => {
     photography: [],
     'virtual-staging': [],
     'item-removal': [],
+    'sky-lawn-replacement': [],
     '3d-tours': []
   });
   const [loading, setLoading] = useState(true);
@@ -416,6 +417,11 @@ const BestInShow = () => {
   });
 
   const [droneRef, droneInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const [skyLawnRef, skyLawnInView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
@@ -684,7 +690,52 @@ const BestInShow = () => {
           </ContentContainer>
         </ContentSection>
       )}
-      
+
+      {/* Sky & Lawn Replacement Section */}
+      {items['sky-lawn-replacement'] && items['sky-lawn-replacement'].length > 0 && (
+        <ContentSection style={{ backgroundColor: "#1a1613" /* warmDark */ }}>
+          <ContentContainer>
+            <SectionHeader>
+              <SectionTitle
+                ref={skyLawnRef}
+                initial="hidden"
+                animate={skyLawnInView ? "visible" : "hidden"}
+                variants={fadeIn}
+                transition={{ duration: 0.8 }}
+              >
+                Sky & Lawn Replacement
+              </SectionTitle>
+              <SectionDescription
+                initial="hidden"
+                animate={skyLawnInView ? "visible" : "hidden"}
+                variants={fadeIn}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                Enhance outdoor spaces with blue skies and lush green lawns for picture-perfect curb appeal.
+              </SectionDescription>
+            </SectionHeader>
+
+            <GalleryGrid
+              initial="hidden"
+              animate={skyLawnInView ? "visible" : "hidden"}
+              variants={staggerItems}
+              style={{ maxWidth: '900px', margin: '0 auto 4rem' }}
+            >
+              {items['sky-lawn-replacement'].map((skyLawnItem, index) => {
+                if (skyLawnItem.item_type === 'gallery-item') {
+                  return renderGalleryItem(skyLawnItem, index);
+                } else if (skyLawnItem.item_type === 'before-after') {
+                  return renderBeforeAfter(skyLawnItem, index);
+                } else if (skyLawnItem.item_type === '360-viewer') {
+                  return render360Viewer(skyLawnItem, index);
+                }
+                return null;
+              })}
+            </GalleryGrid>
+          </ContentContainer>
+        </ContentSection>
+      )}
+
       {/* 3D Tours & Floor Plans Section */}
       {items['3d-tours'] && items['3d-tours'].length > 0 && (
         <ContentSection style={{ backgroundColor: "#101318" /* coolDark */ }}>
